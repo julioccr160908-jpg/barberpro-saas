@@ -1,0 +1,866 @@
+
+
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+
+CREATE EXTENSION IF NOT EXISTS "pg_net" WITH SCHEMA "extensions";
+
+
+
+
+
+
+COMMENT ON SCHEMA "public" IS 'standard public schema';
+
+
+
+CREATE EXTENSION IF NOT EXISTS "pg_graphql" WITH SCHEMA "graphql";
+
+
+
+
+
+
+CREATE EXTENSION IF NOT EXISTS "pg_stat_statements" WITH SCHEMA "extensions";
+
+
+
+
+
+
+CREATE EXTENSION IF NOT EXISTS "pgcrypto" WITH SCHEMA "extensions";
+
+
+
+
+
+
+CREATE EXTENSION IF NOT EXISTS "supabase_vault" WITH SCHEMA "vault";
+
+
+
+
+
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA "extensions";
+
+
+
+
+
+
+CREATE TYPE "public"."appointment_status" AS ENUM (
+    'PENDING',
+    'CONFIRMED',
+    'COMPLETED',
+    'CANCELLED'
+);
+
+
+ALTER TYPE "public"."appointment_status" OWNER TO "postgres";
+
+
+CREATE TYPE "public"."user_role" AS ENUM (
+    'ADMIN',
+    'BARBER',
+    'CUSTOMER',
+    'SUPER_ADMIN'
+);
+
+
+ALTER TYPE "public"."user_role" OWNER TO "postgres";
+
+SET default_tablespace = '';
+
+SET default_table_access_method = "heap";
+
+
+CREATE TABLE IF NOT EXISTS "public"."appointments" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "barber_id" "uuid",
+    "customer_id" "uuid",
+    "service_id" "uuid",
+    "date" timestamp with time zone NOT NULL,
+    "status" "public"."appointment_status" DEFAULT 'PENDING'::"public"."appointment_status",
+    "created_at" timestamp with time zone DEFAULT "timezone"('utc'::"text", "now"()) NOT NULL,
+    "notes" "text",
+    "organization_id" "uuid"
+);
+
+
+ALTER TABLE "public"."appointments" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."organizations" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "name" "text" NOT NULL,
+    "slug" "text" NOT NULL,
+    "owner_id" "uuid",
+    "created_at" timestamp with time zone DEFAULT "timezone"('utc'::"text", "now"()) NOT NULL,
+    "updated_at" timestamp with time zone DEFAULT "timezone"('utc'::"text", "now"()) NOT NULL,
+    "subscription_status" "text" DEFAULT 'trial'::"text",
+    "plan_type" "text" DEFAULT 'basic'::"text",
+    "logo_url" "text",
+    "banner_url" "text",
+    "primary_color" "text",
+    "secondary_color" "text",
+    "theme_mode" "text" DEFAULT 'dark'::"text"
+);
+
+
+ALTER TABLE "public"."organizations" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."profiles" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "name" "text" NOT NULL,
+    "email" "text" NOT NULL,
+    "role" "public"."user_role" DEFAULT 'CUSTOMER'::"public"."user_role",
+    "avatar_url" "text",
+    "job_title" "text",
+    "created_at" timestamp with time zone DEFAULT "timezone"('utc'::"text", "now"()) NOT NULL,
+    "organization_id" "uuid"
+);
+
+
+ALTER TABLE "public"."profiles" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."services" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "name" "text" NOT NULL,
+    "price" numeric(10,2) NOT NULL,
+    "duration_minutes" integer NOT NULL,
+    "description" "text",
+    "image_url" "text",
+    "created_at" timestamp with time zone DEFAULT "timezone"('utc'::"text", "now"()) NOT NULL,
+    "active" boolean DEFAULT true,
+    "organization_id" "uuid"
+);
+
+
+ALTER TABLE "public"."services" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."settings" (
+    "id" integer DEFAULT 1 NOT NULL,
+    "interval_minutes" integer DEFAULT 45,
+    "schedule" "jsonb" NOT NULL,
+    "organization_id" "uuid",
+    "establishment_name" "text",
+    "address" "text",
+    "phone" "text",
+    "city" "text",
+    "state" "text",
+    "zip_code" "text",
+    CONSTRAINT "single_row" CHECK (("id" = 1))
+);
+
+
+ALTER TABLE "public"."settings" OWNER TO "postgres";
+
+
+ALTER TABLE ONLY "public"."appointments"
+    ADD CONSTRAINT "appointments_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."organizations"
+    ADD CONSTRAINT "organizations_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."organizations"
+    ADD CONSTRAINT "organizations_slug_key" UNIQUE ("slug");
+
+
+
+ALTER TABLE ONLY "public"."profiles"
+    ADD CONSTRAINT "profiles_email_key" UNIQUE ("email");
+
+
+
+ALTER TABLE ONLY "public"."profiles"
+    ADD CONSTRAINT "profiles_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."services"
+    ADD CONSTRAINT "services_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."settings"
+    ADD CONSTRAINT "settings_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."appointments"
+    ADD CONSTRAINT "appointments_barber_id_fkey" FOREIGN KEY ("barber_id") REFERENCES "public"."profiles"("id");
+
+
+
+ALTER TABLE ONLY "public"."appointments"
+    ADD CONSTRAINT "appointments_customer_id_fkey" FOREIGN KEY ("customer_id") REFERENCES "public"."profiles"("id");
+
+
+
+ALTER TABLE ONLY "public"."appointments"
+    ADD CONSTRAINT "appointments_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id");
+
+
+
+ALTER TABLE ONLY "public"."appointments"
+    ADD CONSTRAINT "appointments_service_id_fkey" FOREIGN KEY ("service_id") REFERENCES "public"."services"("id");
+
+
+
+ALTER TABLE ONLY "public"."profiles"
+    ADD CONSTRAINT "profiles_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id");
+
+
+
+ALTER TABLE ONLY "public"."services"
+    ADD CONSTRAINT "services_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id");
+
+
+
+ALTER TABLE ONLY "public"."settings"
+    ADD CONSTRAINT "settings_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id");
+
+
+
+CREATE POLICY "Public Access" ON "public"."appointments" USING (true);
+
+
+
+CREATE POLICY "Public Access" ON "public"."organizations" USING (true);
+
+
+
+CREATE POLICY "Public Access" ON "public"."profiles" USING (true);
+
+
+
+CREATE POLICY "Public Access" ON "public"."services" USING (true);
+
+
+
+CREATE POLICY "Public Access" ON "public"."settings" USING (true);
+
+
+
+ALTER TABLE "public"."appointments" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."organizations" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."profiles" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."services" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."settings" ENABLE ROW LEVEL SECURITY;
+
+
+
+
+ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres";
+
+
+
+
+
+GRANT USAGE ON SCHEMA "public" TO "postgres";
+GRANT USAGE ON SCHEMA "public" TO "anon";
+GRANT USAGE ON SCHEMA "public" TO "authenticated";
+GRANT USAGE ON SCHEMA "public" TO "service_role";
+GRANT USAGE ON SCHEMA "public" TO "supabase_auth_admin";
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+SET SESSION AUTHORIZATION "postgres";
+RESET SESSION AUTHORIZATION;
+
+
+
+GRANT ALL ON TABLE "public"."appointments" TO "anon";
+GRANT ALL ON TABLE "public"."appointments" TO "authenticated";
+GRANT ALL ON TABLE "public"."appointments" TO "service_role";
+GRANT ALL ON TABLE "public"."appointments" TO "supabase_auth_admin";
+
+
+
+GRANT ALL ON TABLE "public"."organizations" TO "anon";
+GRANT ALL ON TABLE "public"."organizations" TO "authenticated";
+GRANT ALL ON TABLE "public"."organizations" TO "service_role";
+GRANT ALL ON TABLE "public"."organizations" TO "supabase_auth_admin";
+
+
+
+GRANT ALL ON TABLE "public"."profiles" TO "anon";
+GRANT ALL ON TABLE "public"."profiles" TO "authenticated";
+GRANT ALL ON TABLE "public"."profiles" TO "service_role";
+GRANT ALL ON TABLE "public"."profiles" TO "supabase_auth_admin";
+
+
+
+GRANT ALL ON TABLE "public"."services" TO "anon";
+GRANT ALL ON TABLE "public"."services" TO "authenticated";
+GRANT ALL ON TABLE "public"."services" TO "service_role";
+GRANT ALL ON TABLE "public"."services" TO "supabase_auth_admin";
+
+
+
+GRANT ALL ON TABLE "public"."settings" TO "anon";
+GRANT ALL ON TABLE "public"."settings" TO "authenticated";
+GRANT ALL ON TABLE "public"."settings" TO "service_role";
+GRANT ALL ON TABLE "public"."settings" TO "supabase_auth_admin";
+
+
+
+
+
+
+
+
+
+ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON SEQUENCES TO "postgres";
+ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON SEQUENCES TO "anon";
+ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON SEQUENCES TO "authenticated";
+ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON SEQUENCES TO "service_role";
+
+
+
+
+
+
+ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON FUNCTIONS TO "postgres";
+ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON FUNCTIONS TO "anon";
+ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON FUNCTIONS TO "authenticated";
+ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON FUNCTIONS TO "service_role";
+
+
+
+
+
+
+ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "postgres";
+ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "anon";
+ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "authenticated";
+ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "service_role";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
