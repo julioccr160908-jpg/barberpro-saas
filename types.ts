@@ -1,5 +1,6 @@
 
 export enum Role {
+  SUPER_ADMIN = 'SUPER_ADMIN',
   ADMIN = 'ADMIN',
   BARBER = 'BARBER',
   CUSTOMER = 'CUSTOMER',
@@ -64,6 +65,12 @@ export interface ShopSettings {
   city?: string;
   state?: string;
   zipCode?: string;
+  // Branding
+  primaryColor?: string;
+  secondaryColor?: string;
+  logoUrl?: string;
+  bannerUrl?: string;
+  themeMode?: 'light' | 'dark';
 }
 
 // Stats for dashboard
@@ -71,4 +78,14 @@ export interface DailyStats {
   revenue: number;
   appointments: number;
   occupancyRate: number;
+}
+
+export interface Organization {
+  id: string;
+  name: string;
+  slug: string;
+  ownerId: string;
+  subscriptionStatus: 'trial' | 'active' | 'past_due' | 'canceled';
+  planType: 'basic' | 'pro' | 'enterprise';
+  createdAt?: string;
 }

@@ -4,6 +4,7 @@ import { Button } from './ui/Button';
 import { DayConfig, ShopSettings } from '../types';
 import { Clock, Check, AlertCircle, Loader2, MapPin, Store, Phone, Building } from 'lucide-react';
 import { db } from '../services/database';
+import { AppearanceSettings } from './admin/AppearanceSettings';
 
 export const AdminTimeSettings: React.FC = () => {
     const [schedule, setSchedule] = useState<DayConfig[]>([]);
@@ -17,7 +18,7 @@ export const AdminTimeSettings: React.FC = () => {
     const [state, setState] = useState('');
     const [zipCode, setZipCode] = useState('');
 
-    const [activeTab, setActiveTab] = useState<'general' | 'schedule'>('general');
+    const [activeTab, setActiveTab] = useState<'general' | 'schedule' | 'appearance'>('general');
 
     const [success, setSuccess] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -137,24 +138,35 @@ export const AdminTimeSettings: React.FC = () => {
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-4 border-b border-white/10 mb-8">
+            <div className="flex gap-4 border-b border-white/10 mb-8 overflow-x-auto">
                 <button
                     onClick={() => setActiveTab('general')}
-                    className={`pb-4 px-2 text-sm font-medium transition-colors relative ${activeTab === 'general' ? 'text-primary' : 'text-textMuted hover:text-white'}`}
+                    className={`pb-4 px-2 text-sm font-medium transition-colors relative whitespace-nowrap ${activeTab === 'general' ? 'text-primary' : 'text-textMuted hover:text-white'}`}
                 >
                     Dados do Estabelecimento
                     {activeTab === 'general' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-t-full"></div>}
                 </button>
                 <button
                     onClick={() => setActiveTab('schedule')}
-                    className={`pb-4 px-2 text-sm font-medium transition-colors relative ${activeTab === 'schedule' ? 'text-primary' : 'text-textMuted hover:text-white'}`}
+                    className={`pb-4 px-2 text-sm font-medium transition-colors relative whitespace-nowrap ${activeTab === 'schedule' ? 'text-primary' : 'text-textMuted hover:text-white'}`}
                 >
                     Horários de Funcionamento
                     {activeTab === 'schedule' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-t-full"></div>}
                 </button>
+                <button
+                    onClick={() => setActiveTab('appearance')}
+                    className={`pb-4 px-2 text-sm font-medium transition-colors relative whitespace-nowrap ${activeTab === 'appearance' ? 'text-primary' : 'text-textMuted hover:text-white'}`}
+                >
+                    Aparência & Marca
+                    {activeTab === 'appearance' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-t-full"></div>}
+                </button>
             </div>
 
-            {activeTab === 'general' ? (
+            {/* CONTENT: Appearance */}
+            {activeTab === 'appearance' && <AppearanceSettings />}
+
+            {/* CONTENT: General */}
+            {activeTab === 'general' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-surface p-6 rounded-xl border border-white/5 animate-in fade-in slide-in-from-left-4 duration-300">
                     <div className="md:col-span-2 space-y-2">
                         <label className="text-sm font-medium text-textMuted">Nome do Estabelecimento</label>
@@ -240,7 +252,10 @@ export const AdminTimeSettings: React.FC = () => {
                         </div>
                     </div>
                 </div>
-            ) : (
+            )}
+
+            {/* CONTENT: Schedule */}
+            {activeTab === 'schedule' && (
                 <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                     {days.map(dayLabel => {
                         const config = schedule.find(d => d.dayId === dayLabel.id) || {
@@ -341,22 +356,25 @@ export const AdminTimeSettings: React.FC = () => {
                 </div>
             )}
 
-            <div className="fixed bottom-6 right-6 z-50">
-                {success && (
-                    <div className="absolute bottom-full right-0 mb-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-4 py-2 rounded-lg backdrop-blur-md flex items-center gap-2 shadow-xl mb-2 animate-in slide-in-from-bottom-2">
-                        <Check size={16} />
-                        Configurações salvas com sucesso!
-                    </div>
-                )}
-                <Button
-                    onClick={handleSave}
-                    size="lg"
-                    className="shadow-2xl shadow-primary/20 hover:scale-105 transition-transform"
-                    disabled={saving}
-                >
-                    {saving ? <Loader2 size={24} className="animate-spin" /> : 'Salvar Alterações'}
-                </Button>
-            </div>
+            {/* Footer Actions (Only show for non-Appearance tabs) */}
+            {activeTab !== 'appearance' && (
+                <div className="fixed bottom-6 right-6 z-50">
+                    {success && (
+                        <div className="absolute bottom-full right-0 mb-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-4 py-2 rounded-lg backdrop-blur-md flex items-center gap-2 shadow-xl mb-2 animate-in slide-in-from-bottom-2">
+                            <Check size={16} />
+                            Configurações salvas com sucesso!
+                        </div>
+                    )}
+                    <Button
+                        onClick={handleSave}
+                        size="lg"
+                        className="shadow-2xl shadow-primary/20 hover:scale-105 transition-transform"
+                        disabled={saving}
+                    >
+                        {saving ? <Loader2 size={24} className="animate-spin" /> : 'Salvar Alterações'}
+                    </Button>
+                </div>
+            )}
         </div>
     );
 };

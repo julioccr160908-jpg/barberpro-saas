@@ -8,6 +8,7 @@ interface AuthContextType {
     loading: boolean;
     isAdmin: boolean;
     isBarber: boolean;
+    signOut: () => Promise<any>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -27,18 +28,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Initial check
         const checkUser = async () => {
             try {
-                const { data: { user } } = await supabase.auth.getUser();
+                const { data: { user }, error: authError } = await supabase.auth.getUser();
+                console.log('AuthContext DEBUG: User:', user, 'AuthError:', authError);
+
+                if (authError) {
+                    console.error("AuthContext Error getting user:", authError);
+                }
+
                 setUser(user);
 
                 if (user) {
-                    const { data: profile } = await supabase
+                    console.log('AuthContext DEBUG: Fetching profile for', user.id);
+                    const { data: profile, error } = await supabase
                         .from('profiles')
-                        .select('role')
+                        .select('*')
                         .eq('id', user.id)
                         .single();
 
+                    console.log('AuthContext DEBUG: Profile result:', profile, 'Error:', error);
+
+                    if (error) {
+                        console.error('AuthContext DEBUG: Profile fetch error:', error);
+                    }
+
                     if (profile) {
+                        console.log('AuthContext DEBUG: Setting role to:', profile.role);
                         setRole(profile.role as Role);
+                    } else {
+                        console.warn('AuthContext DEBUG: No profile found for user!');
                     }
                 }
             } catch (error) {
@@ -75,8 +92,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         role,
         loading,
-        isAdmin: role === Role.ADMIN,
         isBarber: role === Role.BARBER,
+        signOut: () => supabase.auth.signOut(),
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

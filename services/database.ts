@@ -210,7 +210,7 @@ export const db = {
         // Fallback or init
         return DEFAULT_SETTINGS;
       }
-      return {
+      const settings: ShopSettings = {
         intervalMinutes: data.interval_minutes,
         schedule: data.schedule,
         establishmentName: data.establishment_name,
@@ -220,6 +220,18 @@ export const db = {
         state: data.state,
         zipCode: data.zip_code
       };
+
+      // Merge with Organization Branding (Single Tenant / First Org Strategy for Demo)
+      const { data: org } = await supabase.from('organizations').select('primary_color, secondary_color, logo_url, banner_url, theme_mode').limit(1).maybeSingle();
+      if (org) {
+        settings.primaryColor = org.primary_color;
+        settings.secondaryColor = org.secondary_color;
+        settings.logoUrl = org.logo_url;
+        settings.bannerUrl = org.banner_url;
+        settings.themeMode = org.theme_mode;
+      }
+
+      return settings;
     },
     update: async (settings: ShopSettings) => {
       const { error } = await supabase.from('settings').upsert({

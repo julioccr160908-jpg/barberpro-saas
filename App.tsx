@@ -1,6 +1,7 @@
 
+
 import React, { useState, useEffect } from 'react';
-import { HashRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Sidebar } from './components/Sidebar';
 import { AdminDashboard } from './components/AdminDashboard';
 import { AdminStaffManager } from './components/AdminStaffManager';
@@ -13,6 +14,8 @@ import { CustomerLayout } from './components/customer/CustomerLayout';
 import { CustomerAppointments } from './components/customer/CustomerAppointments';
 import { CustomerProfile } from './components/customer/CustomerProfile';
 import { Login } from './components/Login';
+import { Register } from './components/Register';
+import { RegisterSuccess } from './components/RegisterSuccess';
 import { Role } from './types';
 import { Button } from './components/ui/Button';
 import { SettingsProvider } from './contexts/SettingsContext';
@@ -20,6 +23,12 @@ import { db } from './services/database';
 import { supabase } from './services/supabase';
 import { Loader2 } from 'lucide-react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { OrganizationProvider } from './contexts/OrganizationContext';
+import { PlatformLayout } from './components/platform/PlatformLayout';
+import { PlatformDashboard } from './components/platform/PlatformDashboard';
+import { OrganizationsList } from './components/platform/OrganizationsList';
+import { PlatformUsers } from './components/platform/PlatformUsers';
+import { PlatformSettings } from './components/platform/PlatformSettings';
 
 
 // Wrapper for internal app layout (Sidebar + Content)
@@ -149,79 +158,95 @@ const App: React.FC = () => {
   return (
     <SettingsProvider>
       <AuthProvider>
-        <HashRouter>
-          <Routes>
-            <Route path="/" element={<Landing />} />
+        <OrganizationProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Landing />} />
 
-            {/* Auth Route */}
-            <Route path="/login" element={<Login />} />
+              {/* Auth Route */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/register-success" element={<RegisterSuccess />} />
 
 
-            {/* Customer Routes - All Protected by Layout in Component or here */}
+              {/* Customer Routes - All Protected by Layout in Component or here */}
 
-            {/* Redirect /book to new structure or keep as is? 
+              {/* Redirect /book to new structure or keep as is? 
                 Let's keep /book as the main entry but wrap it or redirect after login 
             */}
-            <Route path="/book" element={
-              <CustomerLayout>
-                <BookingFlow />
-              </CustomerLayout>
-            } />
+              <Route path="/book" element={
+                <CustomerLayout>
+                  <BookingFlow />
+                </CustomerLayout>
+              } />
 
-            <Route path="/customer/appointments" element={
-              <CustomerLayout>
-                <CustomerAppointments />
-              </CustomerLayout>
-            } />
+              <Route path="/customer/appointments" element={
+                <CustomerLayout>
+                  <CustomerAppointments />
+                </CustomerLayout>
+              } />
 
-            <Route path="/customer/profile" element={
-              <CustomerLayout>
-                <CustomerProfile />
-              </CustomerLayout>
-            } />
+              <Route path="/customer/profile" element={
+                <CustomerLayout>
+                  <CustomerProfile />
+                </CustomerLayout>
+              } />
 
-            {/* Admin / Staff Routes */}
-            <Route path="/admin/dashboard" element={
-              <AppLayout>
-                <AdminDashboard />
-              </AppLayout>
-            } />
+              {/* Super Admin / Platform Routes */}
+              <Route path="/platform/*" element={
+                <PlatformLayout>
+                  <Routes>
+                    <Route path="dashboard" element={<PlatformDashboard />} />
+                    <Route path="organizations" element={<OrganizationsList />} />
+                    <Route path="users" element={<PlatformUsers />} />
+                    <Route path="settings" element={<PlatformSettings />} />
+                  </Routes>
+                </PlatformLayout>
+              } />
 
-            <Route path="/admin/schedule" element={
-              <AppLayout>
-                <Schedule />
-              </AppLayout>
-            } />
+              {/* Admin / Staff Routes */}
+              <Route path="/admin/dashboard" element={
+                <AppLayout>
+                  <AdminDashboard />
+                </AppLayout>
+              } />
 
-            <Route path="/admin/staff" element={
-              <AppLayout>
-                <AdminStaffManager />
-              </AppLayout>
-            } />
+              <Route path="/admin/schedule" element={
+                <AppLayout>
+                  <Schedule />
+                </AppLayout>
+              } />
+
+              <Route path="/admin/staff" element={
+                <AppLayout>
+                  <AdminStaffManager />
+                </AppLayout>
+              } />
 
 
-            <Route path="/admin/services" element={
-              <AppLayout>
-                <AdminServicesManager />
-              </AppLayout>
-            } />
+              <Route path="/admin/services" element={
+                <AppLayout>
+                  <AdminServicesManager />
+                </AppLayout>
+              } />
 
-            <Route path="/admin/customers" element={
-              <AppLayout>
-                <AdminCustomersManager />
-              </AppLayout>
-            } />
+              <Route path="/admin/customers" element={
+                <AppLayout>
+                  <AdminCustomersManager />
+                </AppLayout>
+              } />
 
-            <Route path="/admin/settings" element={
-              <AppLayout>
-                <AdminTimeSettings />
-              </AppLayout>
-            } />
+              <Route path="/admin/settings" element={
+                <AppLayout>
+                  <AdminTimeSettings />
+                </AppLayout>
+              } />
 
-            {/* Fallback */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </HashRouter>
+              {/* Fallback */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </BrowserRouter>
+        </OrganizationProvider>
       </AuthProvider>
     </SettingsProvider>
   );

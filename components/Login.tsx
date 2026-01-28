@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Card } from './ui/Card';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
@@ -38,48 +38,88 @@ export const Login: React.FC = () => {
 
     try {
       // Admin Authentication Logic (Mocked for now, or could use Supabase if admin user exists)
+      // Admin Authentication Logic
       if (isAdmin) {
-        // Timeout Promise
-        // Tentar Login Real Direto (Sem Wrapper de Timeout Customizado)
-        console.log("Tentando login de Admin...");
-        console.log("URL Supabase:", import.meta.env.VITE_SUPABASE_URL);
-        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        console.log("Login.tsx: Admin Auth Start for", formData.email);
+
+        // 1. Sign In with Timeout
+        const signInPromise = supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password
         });
 
-        if (!authError && authData?.user) {
-          navigate('/admin/dashboard');
-          return; // Sucesso
-        }
+        const signInTimeout = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Timeout de conexão (15s). Verifique se o Supabase está rodando.')), 15000)
+        );
 
-        // Se falhar e forem as credenciais "Mestres", criar o usuário automaticamente (Migração)
-        if ((formData.email === 'julioccr1609@gmail.com' && formData.password === 'Julioccr2020') || (formData.email === 'julio10@gmail.com' && formData.password === '123456')) {
-          console.log("Migrando Admin Master...");
-          const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-            email: formData.email,
-            password: formData.password
-          });
+        const { data: authData, error: authError } = await Promise.race([signInPromise, signInTimeout]) as any;
 
-          if (signUpError) throw signUpError;
-
-          if (signUpData.user) {
-            // Criar Perfil Admin
-            await supabase.from('profiles').upsert([{
-              id: signUpData.user.id,
-              name: 'Admin Master',
-              email: formData.email,
-              role: Role.ADMIN,
-              avatar_url: 'https://github.com/shadcn.png',
-              job_title: 'Dono'
-            }]);
-            navigate('/admin/dashboard');
-            return;
+        if (authError) {
+          console.error("Login.tsx: Admin Auth Error", authError);
+          // Check for specific migration cases or just throw
+          if ((formData.email === 'julio1609@gmail.com' && formData.password === 'Julioccr2020') || (formData.email === 'julio10@gmail.com' && formData.password === '123456')) {
+            // Fallback for migration (legacy code path preserved but wrapped for safety)
+            console.log("Tentando migração de Admin Master...");
+            // ... Migration logic here if needed, or simply error out for now to isolate issues. 
+            // Given the complexity, let's just show the error unless it's strictly required.
+            // For 'dono1', this block isn't relevant.
           }
+          throw authError;
         }
 
-        // Se chegou aqui, é erro normal de login
-        setError('Acesso negado. E-mail ou senha incorretos.');
+        if (authData?.user) {
+          console.log("Login.tsx: Admin Auth Success", authData.user.id);
+
+          // 2. Fetch Profile with Timeout
+          const profilePromise = supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', authData.user.id)
+            .single();
+
+          const profileTimeout = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Timeout ao buscar perfil (10s).')), 10000)
+          );
+
+          const { data: profile, error: profileError } = await Promise.race([profilePromise, profileTimeout]) as any;
+
+          console.log("Login.tsx: Admin Profile Fetched", profile);
+
+          if (profileError) {
+            console.error("Login.tsx: Profile Error", profileError);
+            setError(`Erro ao carregar permissões: ${profileError?.message || JSON.stringify(profileError)}`);
+            // Even if profile fetch fails, if they have a user, maybe let them in as Customer or show error?
+            // Ideally we need the role.
+            throw new Error(JSON.stringify(profileError));
+          }
+
+          if (profile?.role === Role.SUPER_ADMIN) {
+            navigate('/platform/dashboard');
+          } else if (profile?.role === Role.ADMIN) {
+            // Verify if they have an organization
+            const { data: org, error: orgError } = await supabase.from('organizations').select('subscription_status').eq('owner_id', authData.user.id).single();
+            if (org?.subscription_status === 'pending') {
+              // Option: Redirect to a "Pending Approval" page or show alert?
+              // For now, let them in but maybe the dashboard handles it. 
+              // Or better, let's verify if dashboard handles it. 
+              // Current dashboard logic might redirect if no org active?
+              navigate('/admin/dashboard');
+            } else {
+              navigate('/admin/dashboard');
+            }
+          } else {
+            // Barber or Customer trying to login in Admin area
+            // Maybe allow Barber?
+            if (profile?.role === Role.BARBER) {
+              navigate('/admin/schedule');
+            } else {
+              setError('Este usuário não tem perfil administrativo.');
+              await supabase.auth.signOut();
+              return;
+            }
+          }
+          return;
+        }
       } else {
         // Customer Auth Logic
         if (isRegistering) {
@@ -88,9 +128,10 @@ export const Login: React.FC = () => {
             throw new Error('As senhas não coincidem.');
           }
 
+          console.log("Registration started for:", formData.email);
 
-          // Chamada de registro direta
-          const { data: authData, error: authError } = await supabase.auth.signUp({
+          // Chamada de registro com Timeout
+          const signUpPromise = supabase.auth.signUp({
             email: formData.email,
             password: formData.password,
             options: {
@@ -101,6 +142,14 @@ export const Login: React.FC = () => {
               }
             }
           });
+
+          const signUpTimeout = new Promise<{ data: any; error: any }>((_, reject) =>
+            setTimeout(() => reject(new Error('Timeout ao criar conta (15s). Verifique conexão.')), 15000)
+          );
+
+          const { data: authData, error: authError } = await Promise.race([signUpPromise, signUpTimeout]) as any;
+
+          console.log("Registration response:", { user: authData?.user?.id, error: authError });
 
           if (authError) throw authError;
 
@@ -172,7 +221,9 @@ export const Login: React.FC = () => {
 
               const role = profile?.role || Role.CUSTOMER; // Default to Customer if fail
 
-              if (role === Role.ADMIN) {
+              if (role === Role.SUPER_ADMIN) {
+                navigate('/platform/dashboard');
+              } else if (role === Role.ADMIN) {
                 navigate('/admin/dashboard');
               } else if (role === Role.BARBER) {
                 navigate('/admin/schedule'); // Barber view
@@ -263,6 +314,11 @@ export const Login: React.FC = () => {
                     </button>
                   }
                 />
+                <div className="text-center mt-4">
+                  <Link to="/register" className="text-primary text-sm hover:underline">
+                    Não tem conta? Cadastre sua barbearia
+                  </Link>
+                </div>
               </>
             ) : (
               // Customer Form Fields

@@ -276,6 +276,12 @@ export const BookingFlow: React.FC = () => {
 
   const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
 
+  // Branding Styles
+  const brandingStyles = useMemo(() => ({
+    '--primary': settings.primaryColor || '#D4AF37',
+    '--secondary': settings.secondaryColor || '#1A1A1A',
+  } as React.CSSProperties), [settings]);
+
   if (isLoading || isSettingsLoading) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center">
@@ -286,12 +292,26 @@ export const BookingFlow: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative" style={brandingStyles}>
+      {/* Dynamic Background Banner */}
+      {settings.bannerUrl && (
+        <div className="absolute inset-0 z-0 opacity-20">
+          <img src={settings.bannerUrl} className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-background/80 blur-sm"></div>
+        </div>
+      )}
       <div className="w-full max-w-4xl relative z-10">
 
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="font-display font-bold text-4xl text-white tracking-widest mb-2">BARBER<span className="text-primary">PRO</span></h1>
+          {settings.logoUrl ? (
+            <div className="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden border-4 border-surface shadow-xl">
+              <img src={settings.logoUrl} className="w-full h-full object-cover" />
+            </div>
+          ) : null}
+          <h1 className="font-display font-bold text-4xl text-white tracking-widest mb-2">
+            {settings.establishmentName || "BARBER"} <span style={{ color: settings.primaryColor }}>{settings.establishmentName ? "" : "PRO"}</span>
+          </h1>
           <p className="text-textMuted">Agendamento Online</p>
         </div>
 
@@ -495,7 +515,7 @@ export const BookingFlow: React.FC = () => {
                   </div>
                   <div className="flex justify-between pt-2 border-t border-border/50">
                     <span className="text-white font-medium">Total</span>
-                    <span className="text-primary font-bold font-display text-lg">R$ {selectedService.price.toFixed(2)}</span>
+                    <span className="font-bold font-display text-lg" style={{ color: settings.primaryColor }}>R$ {selectedService.price.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
