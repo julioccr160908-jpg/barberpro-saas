@@ -18,12 +18,25 @@ export const useSettingsQuery = (orgId?: string) => {
                 console.error("Error fetching settings:", error);
             }
 
-            // Return default settings if not found, or null to let context handle it?
-            // Context logic: if (!data) create default.
-            // Here we just return data or null.
+            // Parse schedule if it's a string (JSON stored as text)
+            if (data && data.schedule && typeof data.schedule === 'string') {
+                try {
+                    data.schedule = JSON.parse(data.schedule);
+                } catch (e) {
+                    console.error("Error parsing schedule JSON:", e);
+                    data.schedule = [];
+                }
+            }
+
+            // Ensure schedule is always an array
+            if (data && !Array.isArray(data.schedule)) {
+                data.schedule = [];
+            }
+
             return data;
         },
         enabled: !!orgId,
         staleTime: 1000 * 60 * 10, // 10 minutes
     });
 };
+
