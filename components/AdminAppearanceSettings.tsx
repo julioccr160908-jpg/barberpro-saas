@@ -58,12 +58,25 @@ export const AdminAppearanceSettings: React.FC = () => {
     const onSubmit = async (data: AppearanceForm) => {
         setIsSaving(true);
         try {
+            // Update Settings Table
             await updateSettings({
                 ...settings,
                 primary_color: data.primary_color,
                 secondary_color: data.secondary_color,
                 establishment_name: data.establishment_name
             });
+
+            // Also Update Organization Table (Critical for Public Page Consistency)
+            if (settings.organization_id) {
+                const { error: orgError } = await supabase.from('organizations').update({
+                    name: data.establishment_name,
+                    primary_color: data.primary_color,
+                    secondary_color: data.secondary_color
+                }).eq('id', settings.organization_id);
+
+                if (orgError) console.error("Error syncing organization colors", orgError);
+            }
+
             toast.success('Aparência atualizada com sucesso!');
         } catch (error) {
             toast.error('Erro ao salvar aparência');

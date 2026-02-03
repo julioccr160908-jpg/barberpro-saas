@@ -300,9 +300,16 @@ export const Login: React.FC = () => {
 
           <div className="mt-6 text-center space-y-4">
             {isAdmin ? (
-              <p className="text-xs text-textMuted">
-                Esqueceu a senha? <a href="#" className="text-primary hover:underline">Contate o suporte</a>.
-              </p>
+              <>
+                <p className="text-xs text-textMuted">
+                  Esqueceu a senha? <a href="#" className="text-primary hover:underline">Contate o suporte</a>.
+                </p>
+                <div className="pt-4 border-t border-white/10 mt-4">
+                  <p className="text-sm text-textMuted">
+                    Quer usar o BarberPro? <Link to="/register" className="text-primary font-medium hover:underline">Cadastrar minha Barbearia</Link>
+                  </p>
+                </div>
+              </>
             ) : (
               <>
                 <div className="pt-2 border-t border-white/5">

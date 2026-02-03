@@ -35,9 +35,12 @@ export const Landing: React.FC = () => {
                         <Button fullWidth size="lg" onClick={() => navigate('/login?role=admin')}>
                             Entrar como Dono (Admin)
                         </Button>
-                        <Button fullWidth size="lg" variant="secondary" onClick={() => navigate('/login?role=customer')}>
-                            Área do Cliente (Agendar)
-                        </Button>
+
+                        <div className="pt-2">
+                            <Button fullWidth size="lg" variant="outline" className="border-primary text-primary hover:bg-primary/10" onClick={() => navigate('/register')}>
+                                Cadastrar sua Barbearia
+                            </Button>
+                        </div>
                     </div>
                 </div>
 

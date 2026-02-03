@@ -547,7 +547,7 @@ export const BookingFlow: React.FC = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative" style={brandingStyles}>
       {/* Dynamic Background Banner */}
-      {activeSettings.bannerUrl && (
+      {activeSettings.banner_url && (
         <div className="absolute inset-0 z-0 opacity-20">
           <img src={activeSettings.banner_url} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-background/80 blur-sm"></div>
@@ -557,7 +557,7 @@ export const BookingFlow: React.FC = () => {
 
         {/* Header */}
         <div className="text-center mb-8">
-          {activeSettings.logoUrl ? (
+          {activeSettings.logo_url ? (
             <div className="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden border-4 border-surface shadow-xl">
               <img src={activeSettings.logo_url} className="w-full h-full object-cover" />
             </div>
@@ -592,8 +592,7 @@ export const BookingFlow: React.FC = () => {
                 <p className="text-textMuted max-w-lg mx-auto">
                   Conheça nossos serviços e profissionais especializados.
                 </p>
-                <Button
-                  size="lg"
+                <button
                   onClick={async () => {
                     const { data: { user } } = await supabase.auth.getUser();
                     if (!user) {
@@ -604,11 +603,15 @@ export const BookingFlow: React.FC = () => {
                       setStep(BookingStep.SERVICE);
                     }
                   }}
-                  style={{ backgroundColor: activeSettings.primary_color, color: activeSettings.secondary_color || '#000' }}
-                  className="animate-pulse shadow-[0_0_20px_rgba(255,255,255,0.1)] scale-110 mb-8 border-none hover:opacity-90 transition-opacity"
+                  style={{
+                    backgroundColor: activeSettings.primary_color || '#D4AF37',
+                    color: activeSettings.secondary_color || '#000',
+                    border: `1px solid ${activeSettings.primary_color || '#D4AF37'}`,
+                  }}
+                  className="w-full sm:w-auto px-8 py-4 rounded-lg font-bold text-lg shadow-[0_0_20px_rgba(255,255,255,0.1)] mb-8 hover:opacity-90 transition-all transform hover:scale-105"
                 >
                   Fazer Agendamento
-                </Button>
+                </button>
               </div>
 
               {/* Services Preview */}
