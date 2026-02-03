@@ -82,15 +82,13 @@ export const Login: React.FC = () => {
         isAdminParam: isAdmin
       });
 
-      if (isAdmin) {
-        if (userRole === Role.ADMIN || userRole === Role.SUPER_ADMIN) {
-          navigate('/admin/dashboard');
-        } else if (userRole === Role.BARBER) {
-          navigate('/admin/schedule');
-        } else {
-          await supabase.auth.signOut();
-          throw new Error('Este usuário não tem permissão de administrador.');
-        }
+      // SEMPRE redirecionar baseado na role do perfil, não no parâmetro URL
+      if (userRole === Role.ADMIN || userRole === Role.SUPER_ADMIN) {
+        // Admin e Super Admin SEMPRE vão para o painel admin
+        navigate('/admin/dashboard');
+      } else if (userRole === Role.BARBER) {
+        // Barbeiro vai para agenda
+        navigate('/admin/schedule');
       } else {
         // Customer Flow
         const redirect = searchParams.get('redirect');
@@ -102,6 +100,7 @@ export const Login: React.FC = () => {
       }
     }
   };
+
 
   const handleRegister = async () => {
     if (formData.password !== formData.confirmPassword) {
