@@ -6,6 +6,7 @@ import { Button } from './ui/Button';
 import { Trash2, Search, Loader2, User, Phone, Mail } from 'lucide-react';
 import { Input } from './ui/Input';
 import { Role } from '../types';
+import { toast } from 'sonner';
 
 interface Customer {
     id: string;
@@ -28,18 +29,51 @@ export const AdminCustomersManager: React.FC = () => {
     const fetchCustomers = async () => {
         try {
             setLoading(true);
+
+            // Get Org ID
+            const { data: { user } } = await supabase.auth.getUser();
+            const { data: profile } = await supabase.from('profiles').select('organization_id').eq('id', user?.id).single();
+            const orgId = profile?.organization_id;
+
+            if (!orgId) {
+                setCustomers([]);
+                return;
+            }
+
+            // Get customers who have appointments in this organization
             const { data, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('role', 'CUSTOMER')
-                .order('name'); // Assuming 'name' exists
+                .from('appointments')
+                .select(`
+                    customer:customer_id (
+                        id,
+                        name,
+                        email,
+                        phone,
+                        avatar_url
+                    )
+                `)
+                .eq('organization_id', orgId);
 
             if (error) throw error;
 
-            // Filter out any potential non-customers if query was broad, but .eq should handle it.
-            setCustomers(data || []);
+            // Extract unique customers (a customer may have multiple appointments)
+            const uniqueCustomers = new Map<string, Customer>();
+            data?.forEach((appointment: any) => {
+                if (appointment.customer && !uniqueCustomers.has(appointment.customer.id)) {
+                    uniqueCustomers.set(appointment.customer.id, {
+                        id: appointment.customer.id,
+                        name: appointment.customer.name,
+                        email: appointment.customer.email,
+                        phone: appointment.customer.phone,
+                        avatar_url: appointment.customer.avatar_url
+                    });
+                }
+            });
+
+            setCustomers(Array.from(uniqueCustomers.values()).sort((a, b) => a.name.localeCompare(b.name)));
         } catch (error) {
             console.error('Error fetching customers:', error);
+            toast.error('Erro ao carregar clientes');
         } finally {
             setLoading(false);
         }
@@ -65,10 +99,10 @@ export const AdminCustomersManager: React.FC = () => {
             if (error) throw error;
 
             setCustomers(customers.filter(c => c.id !== id));
-            alert('Cliente removido com sucesso.');
+            toast.success('Cliente removido com sucesso.');
         } catch (error: any) {
             console.error('Error deleting customer:', error);
-            alert('Erro ao excluir cliente: ' + (error.message || 'Erro desconhecido'));
+            toast.error('Erro ao excluir cliente: ' + (error.message || 'Erro desconhecido'));
         } finally {
             setDeleteLoading(null);
         }

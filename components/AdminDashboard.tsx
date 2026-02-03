@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React from 'react';
 import { Card, CardHeader } from './ui/Card';
-import { DollarSign, Users, CalendarCheck, TrendingUp, Loader2 } from 'lucide-react';
+import { Skeleton } from './ui/Skeleton';
+import { DollarSign, Users, CalendarCheck, TrendingUp } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { supabase } from '../services/supabase';
-import { AppointmentStatus, User } from '../types';
-import { format, isToday, isSameDay, subDays, startOfDay, parseISO } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { useAuth } from '../contexts/AuthContext';
+import { parseISO, format } from 'date-fns';
+import { useAdminStats } from '../hooks/useAdminStats';
+import { AppointmentStatus } from '../types';
 
 const StatCard: React.FC<{
   title: string;
@@ -32,103 +33,41 @@ const StatCard: React.FC<{
 );
 
 export const AdminDashboard: React.FC = () => {
-  const [loading, setLoading] = useState(true);
-  const [appointments, setAppointments] = useState<any[]>([]);
-  const [period, setPeriod] = useState('Esta Semana');
+  const { profile, loading: authLoading } = useAuth();
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
+  // Use the new hook for data fetching and aggregation
+  const {
+    revenue,
+    count,
+    uniqueCustomers,
+    isLoading: statsLoading,
+    upcomingAppointments,
+    chartData
+  } = useAdminStats(profile?.organization_id);
 
-  const fetchDashboardData = async () => {
-    try {
-      setLoading(true);
-      // Fetch appointments with relations
-      // Note: We use raw supabase client here for joins which are essential for dashboard analytics
-      const { data, error } = await supabase
-        .from('appointments')
-        .select(`
-          *,
-          customer:customer_id(name),
-          barber:barber_id(name),
-          service:service_id(name, price)
-        `)
-        .order('date', { ascending: true });
-
-      if (error) throw error;
-      setAppointments(data || []);
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const metrics = useMemo(() => {
-    if (!appointments.length) {
-      return {
-        revenue: 0,
-        count: 0,
-        uniqueCustomers: 0,
-        occupancy: 0
-      };
-    }
-
-    // Filter valid appointments (not cancelled)
-    const validAppts = appointments.filter(a => a.status !== 'CANCELLED');
-
-    // Revenue: APENAS agendamentos COMPLETED (cortes já realizados)
-    const completedAppts = appointments.filter(a => a.status === 'COMPLETED');
-    const revenue = completedAppts.reduce((sum, appt) => sum + (appt.service?.price || 0), 0);
-
-    // Count: Total de agendamentos ativos (não cancelados)
-    const count = validAppts.length;
-
-    // Unique Customers: Baseado em agendamentos completados
-    const uniqueCustomers = new Set(completedAppts.map(a => a.customer_id)).size;
-
-    return {
-      revenue,
-      count,
-      uniqueCustomers,
-      occupancy: 0 // occupancy calculation implies knowing total slots, which is complex. Leaving 0 for now or removing.
-    };
-  }, [appointments]);
-
-  const upcomingAppointments = useMemo(() => {
-    const now = new Date();
-    return appointments
-      .filter(a => new Date(a.date) >= now && a.status !== 'CANCELLED')
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      .slice(0, 5); // Take next 5
-  }, [appointments]);
-
-  const chartData = useMemo(() => {
-    if (!appointments.length) return [];
-
-    // Generate last 7 days data
-    const days = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = subDays(new Date(), i);
-      days.push(d);
-    }
-
-    return days.map(day => {
-      // APENAS cortes COMPLETED (já realizados)
-      const dayRevenue = appointments
-        .filter(a => isSameDay(new Date(a.date), day) && a.status === 'COMPLETED')
-        .reduce((sum, a) => sum + (a.service?.price || 0), 0);
-
-      return {
-        name: format(day, 'EEE', { locale: ptBR }), // Seg, Ter...
-        value: dayRevenue,
-        fullDate: format(day, 'dd/MM/yyyy')
-      };
-    });
-  }, [appointments]);
+  const loading = authLoading || statsLoading;
 
   if (loading) {
-    return <div className="flex h-96 items-center justify-center"><Loader2 className="animate-spin text-primary" size={48} /></div>;
+    return (
+      <div className="space-y-6 animate-pulse">
+        <div className="flex flex-col md:flex-row justify-between gap-4">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+          <Skeleton className="h-10 w-24" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-32 rounded-xl" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Skeleton className="h-96 lg:col-span-2 rounded-xl" />
+          <Skeleton className="h-96 lg:col-span-1 rounded-xl" />
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -139,28 +78,25 @@ export const AdminDashboard: React.FC = () => {
           <h1 className="text-3xl font-display font-bold text-white uppercase">Dashboard</h1>
           <p className="text-textMuted">Visão geral do desempenho</p>
         </div>
-        <div className="flex gap-2">
-          {/* Filter UI - Currently visual only, logic filters 'All time' fetched data or we could refine fetch */}
-        </div>
       </div>
 
       {/* KPI Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Receita Realizada"
-          value={metrics.revenue > 0 ? `R$ ${metrics.revenue.toFixed(2)}` : 'R$ 0,00'}
-          trend={metrics.revenue > 0 ? "Total acumulado" : "Sem dados"}
+          value={revenue > 0 ? `R$ ${revenue.toFixed(2)}` : 'R$ 0,00'}
+          trend={revenue > 0 ? "Total acumulado" : "Sem dados"}
           icon={DollarSign}
         />
         <StatCard
           title="Agendamentos"
-          value={metrics.count > 0 ? metrics.count.toString() : '0'}
-          trend={metrics.count > 0 ? "Total ativos" : "Sem agendamentos"}
+          value={count > 0 ? count.toString() : '0'}
+          trend={count > 0 ? "Total ativos" : "Sem agendamentos"}
           icon={CalendarCheck}
         />
         <StatCard
           title="Clientes Únicos"
-          value={metrics.uniqueCustomers > 0 ? metrics.uniqueCustomers.toString() : '0'}
+          value={uniqueCustomers > 0 ? uniqueCustomers.toString() : '0'}
           trend="Total atendidos"
           icon={Users}
         />
@@ -180,7 +116,7 @@ export const AdminDashboard: React.FC = () => {
           <Card className="h-96">
             <CardHeader title="Receita (Últimos 7 dias)" subtitle="Baseado em cortes realizados" />
             <div className="h-72 w-full">
-              {metrics.revenue === 0 ? (
+              {revenue === 0 ? (
                 <div className="h-full flex items-center justify-center text-textMuted">Sem dados financeiros para exibir</div>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
@@ -231,7 +167,7 @@ export const AdminDashboard: React.FC = () => {
         <div className="lg:col-span-1">
           <Card className="h-96 flex flex-col">
             <CardHeader title="Próximos Cortes" subtitle="Agendados" />
-            <div className="flex-1 overflow-y-auto pr-2 space-y-4">
+            <div className="flex-1 overflow-y-auto pr-2 space-y-4 custom-scrollbar">
               {upcomingAppointments.length === 0 ? (
                 <div className="text-textMuted text-center mt-10">Nenhum agendamento futuro.</div>
               ) : (
@@ -241,10 +177,10 @@ export const AdminDashboard: React.FC = () => {
                       <span className="text-sm">{format(parseISO(appt.date), 'HH:mm')}</span>
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-white">{appt.customer?.name || 'Cliente'}</p>
+                      <p className="text-sm font-medium text-white">{appt.customer?.name || appt.customer_id || 'Cliente'}</p>
                       <p className="text-xs text-textMuted">{appt.service?.name || 'Serviço'} • {format(parseISO(appt.date), 'dd/MM')}</p>
                     </div>
-                    <div className={`w-2 h-2 rounded-full ${appt.status === 'CONFIRMED' ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+                    <div className={`w-2 h-2 rounded-full ${appt.status === AppointmentStatus.CONFIRMED ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
                   </div>
                 ))
               )}

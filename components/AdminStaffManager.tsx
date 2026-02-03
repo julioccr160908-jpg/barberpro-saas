@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Card } from './ui/Card';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
-import { Plus, Edit2, Trash2, X, User, Mail, Briefcase, Shield, Upload, Loader2, Lock } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, User, Mail, Briefcase, Shield, Upload, Loader2, Lock, DollarSign } from 'lucide-react';
 import { User as UserType, Role } from '../types';
 import { db } from '../services/database';
 import { supabase } from '../services/supabase';
+import { toast } from 'sonner';
 
 export const AdminStaffManager: React.FC = () => {
   const [staff, setStaff] = useState<UserType[]>([]);
@@ -62,6 +63,13 @@ export const AdminStaffManager: React.FC = () => {
 
     if (!formData.name || !formData.email) return;
 
+    // 0. Capture Admin Context FIRST (before any potential session switching)
+    const orgId = await db._getOrgId();
+    if (!orgId) {
+      toast.error("Erro: Não foi possível identificar sua barbearia. Recarregue a página.");
+      return;
+    }
+
     try {
       if (editingUser) {
         const updatedUser = {
@@ -70,13 +78,14 @@ export const AdminStaffManager: React.FC = () => {
           email: formData.email,
           role: formData.role,
           jobTitle: formData.jobTitle,
-          avatarUrl: formData.avatarUrl
+          avatarUrl: formData.avatarUrl,
+          commissionRate: formData.commissionRate
         } as UserType;
 
         await db.staff.update(updatedUser);
       } else {
         if (!formData.password) {
-          alert("Senha é obrigatória para novos membros.");
+          toast.error("Senha é obrigatória para novos membros.");
           return;
         }
 
@@ -89,28 +98,65 @@ export const AdminStaffManager: React.FC = () => {
           }
         });
 
+        let authUserId = authData?.user?.id;
+        let recoveryClient = null;
+
         if (authError) {
-          console.error("Auth error:", authError);
-          alert(`Erro na autenticação: ${authError.message}`);
-          return;
+          // If user already exists, try to recover using a TEMP client to avoid logging out the Admin
+          if (authError.message?.includes("already registered") || authError.message?.includes("already exists")) {
+            console.log("User exists, attempting to recover via isolated sign in...");
+
+            // Create a temporary client just for this operation
+            const { createClient } = await import('@supabase/supabase-js');
+            const tempSupabase = createClient(
+              import.meta.env.VITE_SUPABASE_URL,
+              import.meta.env.VITE_SUPABASE_ANON_KEY
+            );
+
+            const { data: signInData, error: signInError } = await tempSupabase.auth.signInWithPassword({
+              email: formData.email,
+              password: formData.password
+            });
+
+            if (signInError) {
+              toast.error(`O email já está cadastrado e a senha não confere.`);
+              return;
+            }
+            authUserId = signInData.user?.id;
+            recoveryClient = tempSupabase; // We might need this client to insert profile if RLS restricts admin
+          } else {
+            console.error("Auth error:", authError);
+            toast.error(`Erro na autenticação: ${authError.message}`);
+            return;
+          }
         }
 
-        if (authData.user) {
+        if (authUserId) {
           // 2. Create Profile in DB linked to Auth ID
           const newUser = {
-            id: authData.user.id, // CRITICAL: Use Auth ID
+            id: authUserId, // CRITICAL: Use Auth ID
+            organization_id: orgId, // Admin's Org ID
             name: formData.name,
             email: formData.email,
             role: formData.role || Role.BARBER,
             job_title: formData.jobTitle || 'Barbeiro',
             avatar_url: formData.avatarUrl || 'https://images.unsplash.com/photo-1534360406560-593259695629?q=80&w=200&auto=format&fit=crop',
+            commission_rate: formData.commissionRate || 0
           };
 
-          const { error: profileError } = await supabase.from('profiles').insert([newUser]);
+          // Try inserting with Admin client first
+          let { error: profileError } = await supabase.from('profiles').insert([newUser]);
+
+          // If Admin failed (RLS?), try with the recovery client (User inserting own profile)
+          if (profileError && recoveryClient) {
+            console.log("Admin insert failed, trying with recovery client...", profileError.message);
+            const { error: recoveryError } = await recoveryClient.from('profiles').insert([newUser]);
+            profileError = recoveryError;
+          }
 
           if (profileError) {
             console.error("Profile error:", profileError);
-            alert("Usuário criado, mas erro ao criar perfil. Contate suporte.");
+            toast.error("Usuário criado/recuperado, mas erro ao criar perfil. Verifique se o usuário já não está na equipe.");
           }
         }
       }
@@ -118,7 +164,7 @@ export const AdminStaffManager: React.FC = () => {
       setIsModalOpen(false);
     } catch (error) {
       console.error("Error saving staff member", error);
-      alert("Erro ao salvar membro da equipe.");
+      toast.error("Erro ao salvar membro da equipe.");
     }
   };
 
@@ -130,10 +176,10 @@ export const AdminStaffManager: React.FC = () => {
         await db.staff.delete(id);
         console.log('Usuário deletado com sucesso');
         await fetchStaff();
-        alert('✅ Membro removido com sucesso!');
+        toast.success('Membro removido com sucesso!');
       } catch (error: any) {
         console.error("Error deleting staff member", error);
-        alert(`❌ Erro ao excluir membro: ${error.message || 'Erro desconhecido'}`);
+        toast.error(`❌ Erro ao excluir membro: ${error.message || 'Erro desconhecido'}`);
       } finally {
         setIsLoading(false);
       }
@@ -307,6 +353,17 @@ export const AdminStaffManager: React.FC = () => {
                     </select>
                   </div>
                 </div>
+
+                {formData.role === Role.BARBER && (
+                  <Input
+                    label="Comissão (%)"
+                    type="number"
+                    placeholder="0"
+                    value={formData.commissionRate?.toString() || ''}
+                    onChange={(e) => setFormData({ ...formData, commissionRate: Number(e.target.value) })}
+                    icon={<DollarSign size={18} />}
+                  />
+                )}
               </div>
 
               <div className="flex justify-end gap-4 pt-4 border-t border-border">

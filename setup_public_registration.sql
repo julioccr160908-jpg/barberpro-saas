@@ -38,6 +38,14 @@ BEGIN
         role = 'ADMIN' -- They are the admin of their own shop
     WHERE id = v_user_id;
 
+    -- Insert Default Notification Templates
+    INSERT INTO public.notification_templates (organization_id, type, channel, subject, content, is_active)
+    VALUES 
+    (new_org_id, 'confirmation', 'email', 'Confirmação: {service_name}', 'Olá {customer_name}, seu agendamento para {service_name} em {date_time} foi confirmado.', true),
+    (new_org_id, 'reminder_24h', 'email', 'Lembrete: Corte Amanhã', 'Olá {customer_name}, lembrete do seu corte amanhã às {time}.', true),
+    (new_org_id, 'reminder_1h', 'whatsapp', NULL, 'Olá {customer_name}, seu corte é em 1 hora! ({time})', true),
+    (new_org_id, 'welcome', 'email', 'Bem-vindo à {establishment_name}', 'Obrigado por se cadastrar na {establishment_name}!', true);
+
     RETURN new_org_id;
 END;
 $$;

@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   format,
   addMonths,
@@ -15,18 +15,19 @@ import {
   addMinutes,
   isBefore,
   parse,
-  setHours,
-  setMinutes
 } from 'date-fns';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, User, Scissors, CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle, XCircle, Loader2, Scissors } from 'lucide-react';
 import { Card } from './ui/Card';
 import { Badge } from './ui/Badge';
+import { Skeleton } from './ui/Skeleton';
 import { Button } from './ui/Button';
 import { WhatsAppButton } from './ui/WhatsAppButton';
+import { toast } from 'sonner';
 import { useSettings } from '../contexts/SettingsContext';
-import { db } from '../services/database';
-import { Appointment, Service, User as UserType } from '../types';
+import { Appointment, AppointmentStatus } from '../types';
 import { useAuth } from '../contexts/AuthContext';
+import { useAppointments } from '../hooks/useAppointments';
+import { ptBR } from 'date-fns/locale';
 
 interface TimeSlot {
   time: string;
@@ -42,44 +43,15 @@ interface TimeSlot {
 
 export const Schedule: React.FC = () => {
   const { settings } = useSettings();
-  const { user, isBarber } = useAuth();
+  const { user, isBarber, profile } = useAuth();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
 
-  // Real Data State
-  const [loading, setLoading] = useState(true);
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [services, setServices] = useState<Service[]>([]);
-  const [staff, setStaff] = useState<UserType[]>([]);
-  const [customers, setCustomers] = useState<UserType[]>([]);
-
-  // Load Data
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      const [apptsData, servicesData, staffData, customersData] = await Promise.all([
-        db.appointments.list(),
-        db.services.list(),
-        db.staff.list(),
-        db.customers.list()
-      ]);
-      setAppointments(apptsData);
-      setServices(servicesData);
-      setStaff(staffData);
-      setCustomers(customersData);
-    } catch (error) {
-      console.error("Error loading schedule data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadData();
-    // In a real app with websockets, we'd listen for changes.
-    // Here we could set an interval or rely on component mount.
-  }, []);
+  // Fetch Appointments using Query Hook
+  const { data: appointments = [], isLoading, updateStatus, createAppointment } = useAppointments({
+    orgId: profile?.organization_id
+  });
 
   // Calendar Navigation
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
@@ -130,31 +102,20 @@ export const Schedule: React.FC = () => {
       while (isBefore(current, close)) {
         const timeStr = format(current, 'HH:mm');
 
-        // Find appointment starting at this time (tolerance of few mins could be added in real app)
+        // Find appointment starting at this time
         const appt = dayAppointments.find(a => format(new Date(a.date), 'HH:mm') === timeStr);
 
         let enrichedAppt = undefined;
         if (appt) {
-          const service = services.find(s => s.id === appt.serviceId);
-          const barber = staff.find(u => u.id === appt.barberId);
           enrichedAppt = {
             ...appt,
-            serviceName: service?.name || 'Serviço desconhecido',
-            staffName: barber?.name || 'Barbeiro',
-            staffAvatar: barber?.avatarUrl,
-            customerName: undefined,
-            customerPhone: undefined
+            serviceName: appt.service?.name || 'Serviço excluído',
+            staffName: appt.barber?.name || 'Barbeiro',
+            staffAvatar: undefined, // barber avatar not fetched yet, could add if critical
+            customerName: appt.customer?.name || (appt.customerId === 'guest' ? 'Cliente Externo' : 'Cliente'),
+            customerPhone: appt.customer?.phone
           };
-
-          if (appt.customerId === 'guest') {
-            enrichedAppt.customerName = 'Cliente Externo';
-          } else {
-            const customer = customers.find(c => c.id === appt.customerId);
-            enrichedAppt.customerName = customer?.name || 'Cliente';
-            enrichedAppt.customerPhone = customer?.phone;
-          }
         }
-
 
         slots.push({
           time: timeStr,
@@ -164,7 +125,7 @@ export const Schedule: React.FC = () => {
 
         // Increment
         const duration = appt
-          ? (services.find(s => s.id === appt.serviceId)?.durationMinutes || settings.intervalMinutes)
+          ? (appt.service?.durationMinutes || settings.intervalMinutes)
           : settings.intervalMinutes;
 
         current = addMinutes(current, duration);
@@ -175,7 +136,7 @@ export const Schedule: React.FC = () => {
     }
 
     return slots;
-  }, [settings, selectedDate, appointments, services, staff]);
+  }, [settings, selectedDate, appointments, isBarber, user]);
 
   // Indicator logic
   const hasAppointments = (day: Date) => {
@@ -206,15 +167,21 @@ export const Schedule: React.FC = () => {
             })()}
           </p>
         </div>
-        <Button size="sm" onClick={() => loadData()} disabled={loading}>
-          {loading ? <Loader2 size={16} className="animate-spin" /> : 'Atualizar'}
-        </Button>
       </div>
 
       <div className="flex-1 overflow-y-auto pr-2 space-y-2 custom-scrollbar min-h-0">
-        {loading ? (
-          <div className="flex items-center justify-center h-40">
-            <Loader2 size={32} className="text-primary animate-spin" />
+        {isLoading ? (
+          <div className="space-y-4 animate-pulse">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="flex gap-4">
+                <div className="w-14 pt-2">
+                  <Skeleton className="h-4 w-10" />
+                </div>
+                <div className="flex-1">
+                  <Skeleton className="h-24 w-full rounded-xl" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : (
           <>
@@ -262,11 +229,10 @@ export const Schedule: React.FC = () => {
                             <button
                               onClick={async () => {
                                 try {
-                                  await db.appointments.updateStatus(slot.appointment!.id, 'CONFIRMED' as any);
-                                  await loadData();
-                                  alert('✅ Agendamento confirmado!');
+                                  await updateStatus({ id: slot.appointment!.id, status: AppointmentStatus.CONFIRMED });
+                                  toast.success('Agendamento confirmado!');
                                 } catch (error) {
-                                  alert('❌ Erro ao confirmar');
+                                  toast.error('Erro ao confirmar');
                                 }
                               }}
                               className="flex-1 px-3 py-1.5 bg-green-500/20 hover:bg-green-500/30 border border-green-500/50 text-green-400 text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-1"
@@ -278,11 +244,10 @@ export const Schedule: React.FC = () => {
                               onClick={async () => {
                                 if (window.confirm('Cancelar este agendamento?')) {
                                   try {
-                                    await db.appointments.updateStatus(slot.appointment!.id, 'CANCELLED' as any);
-                                    await loadData();
-                                    alert('❌ Agendamento cancelado');
+                                    await updateStatus({ id: slot.appointment!.id, status: AppointmentStatus.CANCELLED });
+                                    toast.success('Agendamento cancelado');
                                   } catch (error) {
-                                    alert('Erro ao cancelar');
+                                    toast.error('Erro ao cancelar');
                                   }
                                 }
                               }}
@@ -297,11 +262,10 @@ export const Schedule: React.FC = () => {
                             <button
                               onClick={async () => {
                                 try {
-                                  await db.appointments.updateStatus(slot.appointment!.id, 'COMPLETED' as any);
-                                  await loadData();
-                                  alert('✅ Corte marcado como realizado!');
+                                  await updateStatus({ id: slot.appointment!.id, status: AppointmentStatus.COMPLETED });
+                                  toast.success('Corte marcado como realizado!');
                                 } catch (error) {
-                                  alert('❌ Erro ao atualizar');
+                                  toast.error('Erro ao atualizar');
                                 }
                               }}
                               className="flex-1 px-3 py-1.5 bg-primary/20 hover:bg-primary/30 border border-primary text-primary text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-1"
@@ -313,11 +277,10 @@ export const Schedule: React.FC = () => {
                               onClick={async () => {
                                 if (window.confirm('Cancelar este agendamento?')) {
                                   try {
-                                    await db.appointments.updateStatus(slot.appointment!.id, 'CANCELLED' as any);
-                                    await loadData();
-                                    alert('❌ Agendamento cancelado');
+                                    await updateStatus({ id: slot.appointment!.id, status: AppointmentStatus.CANCELLED });
+                                    toast.success('Agendamento cancelado');
                                   } catch (error) {
-                                    alert('Erro ao cancelar');
+                                    toast.error('Erro ao cancelar');
                                   }
                                 }
                               }}
@@ -370,7 +333,7 @@ export const Schedule: React.FC = () => {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
             <h2 className="text-2xl font-display font-bold text-white capitalize">
-              {format(currentMonth, 'MMMM yyyy')}
+              {format(currentMonth, 'MMMM yyyy', { locale: ptBR })}
             </h2>
           </div>
           <div className="flex items-center gap-1 bg-surfaceHighlight rounded-lg p-1">
@@ -456,4 +419,3 @@ export const Schedule: React.FC = () => {
     </div>
   );
 };
-

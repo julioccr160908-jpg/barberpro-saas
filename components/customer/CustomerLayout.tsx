@@ -21,8 +21,11 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
         window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}`, '_blank');
     };
 
+    const lastSlug = localStorage.getItem('barberpro_last_slug');
+    const bookPath = lastSlug ? `/${lastSlug}` : '/book';
+
     const menuItems = [
-        { id: 'book', label: 'Novo Agendamento', icon: Scissors, path: '/book' },
+        { id: 'book', label: 'Novo Agendamento', icon: Scissors, path: bookPath },
         { id: 'appointments', label: 'Meus Agendamentos', icon: Calendar, path: '/customer/appointments' },
         { id: 'profile', label: 'Meu Perfil', icon: User, path: '/customer/profile' },
     ];
@@ -35,15 +38,20 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
         navigate('/login');
     }
 
+    const brandingStyles = React.useMemo(() => ({
+        '--primary': settings.primary_color || '#D4AF37',
+        '--secondary': settings.secondary_color || '#1A1A1A',
+    } as React.CSSProperties), [settings]);
+
     return (
-        <div className="min-h-screen bg-background text-textMain font-sans flex flex-col">
+        <div className="min-h-screen bg-background text-textMain font-sans flex flex-col" style={brandingStyles}>
             {/* Mobile Header */}
             <div className="lg:hidden flex items-center justify-between p-4 border-b border-border bg-background z-50 relative">
                 <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-primary rounded-sm flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-sm flex items-center justify-center" style={{ backgroundColor: settings.primary_color || '#D4AF37' }}>
                         <Scissors size={18} className="text-black" />
                     </div>
-                    <span className="font-display font-bold text-lg text-white">BARBER<span className="text-primary">PRO</span></span>
+                    <span className="font-display font-bold text-lg text-white">BARBER<span style={{ color: settings.primary_color || '#D4AF37' }}>PRO</span></span>
                 </div>
                 <button onClick={() => setIsOpen(!isOpen)} className="text-white p-2">
                     <Menu />
@@ -63,10 +71,10 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                         {/* Logo Desktop */}
                         <div className="hidden lg:flex h-20 items-center px-6 border-b border-border">
                             <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 bg-primary rounded-sm flex items-center justify-center">
+                                <div className="w-8 h-8 rounded-sm flex items-center justify-center" style={{ backgroundColor: settings.primary_color || '#D4AF37' }}>
                                     <Scissors size={18} className="text-black" />
                                 </div>
-                                <span className="font-display font-bold text-xl tracking-wider text-white">BARBER<span className="text-primary">PRO</span></span>
+                                <span className="font-display font-bold text-xl tracking-wider text-white">BARBER<span style={{ color: settings.primary_color || '#D4AF37' }}>PRO</span></span>
                             </div>
                         </div>
 
@@ -101,7 +109,7 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                                     <div className="flex items-start gap-2 mb-2">
                                         <MapPin size={16} className="text-primary mt-0.5 shrink-0" />
                                         <div className="text-xs text-textMuted">
-                                            <p className="font-medium text-white mb-1">{settings.establishmentName || 'Barbearia'}</p>
+                                            <p className="font-medium text-white mb-1">{settings.establishment_name || 'Barbearia'}</p>
                                             <p>{settings.address}</p>
                                             <p>{settings.city} - {settings.state}</p>
                                         </div>

@@ -20,8 +20,8 @@
             background: '#121212',
             surface: '#1E1E1E',
             surfaceHighlight: '#2A2A2A',
-            primary: '#D4AF37', // Gold
-            primaryHover: '#B5952F',
+            primary: 'var(--primary, #D4AF37)', // Dynamic or Gold
+            primaryHover: 'color-mix(in srgb, var(--primary, #D4AF37), black 10%)',
             textMain: '#FFFFFF',
             textMuted: '#A1A1AA',
             border: '#333333',
@@ -72,8 +72,8 @@
     }
 
     .custom-scrollbar::-webkit-scrollbar-thumb {
-      background-color: #D4AF37;
-      /* Primary Gold */
+      background-color: var(--scrollbar-color, #D4AF37);
+      /* Primary Gold or Dynamic */
       border-radius: 6px;
       border: 3px solid #1E1E1E;
       /* Padding effect */

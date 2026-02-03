@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../services/supabase';
 import { Organization } from '../../types';
+import { toast } from 'sonner';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
-import { Plus, Search, Building2, ExternalLink, MoreVertical, Ban, CheckCircle } from 'lucide-react';
+import { Plus, Search, Building2, ExternalLink, MoreVertical, Ban, CheckCircle, Trash2, LogIn, MonitorPlay } from 'lucide-react';
 import { CreateOrganizationModal } from './CreateOrganizationModal';
 
 export const OrganizationsList: React.FC = () => {
@@ -95,6 +96,7 @@ export const OrganizationsList: React.FC = () => {
                                 </div>
                             </div>
 
+
                             <div className="flex items-center gap-2">
                                 {org.subscriptionStatus === 'pending' ? (
                                     <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white border-none" onClick={async () => {
@@ -103,14 +105,14 @@ export const OrganizationsList: React.FC = () => {
                                                 const { error } = await supabase.from('organizations').update({ subscription_status: 'active' }).eq('id', org.id);
                                                 if (error) {
                                                     console.error('Error approving org:', error);
-                                                    alert('Erro ao aprovar: ' + error.message);
+                                                    toast.error('Erro ao aprovar: ' + error.message);
                                                 } else {
                                                     loadOrgs();
-                                                    alert('Barbearia aprovada com sucesso!');
+                                                    toast.success('Barbearia aprovada com sucesso!');
                                                 }
                                             } catch (err: any) {
                                                 console.error('Exception approving org:', err);
-                                                alert('Erro inesperado: ' + err.message);
+                                                toast.error('Erro inesperado: ' + err.message);
                                             }
                                         }
                                     }}>
@@ -118,15 +120,53 @@ export const OrganizationsList: React.FC = () => {
                                         Aprovar
                                     </Button>
                                 ) : (
-                                    <Button variant="secondary" size="sm" className="hidden group-hover:flex">
-                                        <ExternalLink size={16} className="mr-2" />
+                                    <Button
+                                        variant="secondary"
+                                        size="sm"
+                                        className="hidden group-hover:flex"
+                                        onClick={() => {
+                                            if (window.confirm(`Deseja acessar o painel de "${org.name}" como Administrador?`)) {
+                                                localStorage.setItem('su_org_override', org.id);
+                                                window.location.href = '/admin/dashboard';
+                                            }
+                                        }}
+                                    >
+                                        <MonitorPlay size={16} className="mr-2" />
                                         Acessar Painel
                                     </Button>
                                 )}
 
-                                <button className="p-2 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-700">
-                                    <MoreVertical size={18} />
-                                </button>
+                                <div className="group/menu relative">
+                                    <button className="p-2 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-700">
+                                        <MoreVertical size={18} />
+                                    </button>
+
+                                    <div className="absolute right-0 mt-2 w-48 bg-zinc-900 border border-zinc-700 rounded-lg shadow-xl py-1 z-50 hidden group-hover/menu:block">
+                                        <button
+                                            className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-zinc-800 flex items-center gap-2"
+                                            onClick={async () => {
+                                                const action = org.subscriptionStatus === 'canceled' ? 'Excluir definitivamente' : 'Cancelar assinatura';
+                                                const confirmMsg = org.subscriptionStatus === 'canceled'
+                                                    ? `TEM CERTEZA? Isso apagará a barbearia "${org.name}" permanentemente!`
+                                                    : `Deseja cancelar a assinatura de "${org.name}"?`;
+
+                                                if (window.confirm(confirmMsg)) {
+                                                    if (org.subscriptionStatus !== 'canceled') {
+                                                        await supabase.from('organizations').update({ subscription_status: 'canceled' }).eq('id', org.id);
+                                                        loadOrgs();
+                                                    } else {
+                                                        // Delete
+                                                        await supabase.from('organizations').delete().eq('id', org.id);
+                                                        loadOrgs();
+                                                    }
+                                                }
+                                            }}
+                                        >
+                                            <Trash2 size={16} />
+                                            {org.subscriptionStatus === 'canceled' ? 'Excluir' : 'Cancelar'}
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     ))}

@@ -42,7 +42,7 @@ export const Register: React.FC = () => {
         try {
             console.log('Register.tsx: Starting registration for', formData.email);
 
-            // 1. Sign Up User with Timeout
+            // 1. Sign Up User with Extended Timeout (Local environment can be slow)
             const signUpPromise = supabase.auth.signUp({
                 email: formData.email,
                 password: formData.password,
@@ -54,21 +54,38 @@ export const Register: React.FC = () => {
                 }
             });
 
+            // Increase timeout to 60s to avoid premature failure in dev
             const signUpTimeout = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Timeout ao criar conta (20s). Verifique sua conexão.')), 20000)
+                setTimeout(() => reject(new Error('A criação da conta está demorando mais que o esperado (60s). Verifique sua conexão ou tente novamente.')), 60000)
             );
 
             console.log('Register.tsx: Calling supabase.auth.signUp');
             const { data: authData, error: authError } = await Promise.race([signUpPromise, signUpTimeout]) as any;
 
+            let user = authData?.user;
+
             if (authError) {
                 console.error('Register.tsx: Auth Error', authError);
-                throw authError; // Supabase error often has a .message property
+
+                // Recover from "User already registered" or timeout retry
+                if (authError.message?.includes('registered') || authError.message?.includes('already exists')) {
+                    console.log('User exists, attempting login...');
+                    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+                        email: formData.email,
+                        password: formData.password
+                    });
+
+                    if (signInError) throw signInError;
+
+                    user = signInData.user;
+                } else {
+                    throw authError;
+                }
             }
 
-            console.log('Register.tsx: Auth Success', authData.user?.id);
+            console.log('Register.tsx: Auth Success', user?.id);
 
-            if (authData.user) {
+            if (user) {
                 // 2. Call RPC to create Pending Organization with Timeout
                 console.log('Register.tsx: Calling generate_pending_organization RPC');
 
@@ -78,7 +95,7 @@ export const Register: React.FC = () => {
                 });
 
                 const rpcTimeout = new Promise((_, reject) =>
-                    setTimeout(() => reject(new Error('Timeout ao criar barbearia (15s).')), 15000)
+                    setTimeout(() => reject(new Error('Timeout ao criar barbearia (45s).')), 45000)
                 );
 
                 const { error: rpcError } = await Promise.race([rpcPromise, rpcTimeout]) as any;
@@ -98,9 +115,9 @@ export const Register: React.FC = () => {
         } catch (err: any) {
             console.error('Registration Exception:', err);
             setError(err.message || 'Erro desconhecido ao processar cadastro.');
-        } finally {
             setLoading(false);
         }
+        // No finally block to avoid setting state after navigation
     };
 
     return (

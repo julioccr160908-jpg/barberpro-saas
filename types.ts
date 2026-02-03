@@ -11,6 +11,7 @@ export enum AppointmentStatus {
   CONFIRMED = 'CONFIRMED',
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
+  AWAITING_PAYMENT = 'AWAITING_PAYMENT',
 }
 
 export interface Service {
@@ -30,6 +31,8 @@ export interface User {
   avatarUrl?: string;
   jobTitle?: string;
   phone?: string;
+  commissionRate?: number;
+  loyaltyCount?: number;
 }
 
 export interface Appointment {
@@ -39,6 +42,19 @@ export interface Appointment {
   serviceId: string;
   date: string; // ISO string
   status: AppointmentStatus;
+  service?: {
+    name: string;
+    price: number;
+    durationMinutes: number;
+  };
+  barber?: {
+    name: string;
+  };
+  customer?: {
+    name: string;
+    phone?: string;
+    avatarUrl?: string;
+  };
 }
 
 export interface Barbershop {
@@ -56,28 +72,16 @@ export interface DayConfig {
   breakEnd?: string;
 }
 
-export interface ShopSettings {
-  intervalMinutes: number;
-  schedule: DayConfig[];
-  establishmentName?: string;
-  address?: string;
-  phone?: string;
-  city?: string;
-  state?: string;
-  zipCode?: string;
-  // Branding
-  primaryColor?: string;
-  secondaryColor?: string;
-  logoUrl?: string;
-  bannerUrl?: string;
-  themeMode?: 'light' | 'dark';
-}
+import { Database } from './database.types';
+
+export type ShopSettings = Database['public']['Tables']['settings']['Row'];
 
 // Stats for dashboard
 export interface DailyStats {
   revenue: number;
   appointments: number;
   occupancyRate: number;
+  commissionRate?: number;
 }
 
 export interface Organization {
@@ -88,4 +92,15 @@ export interface Organization {
   subscriptionStatus: 'trial' | 'active' | 'past_due' | 'canceled';
   planType: 'basic' | 'pro' | 'enterprise';
   createdAt?: string;
+  logoUrl?: string;
+  bannerUrl?: string;
+}
+
+export interface Expense {
+  id: string;
+  organizationId: string;
+  title: string;
+  amount: number;
+  date: string;
+  category: string;
 }

@@ -24,33 +24,47 @@ export const OrganizationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
     const refreshOrganization = async () => {
         if (!user) {
+            console.log("OrgContext: No user, clearing org.");
             setOrganization(null);
             setLoading(false);
             return;
         }
 
         try {
+            console.log("OrgContext: Refreshing for user", user.id);
+            // 0. Super Admin Override Check
+            const overrideId = localStorage.getItem('su_org_override');
+            if (overrideId) {
+                // ... (existing logic)
+                console.log("OrgContext: Using Override", overrideId);
+                // ...
+            }
+
+            // ... (keep existing logic structure but add logs)
+
             // 1. Try to find an organization owned by the user (Admin view)
             let { data: ownedOrg, error: ownedError } = await supabase
                 .from('organizations')
                 .select('*')
                 .eq('owner_id', user.id)
-                .single();
+                .maybeSingle();
 
             if (ownedOrg) {
+                console.log("OrgContext: User owns org", ownedOrg.slug);
                 setOrganization({
                     id: ownedOrg.id,
                     name: ownedOrg.name,
                     slug: ownedOrg.slug,
                     ownerId: ownedOrg.owner_id,
                     subscriptionStatus: ownedOrg.subscription_status,
-                    planType: ownedOrg.plan_type
+                    planType: ownedOrg.plan_type,
+                    logoUrl: ownedOrg.logo_url,
+                    bannerUrl: ownedOrg.banner_url
                 });
                 return;
             }
 
             // 2. If not owner, check if user is part of an organization (via profile)
-            // This is for Staff/Customers who don't own the org but belong to one.
             const { data: profile } = await supabase
                 .from('profiles')
                 .select('organization_id')
@@ -58,26 +72,42 @@ export const OrganizationProvider: React.FC<{ children: React.ReactNode }> = ({ 
                 .single();
 
             if (profile?.organization_id) {
-                const { data: profileOrg } = await supabase
+                // ...
+                console.log("OrgContext: User belongs to org via profile", profile.organization_id);
+                // ...
+            }
+
+            // 3. Fallback: Check for persisted Slug (Customer Context)
+            const lastSlug = localStorage.getItem('barberpro_last_slug');
+            console.log("OrgContext: Checking fallback slug:", lastSlug);
+
+            if (lastSlug) {
+                const { data: slugOrg, error: slugError } = await supabase
                     .from('organizations')
                     .select('*')
-                    .eq('id', profile.organization_id)
+                    .eq('slug', lastSlug)
                     .single();
 
-                if (profileOrg) {
+                if (slugOrg) {
+                    console.log("OrgContext: Resolved org from slug", slugOrg.slug);
                     setOrganization({
-                        id: profileOrg.id,
-                        name: profileOrg.name,
-                        slug: profileOrg.slug,
-                        ownerId: profileOrg.owner_id,
-                        subscriptionStatus: profileOrg.subscription_status,
-                        planType: profileOrg.plan_type
+                        id: slugOrg.id,
+                        name: slugOrg.name,
+                        slug: slugOrg.slug,
+                        ownerId: slugOrg.owner_id,
+                        subscriptionStatus: slugOrg.subscription_status,
+                        planType: slugOrg.plan_type,
+                        logoUrl: slugOrg.logo_url,
+                        bannerUrl: slugOrg.banner_url
                     });
+                    setLoading(false);
                     return;
+                } else {
+                    console.warn("OrgContext: Failed to find org for slug", lastSlug, slugError);
                 }
             }
 
-            console.log('No organization found for user');
+            console.log('OrgContext: No organization found for user');
             setOrganization(null);
 
         } catch (error) {

@@ -22,8 +22,20 @@ const DEFAULT_SCHEDULE = [
 ];
 
 const DEFAULT_SETTINGS: ShopSettings = {
-  intervalMinutes: 45,
-  schedule: DEFAULT_SCHEDULE
+  id: 0,
+  interval_minutes: 45,
+  schedule: DEFAULT_SCHEDULE as any,
+  organization_id: null,
+  establishment_name: null,
+  address: null,
+  phone: null,
+  city: null,
+  state: null,
+  zip_code: null,
+  primary_color: null,
+  secondary_color: null,
+  loyalty_enabled: false,
+  loyalty_target: null
 };
 
 
@@ -31,23 +43,28 @@ import { supabase } from './supabase';
 
 export const db = {
   // Initialize DB (No longer needed for Supabase as it persists remotely, but kept for compatibility if needed)
-  init: async () => {
-    // Optional: Check connection or run initial setup if needed
-    const { error } = await supabase.from('settings').select('id').single();
-    if (error && error.code === 'PGRST116') {
-      // Create initial settings if missing
-      await supabase.from('settings').insert([{
-        id: 1,
-        interval_minutes: DEFAULT_SETTINGS.intervalMinutes,
-        schedule: DEFAULT_SETTINGS.schedule
-      }]);
-    }
+  init: async () => { },
+
+  // Helper to ensure data isolation
+  _getOrgId: async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    // Check if we have it in metadata (faster)
+    // if (user.app_metadata?.organization_id) return user.app_metadata.organization_id;
+
+    const { data } = await supabase.from('profiles').select('organization_id').eq('id', user.id).single();
+    return data?.organization_id;
   },
 
   // --- SERVICES ---
   services: {
     list: async (): Promise<Service[]> => {
-      const { data, error } = await supabase.from('services').select('*');
+      const orgId = await db._getOrgId();
+      if (!orgId) return []; // Fail-closed
+
+      const { data, error } = await supabase.from('services').select('*').eq('organization_id', orgId);
+
       if (error) throw error;
       return data.map(s => ({
         ...s,
@@ -56,7 +73,11 @@ export const db = {
       }));
     },
     create: async (service: Service) => {
+      const orgId = await db._getOrgId();
+      if (!orgId) throw new Error("Organization ID required");
+
       const { data, error } = await supabase.from('services').insert([{
+        organization_id: orgId,
         name: service.name,
         price: service.price,
         duration_minutes: service.durationMinutes,
@@ -91,25 +112,39 @@ export const db = {
   // --- CUSTOMERS ---
   customers: {
     list: async (): Promise<User[]> => {
-      const { data, error } = await supabase.from('profiles').select('*').eq('role', 'CUSTOMER');
+      const orgId = await db._getOrgId();
+      if (!orgId) return [];
+
+      const { data, error } = await supabase.from('profiles').select('*').eq('role', 'CUSTOMER').eq('organization_id', orgId);
+
       if (error) throw error;
       return data.map(u => ({
         ...u,
         avatarUrl: u.avatar_url,
         jobTitle: u.job_title
       }));
+    },
+    getById: async (id: string) => {
+      const { data, error } = await supabase.from('profiles').select('*').eq('id', id).single();
+      if (error) return undefined;
+      return { ...data, avatarUrl: data.avatar_url, jobTitle: data.job_title };
     }
   },
 
   // --- STAFF ---
   staff: {
     list: async (): Promise<User[]> => {
-      const { data, error } = await supabase.from('profiles').select('*').in('role', ['BARBER', 'ADMIN']);
+      const orgId = await db._getOrgId();
+      if (!orgId) return [];
+
+      const { data, error } = await supabase.from('profiles').select('*').in('role', ['BARBER', 'ADMIN']).eq('organization_id', orgId);
+
       if (error) throw error;
       return data.map(u => ({
         ...u,
         avatarUrl: u.avatar_url,
-        jobTitle: u.job_title
+        jobTitle: u.job_title,
+        commissionRate: u.commission_rate
       }));
     },
     create: async (user: User) => {
@@ -120,11 +155,12 @@ export const db = {
         email: user.email,
         role: user.role,
         avatar_url: user.avatarUrl,
-        job_title: user.jobTitle
+        job_title: user.jobTitle,
+        commission_rate: user.commissionRate || 0
       }]).select().single();
 
       if (error) throw error;
-      return { ...data, avatarUrl: data.avatar_url, jobTitle: data.job_title };
+      return { ...data, avatarUrl: data.avatar_url, jobTitle: data.job_title, commissionRate: data.commission_rate };
     },
     update: async (updated: User) => {
       const { error } = await supabase.from('profiles').update({
@@ -132,7 +168,8 @@ export const db = {
         email: updated.email,
         role: updated.role,
         avatar_url: updated.avatarUrl,
-        job_title: updated.jobTitle
+        job_title: updated.jobTitle,
+        commission_rate: updated.commissionRate
       }).eq('id', updated.id);
 
       if (error) throw error;
@@ -165,8 +202,30 @@ export const db = {
 
   // --- APPOINTMENTS ---
   appointments: {
-    list: async (): Promise<Appointment[]> => {
-      const { data, error } = await supabase.from('appointments').select('*');
+    list: async (filters?: { customerId?: string; barberId?: string }): Promise<Appointment[]> => {
+      const orgId = await db._getOrgId();
+
+      // If we have an orgId (Staff/Admin), use it contextually.
+      // If we don't (Customer), relying on filters.customerId is valid (RLS will protect).
+      // If neither, we can't look up anything safely.
+      if (!orgId && !filters?.customerId) return [];
+
+      let query = supabase.from('appointments').select(`
+        *,
+        service:service_id (name, price, duration_minutes),
+        barber:barber_id (name),
+        customer:customer_id (name, phone, avatar_url)
+      `);
+
+      if (orgId) {
+        query = query.eq('organization_id', orgId);
+      }
+
+      if (filters?.customerId) query = query.eq('customer_id', filters.customerId);
+      if (filters?.barberId) query = query.eq('barber_id', filters.barberId);
+
+      const { data, error } = await query;
+
       if (error) throw error;
       return data.map(a => ({
         id: a.id,
@@ -174,11 +233,29 @@ export const db = {
         customerId: a.customer_id,
         serviceId: a.service_id,
         date: a.date,
-        status: a.status
+        status: a.status,
+        service: a.service ? {
+          name: a.service.name,
+          price: a.service.price,
+          durationMinutes: a.service.duration_minutes
+        } : undefined,
+        barber: a.barber ? {
+          name: a.barber.name
+        } : undefined,
+        customer: a.customer ? {
+          name: a.customer.name,
+          phone: a.customer.phone,
+          avatarUrl: a.customer.avatar_url
+        } : undefined
       }));
     },
     create: async (appt: Appointment) => {
+      const orgId = await db._getOrgId();
+      // orgId can be null? appointments might not strictly require it if barber_id has it, but better to be explicit 
+      // Actually appointments SHOULD link to org.
+
       const { data, error } = await supabase.from('appointments').insert([{
+        organization_id: orgId,
         barber_id: appt.barberId,
         customer_id: appt.customerId,
         service_id: appt.serviceId,
@@ -197,7 +274,37 @@ export const db = {
       };
     },
     updateStatus: async (id: string, status: AppointmentStatus) => {
-      const { error } = await supabase.from('appointments').update({ status }).eq('id', id);
+      let updateData: any = { status };
+
+      // Calculate commission if completing
+      if (status === 'COMPLETED') {
+        // 1. Get Appointment Details
+        const { data: appt } = await supabase.from('appointments').select('service_id, barber_id, customer_id').eq('id', id).single();
+
+        if (appt) {
+          // 2. Get Service Price & Barber Commission Rate
+          const { data: service } = await supabase.from('services').select('price').eq('id', appt.service_id).single();
+          const { data: barber } = await supabase.from('profiles').select('commission_rate').eq('id', appt.barber_id).single();
+
+          if (service && barber) {
+            const price = service.price || 0;
+            const rate = barber.commission_rate || 0;
+            const commission = (price * rate) / 100;
+
+            updateData.commission_amount = commission;
+          }
+
+          // Loyalty Program Logic
+          const { data: settings } = await supabase.from('settings').select('loyalty_enabled').single();
+          if (settings?.loyalty_enabled) {
+            const { data: customer } = await supabase.from('profiles').select('loyalty_count').eq('id', appt.customer_id).single();
+            const currentCount = customer?.loyalty_count || 0;
+            await supabase.from('profiles').update({ loyalty_count: currentCount + 1 }).eq('id', appt.customer_id);
+          }
+        }
+      }
+
+      const { error } = await supabase.from('appointments').update(updateData).eq('id', id);
       if (error) throw error;
     }
   },
@@ -205,46 +312,77 @@ export const db = {
   // --- SETTINGS ---
   settings: {
     get: async (): Promise<ShopSettings> => {
-      const { data, error } = await supabase.from('settings').select('*').single();
-      if (error) {
-        // Fallback or init
-        return DEFAULT_SETTINGS;
-      }
-      const settings: ShopSettings = {
-        intervalMinutes: data.interval_minutes,
-        schedule: data.schedule,
-        establishmentName: data.establishment_name,
-        address: data.address,
-        phone: data.phone,
-        city: data.city,
-        state: data.state,
-        zipCode: data.zip_code
+      const orgId = await db._getOrgId();
+      if (!orgId) return DEFAULT_SETTINGS;
+
+      // Fetch Settings and Organization Slug in parallel
+      const [settingsRes, orgRes] = await Promise.all([
+        supabase.from('settings').select('*').eq('organization_id', orgId).maybeSingle(),
+        supabase.from('organizations').select('slug').eq('id', orgId).single()
+      ]);
+
+      if (settingsRes.error) throw settingsRes.error;
+      const data = settingsRes.data;
+      if (!data) return DEFAULT_SETTINGS;
+
+      // Return raw DB data (snake_case)
+      return data;
+    },
+    update: async (settings: Partial<ShopSettings>) => {
+      const orgId = await db._getOrgId();
+      if (!orgId) throw new Error("Organization ID required");
+
+      // 1. Fetch existing to merge (safe partial update)
+      const { data: existing } = await supabase.from('settings').select('*').eq('organization_id', orgId).single();
+
+      const merged: any = {
+        organization_id: orgId,
+        ...existing,
+        ...settings
       };
 
-      // Merge with Organization Branding (Single Tenant / First Org Strategy for Demo)
-      const { data: org } = await supabase.from('organizations').select('primary_color, secondary_color, logo_url, banner_url, theme_mode').limit(1).maybeSingle();
-      if (org) {
-        settings.primaryColor = org.primary_color;
-        settings.secondaryColor = org.secondary_color;
-        settings.logoUrl = org.logo_url;
-        settings.bannerUrl = org.banner_url;
-        settings.themeMode = org.theme_mode;
-      }
+      // Ensure NO undefineds are passed to DB (which might not happen with spread but good to be safe)
+      // Upsert needs to know the conflict key if we rely on it, but here we provide organization_id.
 
-      return settings;
-    },
-    update: async (settings: ShopSettings) => {
+      // Update settings using snake_case properties directly
       const { error } = await supabase.from('settings').upsert({
-        id: 1,
-        interval_minutes: settings.intervalMinutes,
-        schedule: settings.schedule,
-        establishment_name: settings.establishmentName,
-        address: settings.address,
-        phone: settings.phone,
-        city: settings.city,
-        state: settings.state,
-        zip_code: settings.zipCode
-      });
+        organization_id: orgId,
+        interval_minutes: merged.interval_minutes,
+        schedule: merged.schedule,
+        establishment_name: merged.establishment_name,
+        address: merged.address,
+        phone: merged.phone,
+        city: merged.city,
+        state: merged.state,
+        zip_code: merged.zip_code,
+        primary_color: merged.primary_color,
+        secondary_color: merged.secondary_color,
+        loyalty_enabled: merged.loyalty_enabled,
+        loyalty_target: merged.loyalty_target
+      }, { onConflict: 'organization_id' });
+
+      if (error) throw error;
+    }
+
+    // Note: Slug update was previously here but removed because 'slug' is not in settings table type anymore.
+    // If we need to update slug, it should be a separate Organization update method.
+  },
+
+  // --- ORGANIZATIONS ---
+  organizations: {
+    get: async () => {
+      const orgId = await db._getOrgId();
+      if (!orgId) return null;
+
+      const { data, error } = await supabase.from('organizations').select('*').eq('id', orgId).single();
+      if (error) throw error;
+      return data;
+    },
+    update: async (updates: any) => {
+      const orgId = await db._getOrgId();
+      if (!orgId) throw new Error("Organization not found");
+
+      const { error } = await supabase.from('organizations').update(updates).eq('id', orgId);
       if (error) throw error;
     }
   }

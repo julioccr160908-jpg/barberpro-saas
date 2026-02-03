@@ -6,6 +6,7 @@ import { Input } from './ui/Input';
 import { Plus, Edit2, Trash2, X, Scissors, Clock, DollarSign, Upload, Loader2 } from 'lucide-react';
 import { Service } from '../types';
 import { db } from '../services/database';
+import { toast } from 'sonner';
 
 export const AdminServicesManager: React.FC = () => {
   const [services, setServices] = useState<Service[]>([]);
@@ -83,7 +84,7 @@ export const AdminServicesManager: React.FC = () => {
       setIsModalOpen(false);
     } catch (error) {
       console.error("Error saving service", error);
-      alert("Erro ao salvar serviço.");
+      toast.error("Erro ao salvar serviço.");
     }
   };
 
@@ -94,7 +95,7 @@ export const AdminServicesManager: React.FC = () => {
         await fetchServices();
       } catch (error) {
         console.error("Error deleting service", error);
-        alert("Erro ao excluir serviço.");
+        toast.error("Erro ao excluir serviço.");
       }
     }
   };

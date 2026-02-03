@@ -6,14 +6,14 @@ import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 import { Phone, User, ArrowRight, Scissors, Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { supabase } from '../services/supabase';
-import { db } from '../services/database';
 import { Role } from '../types';
+import { toast } from 'sonner';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const role = searchParams.get('role') || 'customer';
-  const isAdmin = role === 'admin';
+  const roleParam = searchParams.get('role') || 'customer';
+  const isAdmin = roleParam === 'admin';
 
   const [showPassword, setShowPassword] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
@@ -28,234 +28,133 @@ export const Login: React.FC = () => {
   });
 
   const [error, setError] = useState('');
-  const [infoMessage, setInfoMessage] = useState('');
+
+  const handleSmartRedirect = async (userId: string) => {
+    try {
+      const { data: lastAppt } = await supabase
+        .from('appointments')
+        .select('organization_id')
+        .eq('customer_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (lastAppt?.organization_id) {
+        const { data: org } = await supabase
+          .from('organizations')
+          .select('slug')
+          .eq('id', lastAppt.organization_id)
+          .single();
+
+        if (org?.slug) {
+          navigate(`/${org.slug}`);
+          return;
+        }
+      }
+    } catch (e) {
+      console.log("Error finding smart redirect:", e);
+    }
+    navigate('/book');
+  };
+
+  const handleLogin = async () => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: formData.email,
+      password: formData.password
+    });
+
+    if (error) throw error;
+
+    if (data.user) {
+      // Check Profile Role
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', data.user.id)
+        .single();
+
+      const userRole = profile?.role || Role.CUSTOMER;
+
+      console.log("LOGIN DEBUG:", {
+        authId: data.user.id,
+        profileData: profile,
+        resolvedRole: userRole,
+        isAdminParam: isAdmin
+      });
+
+      if (isAdmin) {
+        if (userRole === Role.ADMIN || userRole === Role.SUPER_ADMIN) {
+          navigate('/admin/dashboard');
+        } else if (userRole === Role.BARBER) {
+          navigate('/admin/schedule');
+        } else {
+          await supabase.auth.signOut();
+          throw new Error('Este usuário não tem permissão de administrador.');
+        }
+      } else {
+        // Customer Flow
+        const redirect = searchParams.get('redirect');
+        if (redirect) {
+          navigate(redirect);
+        } else {
+          await handleSmartRedirect(data.user.id);
+        }
+      }
+    }
+  };
+
+  const handleRegister = async () => {
+    if (formData.password !== formData.confirmPassword) {
+      throw new Error('As senhas não coincidem.');
+    }
+
+    const { data, error } = await supabase.auth.signUp({
+      email: formData.email,
+      password: formData.password,
+      options: {
+        data: {
+          name: formData.name,
+          full_name: formData.name,
+          phone: formData.phone
+        }
+      }
+    });
+
+    if (error) throw error;
+
+    if (data.user) {
+      toast.success('Conta criada com sucesso!');
+      // Assuming auto-login, redirect
+      navigate('/book');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setInfoMessage('');
     setLoading(true);
 
     try {
-      // Admin Authentication Logic (Mocked for now, or could use Supabase if admin user exists)
-      // Admin Authentication Logic
-      if (isAdmin) {
-        console.log("Login.tsx: Admin Auth Start for", formData.email);
-
-        // 1. Sign In with Timeout
-        const signInPromise = supabase.auth.signInWithPassword({
-          email: formData.email,
-          password: formData.password
-        });
-
-        const signInTimeout = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Timeout de conexão (15s). Verifique se o Supabase está rodando.')), 15000)
-        );
-
-        const { data: authData, error: authError } = await Promise.race([signInPromise, signInTimeout]) as any;
-
-        if (authError) {
-          console.error("Login.tsx: Admin Auth Error", authError);
-          // Check for specific migration cases or just throw
-          if ((formData.email === 'julio1609@gmail.com' && formData.password === 'Julioccr2020') || (formData.email === 'julio10@gmail.com' && formData.password === '123456')) {
-            // Fallback for migration (legacy code path preserved but wrapped for safety)
-            console.log("Tentando migração de Admin Master...");
-            // ... Migration logic here if needed, or simply error out for now to isolate issues. 
-            // Given the complexity, let's just show the error unless it's strictly required.
-            // For 'dono1', this block isn't relevant.
-          }
-          throw authError;
-        }
-
-        if (authData?.user) {
-          console.log("Login.tsx: Admin Auth Success", authData.user.id);
-
-          // 2. Fetch Profile with Timeout
-          const profilePromise = supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', authData.user.id)
-            .single();
-
-          const profileTimeout = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Timeout ao buscar perfil (10s).')), 10000)
-          );
-
-          const { data: profile, error: profileError } = await Promise.race([profilePromise, profileTimeout]) as any;
-
-          console.log("Login.tsx: Admin Profile Fetched", profile);
-
-          if (profileError) {
-            console.error("Login.tsx: Profile Error", profileError);
-            setError(`Erro ao carregar permissões: ${profileError?.message || JSON.stringify(profileError)}`);
-            // Even if profile fetch fails, if they have a user, maybe let them in as Customer or show error?
-            // Ideally we need the role.
-            throw new Error(JSON.stringify(profileError));
-          }
-
-          if (profile?.role === Role.SUPER_ADMIN) {
-            navigate('/platform/dashboard');
-          } else if (profile?.role === Role.ADMIN) {
-            // Verify if they have an organization
-            const { data: org, error: orgError } = await supabase.from('organizations').select('subscription_status').eq('owner_id', authData.user.id).single();
-            if (org?.subscription_status === 'pending') {
-              // Option: Redirect to a "Pending Approval" page or show alert?
-              // For now, let them in but maybe the dashboard handles it. 
-              // Or better, let's verify if dashboard handles it. 
-              // Current dashboard logic might redirect if no org active?
-              navigate('/admin/dashboard');
-            } else {
-              navigate('/admin/dashboard');
-            }
-          } else {
-            // Barber or Customer trying to login in Admin area
-            // Maybe allow Barber?
-            if (profile?.role === Role.BARBER) {
-              navigate('/admin/schedule');
-            } else {
-              setError('Este usuário não tem perfil administrativo.');
-              await supabase.auth.signOut();
-              return;
-            }
-          }
-          return;
-        }
+      if (isRegistering && !isAdmin) {
+        await handleRegister();
       } else {
-        // Customer Auth Logic
-        if (isRegistering) {
-          // REGISTRATION
-          if (formData.password !== formData.confirmPassword) {
-            throw new Error('As senhas não coincidem.');
-          }
-
-          console.log("Registration started for:", formData.email);
-
-          // Chamada de registro com Timeout
-          const signUpPromise = supabase.auth.signUp({
-            email: formData.email,
-            password: formData.password,
-            options: {
-              data: {
-                name: formData.name,
-                full_name: formData.name,
-                phone: formData.phone
-              }
-            }
-          });
-
-          const signUpTimeout = new Promise<{ data: any; error: any }>((_, reject) =>
-            setTimeout(() => reject(new Error('Timeout ao criar conta (15s). Verifique conexão.')), 15000)
-          );
-
-          const { data: authData, error: authError } = await Promise.race([signUpPromise, signUpTimeout]) as any;
-
-          console.log("Registration response:", { user: authData?.user?.id, error: authError });
-
-          if (authError) throw authError;
-
-          if (authData?.user) {
-            setInfoMessage('Conta criada com sucesso! Redirecionando...');
-
-            // Pequeno delay para o usuário ver a mensagem de sucesso
-            setTimeout(() => {
-              navigate('/book');
-            }, 1000);
-            return;
-          }
-
-        } else {
-          // LOGIN
-          console.log("Login.tsx: Auth Start for", formData.email);
-          console.log("Supabase URL:", import.meta.env.VITE_SUPABASE_URL);
-
-          // Define login promise
-          const loginPromise = supabase.auth.signInWithPassword({
-            email: formData.email,
-            password: formData.password
-          });
-
-          // Define timeout promise (15 seconds)
-          const loginTimeoutPromise = new Promise<{ data: any; error: any }>((_, reject) =>
-            setTimeout(() => reject(new Error('Tempo limite de conexão excedido. Verifique sua internet ou se o servidor está rodando.')), 15000)
-          );
-
-          // Race them
-          const { data, error: authError } = await Promise.race([loginPromise, loginTimeoutPromise]) as any;
-
-          console.log("Login.tsx: Auth Done", { user: data?.user?.id, error: authError });
-
-          if (authError) {
-            if (authError.message.includes('Invalid login credentials')) {
-              setError('E-mail ou senha inválidos.');
-            } else {
-              setError(authError.message);
-            }
-            return; // Stop here if auth failed
-          }
-
-          if (data.user) {
-            console.log("Login.tsx: Fetching Profile...");
-
-            // Timeout for profile fetch
-            const profilePromise = supabase
-              .from('profiles')
-              .select('role')
-              .eq('id', data.user.id)
-              .single();
-
-            const timeoutPromise = new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Profile fetch timeout')), 8000)
-            );
-
-            try {
-              const result: any = await Promise.race([profilePromise, timeoutPromise]);
-              const profile = result.data;
-              const profileError = result.error;
-
-              console.log("Login.tsx: Profile Fetched", { role: profile?.role, error: profileError });
-
-              if (profileError) {
-                console.error('Error fetching profile:', profileError);
-                // Fallback?
-              }
-
-              const role = profile?.role || Role.CUSTOMER; // Default to Customer if fail
-
-              if (role === Role.SUPER_ADMIN) {
-                navigate('/platform/dashboard');
-              } else if (role === Role.ADMIN) {
-                navigate('/admin/dashboard');
-              } else if (role === Role.BARBER) {
-                navigate('/admin/schedule'); // Barber view
-              } else {
-                // Customer
-                const redirect = searchParams.get('redirect');
-                navigate(redirect || '/book');
-              }
-            } catch (err) {
-              console.error("Login.tsx: Profile Fetch Exception", err);
-              // Fallback to customer on error to avoid lock
-              navigate('/book');
-            }
-          }
-        }
+        await handleLogin();
       }
     } catch (err: any) {
-      console.error("Login Error Catch:", err);
-      setError(err.message || 'Ocorreu um erro. Tente novamente.');
+      console.error("Auth Error:", err);
+      let msg = err.message;
+      if (msg.includes('Invalid login credentials')) msg = 'E-mail ou senha inválidos.';
+      setError(msg || 'Ocorreu um erro.');
     } finally {
-      console.log("Login Finally Block Reached");
       setLoading(false);
     }
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Simple mask for phone number (00) 00000-0000
     let value = e.target.value.replace(/\D/g, '');
     if (value.length > 11) value = value.slice(0, 11);
     if (value.length > 2) value = `(${value.slice(0, 2)}) ${value.slice(2)}`;
     if (value.length > 9) value = `${value.slice(0, 9)}-${value.slice(9)}`;
-
     setFormData({ ...formData, phone: value });
   };
 
@@ -314,11 +213,6 @@ export const Login: React.FC = () => {
                     </button>
                   }
                 />
-                <div className="text-center mt-4">
-                  <Link to="/register" className="text-primary text-sm hover:underline">
-                    Não tem conta? Cadastre sua barbearia
-                  </Link>
-                </div>
               </>
             ) : (
               // Customer Form Fields
@@ -351,7 +245,7 @@ export const Login: React.FC = () => {
                     icon={<Phone size={18} />}
                     value={formData.phone}
                     onChange={handlePhoneChange}
-                    required // Optional: make required only if strict
+                    required
                     type="tel"
                   />
                 )}
@@ -393,22 +287,6 @@ export const Login: React.FC = () => {
             {error && (
               <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-500 text-xs text-center font-medium animate-pulse">
                 {error}
-                {!isRegistering && error.includes('cadastre-se') && (
-                  <button
-                    type="button"
-                    onClick={() => { setError(''); setIsRegistering(true); }}
-                    className="block w-full mt-2 text-primary hover:underline font-bold"
-                  >
-                    Criar conta agora
-                  </button>
-                )}
-              </div>
-            )}
-
-            {/* Info Message */}
-            {infoMessage && (
-              <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-emerald-500 text-xs text-center font-medium">
-                {infoMessage}
               </div>
             )}
 
@@ -419,16 +297,6 @@ export const Login: React.FC = () => {
               {isAdmin ? 'Entrar no Painel' : (isRegistering ? 'Criar Conta' : 'Entrar')}
               {!loading && <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" size={18} />}
             </Button>
-
-            {loading && (
-              <button
-                type="button"
-                onClick={() => setLoading(false)}
-                className="w-full text-center text-xs text-textMuted hover:text-white mt-4 underline"
-              >
-                Demorando muito? Cancelar
-              </button>
-            )}
           </form>
 
           <div className="mt-6 text-center space-y-4">
