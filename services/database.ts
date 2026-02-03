@@ -50,12 +50,17 @@ export const db = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
 
-    // Check if we have it in metadata (faster)
-    // if (user.app_metadata?.organization_id) return user.app_metadata.organization_id;
+    // 1. Check if user has organization_id in profile (for barbers/staff)
+    const { data: profile } = await supabase.from('profiles').select('organization_id').eq('id', user.id).single();
+    if (profile?.organization_id) return profile.organization_id;
 
-    const { data } = await supabase.from('profiles').select('organization_id').eq('id', user.id).single();
-    return data?.organization_id;
+    // 2. Check if user is owner of an organization
+    const { data: ownedOrg } = await supabase.from('organizations').select('id').eq('owner_id', user.id).limit(1).single();
+    if (ownedOrg?.id) return ownedOrg.id;
+
+    return null;
   },
+
 
   // --- SERVICES ---
   services: {
