@@ -1,11 +1,13 @@
 import React from 'react';
 import { Card, CardHeader } from './ui/Card';
 import { Skeleton } from './ui/Skeleton';
-import { DollarSign, Users, CalendarCheck, TrendingUp } from 'lucide-react';
+import { useOrganization } from '../hooks/useOrganization';
+import { DollarSign, Users, CalendarCheck, TrendingUp, ExternalLink } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useAuth } from '../contexts/AuthContext';
 import { parseISO, format } from 'date-fns';
 import { useAdminStats } from '../hooks/useAdminStats';
+import { OnboardingChecklist } from './platform/OnboardingChecklist';
 import { AppointmentStatus } from '../types';
 
 const StatCard: React.FC<{
@@ -34,6 +36,7 @@ const StatCard: React.FC<{
 
 export const AdminDashboard: React.FC = () => {
   const { profile, loading: authLoading } = useAuth();
+  const { data: organization } = useOrganization();
 
   // Use the new hook for data fetching and aggregation
   const {
@@ -78,7 +81,22 @@ export const AdminDashboard: React.FC = () => {
           <h1 className="text-3xl font-display font-bold text-white uppercase">Dashboard</h1>
           <p className="text-textMuted">Visão geral do desempenho</p>
         </div>
+
+        {/* Public Link Button */}
+        {organization?.slug && (
+          <a
+            href={`/${organization.slug}`}
+            className="flex items-center gap-2 px-4 py-2 bg-surface border border-white/10 rounded-lg hover:border-primary/50 transition-colors text-sm font-medium text-white"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span>Ver Loja Online</span>
+            <ExternalLink size={16} className="text-primary" />
+          </a>
+        )}
       </div>
+
+      <OnboardingChecklist />
 
       {/* KPI Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

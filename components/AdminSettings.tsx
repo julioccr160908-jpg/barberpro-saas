@@ -1,15 +1,25 @@
 
 import React, { useState } from 'react';
-import { Clock, Palette, Store, Bell } from 'lucide-react';
+import { Clock, Palette, Store, Bell, User } from 'lucide-react';
 import { AdminTimeSettings } from './AdminTimeSettings';
 import { AdminAppearanceSettings } from './AdminAppearanceSettings';
 import { AdminGeneralSettings } from './AdminGeneralSettings';
 import { AdminNotificationSettings } from './admin/AdminNotificationSettings';
+import { AdminProfileSettings } from './AdminProfileSettings';
+import { useSearchParams } from 'react-router-dom';
 
-type Tab = 'general' | 'schedule' | 'appearance' | 'notifications';
+type Tab = 'general' | 'schedule' | 'appearance' | 'notifications' | 'profile';
 
 export const AdminSettings: React.FC = () => {
-    const [activeTab, setActiveTab] = useState<Tab>('general');
+    const [searchParams] = useSearchParams();
+    const [activeTab, setActiveTab] = useState<Tab>((searchParams.get('tab') as Tab) || 'general');
+
+    React.useEffect(() => {
+        const tab = searchParams.get('tab');
+        if (tab && ['general', 'schedule', 'appearance', 'notifications', 'profile'].includes(tab)) {
+            setActiveTab(tab as Tab);
+        }
+    }, [searchParams]);
 
     return (
         <div className="space-y-6 animate-fade-in">
@@ -68,6 +78,18 @@ export const AdminSettings: React.FC = () => {
                     <Bell size={18} />
                     Notificações
                 </button>
+                <button
+                    onClick={() => setActiveTab('profile')}
+                    className={`
+            flex items-center gap-2 px-6 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap
+            ${activeTab === 'profile'
+                            ? 'border-primary text-primary'
+                            : 'border-transparent text-textMuted hover:text-white hover:bg-white/5'}
+          `}
+                >
+                    <User size={18} />
+                    Perfil
+                </button>
             </div>
 
             {/* Content */}
@@ -76,6 +98,7 @@ export const AdminSettings: React.FC = () => {
                 {activeTab === 'schedule' && <AdminTimeSettings />}
                 {activeTab === 'appearance' && <AdminAppearanceSettings />}
                 {activeTab === 'notifications' && <AdminNotificationSettings />}
+                {activeTab === 'profile' && <AdminProfileSettings />}
             </div>
         </div>
     );

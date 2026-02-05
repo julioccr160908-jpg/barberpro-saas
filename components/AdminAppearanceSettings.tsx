@@ -274,7 +274,13 @@ export const AdminAppearanceSettings: React.FC = () => {
                     )}
 
                     {/* App Content */}
-                    <div className="bg-zinc-900 h-full flex flex-col font-sans overflow-y-auto">
+                    <div
+                        className="bg-zinc-900 h-full flex flex-col font-sans overflow-y-auto transition-colors duration-300"
+                        style={{
+                            '--primary': previewPrimary,
+                            '--secondary': previewSecondary
+                        } as React.CSSProperties}
+                    >
                         {/* Header */}
                         <div className="p-4 flex justify-between items-center bg-black/50 backdrop-blur-md absolute top-0 left-0 right-0 z-10">
                             <div className="flex items-center gap-2">
@@ -317,13 +323,16 @@ export const AdminAppearanceSettings: React.FC = () => {
                             </div>
 
                             {/* My Appointments */}
-                            <div className="bg-[#1A1A1A] p-4 rounded-xl flex items-center gap-3 border border-white/5">
-                                <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-800 text-white">
+                            <div
+                                className="p-4 rounded-xl flex items-center gap-3 border border-white/5 transition-colors"
+                                style={{ backgroundColor: previewSecondary }}
+                            >
+                                <div className="w-10 h-10 rounded-full flex items-center justify-center bg-black/20 text-white">
                                     <Clock size={18} />
                                 </div>
                                 <div>
                                     <h5 className="text-white text-sm font-medium">Meus Agendamentos</h5>
-                                    <p className="text-gray-500 text-xs">Visualize seus cortes futuros</p>
+                                    <p className="text-white/60 text-xs">Visualize seus cortes futuros</p>
                                 </div>
                             </div>
 

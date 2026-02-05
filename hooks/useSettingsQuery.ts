@@ -12,7 +12,7 @@ export const useSettingsQuery = (orgId?: string) => {
                 .from('settings')
                 .select('*')
                 .eq('organization_id', orgId)
-                .single();
+                .maybeSingle();
 
             if (error && error.code !== 'PGRST116') { // PGRST116 is "No rows found"
                 console.error("Error fetching settings:", error);

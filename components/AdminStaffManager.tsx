@@ -89,8 +89,17 @@ export const AdminStaffManager: React.FC = () => {
           return;
         }
 
-        // 1. Create User in Supabase Auth
-        const { data: authData, error: authError } = await supabase.auth.signUp({
+        // CRITICAL FIX: Save admin session BEFORE any auth operations
+        const { data: { session: adminSession } } = await supabase.auth.getSession();
+
+        // 1. Create User in Supabase Auth using isolated client
+        const { createClient } = await import('@supabase/supabase-js');
+        const tempSupabase = createClient(
+          import.meta.env.VITE_SUPABASE_URL,
+          import.meta.env.VITE_SUPABASE_ANON_KEY
+        );
+
+        const { data: authData, error: authError } = await tempSupabase.auth.signUp({
           email: formData.email,
           password: formData.password,
           options: {
@@ -99,19 +108,12 @@ export const AdminStaffManager: React.FC = () => {
         });
 
         let authUserId = authData?.user?.id;
-        let recoveryClient = null;
+        let recoveryClient = tempSupabase;
 
         if (authError) {
-          // If user already exists, try to recover using a TEMP client to avoid logging out the Admin
+          // If user already exists, try to recover
           if (authError.message?.includes("already registered") || authError.message?.includes("already exists")) {
             console.log("User exists, attempting to recover via isolated sign in...");
-
-            // Create a temporary client just for this operation
-            const { createClient } = await import('@supabase/supabase-js');
-            const tempSupabase = createClient(
-              import.meta.env.VITE_SUPABASE_URL,
-              import.meta.env.VITE_SUPABASE_ANON_KEY
-            );
 
             const { data: signInData, error: signInError } = await tempSupabase.auth.signInWithPassword({
               email: formData.email,
@@ -120,13 +122,26 @@ export const AdminStaffManager: React.FC = () => {
 
             if (signInError) {
               toast.error(`O email já está cadastrado e a senha não confere.`);
+              // Restore admin session before returning
+              if (adminSession) {
+                await supabase.auth.setSession({
+                  access_token: adminSession.access_token,
+                  refresh_token: adminSession.refresh_token
+                });
+              }
               return;
             }
             authUserId = signInData.user?.id;
-            recoveryClient = tempSupabase; // We might need this client to insert profile if RLS restricts admin
           } else {
             console.error("Auth error:", authError);
             toast.error(`Erro na autenticação: ${authError.message}`);
+            // Restore admin session before returning
+            if (adminSession) {
+              await supabase.auth.setSession({
+                access_token: adminSession.access_token,
+                refresh_token: adminSession.refresh_token
+              });
+            }
             return;
           }
         }
@@ -156,8 +171,20 @@ export const AdminStaffManager: React.FC = () => {
 
           if (profileError) {
             console.error("Profile error:", profileError);
-            toast.error("Usuário criado/recuperado, mas erro ao criar perfil. Verifique se o usuário já não está na equipe.");
+            toast.error(`Erro ao criar perfil: ${profileError.message}`);
+            // Don't restore session on error - let user see they're logged as the new user so they know something went wrong
+            return;
+          } else {
+            toast.success("Membro adicionado com sucesso!");
           }
+        }
+
+        // CRITICAL FIX: Restore admin session after all operations
+        if (adminSession) {
+          await supabase.auth.setSession({
+            access_token: adminSession.access_token,
+            refresh_token: adminSession.refresh_token
+          });
         }
       }
       await fetchStaff();

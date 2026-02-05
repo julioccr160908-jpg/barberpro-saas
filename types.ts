@@ -33,6 +33,7 @@ export interface User {
   phone?: string;
   commissionRate?: number;
   loyaltyCount?: number;
+  organization_id?: string;
 }
 
 export interface Appointment {

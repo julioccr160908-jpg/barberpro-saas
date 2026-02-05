@@ -3,27 +3,31 @@ import { db } from '../services/database';
 import { supabase } from '../services/supabase';
 import { Appointment, AppointmentStatus } from '../types';
 
-export const useAppointments = (filters?: { barberId?: string; customerId?: string; status?: AppointmentStatus; orgId?: string }, enabled: boolean = true) => {
+export const useAppointments = (filters?: { barberId?: string; customerId?: string; status?: AppointmentStatus; orgId?: string }, enabled: boolean = true, expanded: boolean = true) => {
     const queryClient = useQueryClient();
 
     // Query: Fetch Appointments
     const query = useQuery({
-        queryKey: ['appointments', filters],
+        queryKey: ['appointments', filters, expanded],
         queryFn: async () => {
             let all: Appointment[] = [];
 
             if (filters?.orgId) {
                 // Public/Explicit Fetch
-                console.log("Fetching appointments for org:", filters.orgId);
-                const { data, error } = await supabase.from('appointments').select(`
+                console.log("Fetching appointments for org:", filters.orgId, "Expanded:", expanded);
+
+                let queryBuilder = supabase.from('appointments').select(expanded ? `
                     *,
-                    service:service_id (name, price, duration_minutes),
-                    barber:barber_id (name),
-                    customer:customer_id (name, phone, avatar_url)
-                `).eq('organization_id', filters.orgId);
+                    service:services!appointments_service_id_fkey (name, price, duration_minutes),
+                    barber:profiles!appointments_barber_id_fkey (name),
+                    customer:profiles!appointments_customer_id_fkey (name, phone, avatar_url)
+                ` : '*').eq('organization_id', filters.orgId);
+
+                const { data, error } = await queryBuilder;
 
                 if (error) throw error;
-                all = data.map(a => ({
+
+                all = (data as any[]).map(a => ({
                     id: a.id,
                     barberId: a.barber_id,
                     customerId: a.customer_id,

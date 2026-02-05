@@ -112,7 +112,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentRole, setCurrentView, c
 
         {/* User Profile Footer */}
         <div className="p-4 border-t border-white/5 bg-black/20">
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors cursor-pointer group">
+          <div
+            onClick={() => navigate('/admin/settings?tab=profile')}
+            className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors cursor-pointer group"
+          >
             <div className="relative">
               <img
                 src={profile?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile?.email || 'User'}`}

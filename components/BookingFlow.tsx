@@ -3,7 +3,7 @@ import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { Button } from './ui/Button';
 import { WhatsAppButton } from './ui/WhatsAppButton';
 import { Card } from './ui/Card';
-import { Check, ChevronRight, ChevronLeft, Calendar as CalendarIcon, Clock, Scissors, User as UserIcon, Loader2, CreditCard, Store, Gift, AlertCircle } from 'lucide-react';
+import { Check, ChevronRight, ChevronLeft, Calendar as CalendarIcon, Clock, Scissors, User as UserIcon, Loader2, CreditCard, Store, Gift, AlertCircle, MapPin } from 'lucide-react';
 import { User, Service, AppointmentStatus, Role } from '../types';
 import { db } from '../services/database';
 import {
@@ -37,6 +37,9 @@ import { useStaff } from '../hooks/useStaff';
 import { useAppointments } from '../hooks/useAppointments';
 import { useSettingsQuery } from '../hooks/useSettingsQuery';
 
+import { useAuth } from '../contexts/AuthContext';
+import { useProfile } from '../hooks/useProfile';
+
 enum BookingStep {
   SHOWCASE = 0,
   SERVICE = 1,
@@ -63,8 +66,12 @@ export const BookingFlow: React.FC = () => {
 
   const { data: servicesData, isLoading: isServicesLoading, isError: isServicesError } = useServices(orgId);
   const { data: staffData, isLoading: isStaffLoading, isError: isStaffError } = useStaff(orgId);
-  const { data: appointmentsData, isLoading: isAppointmentsLoading, isError: isAppointmentsError } = useAppointments({ orgId }, !!orgId);
+  const { data: appointmentsData, isLoading: isAppointmentsLoading, isError: isAppointmentsError } = useAppointments({ orgId }, !!orgId, false);
   const { data: settingsData, isLoading: isSettingsLoading, isError: isSettingsError } = useSettingsQuery(orgId);
+
+  // Auth Hook placement (Must be at top level)
+  const { user } = useAuth();
+  const { data: profile } = useProfile(user?.id);
 
   // Derived State
   const services = servicesData || [];
@@ -544,8 +551,25 @@ export const BookingFlow: React.FC = () => {
     );
   }
 
+  // Auth Check for Admin Navigation
+  const isAdmin = profile?.role === Role.ADMIN || profile?.role === Role.SUPER_ADMIN;
+
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative" style={brandingStyles}>
+      {/* Admin Back Button */}
+      {isAdmin && (
+        <div className="absolute top-4 right-4 z-50">
+          <Button
+            variant="outline"
+            onClick={() => navigate('/admin/dashboard')}
+            className="bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-sm"
+          >
+            <ChevronLeft size={16} className="mr-2" />
+            Voltar ao Painel
+          </Button>
+        </div>
+      )}
+
       {/* Dynamic Background Banner */}
       {activeSettings.banner_url && (
         <div className="absolute inset-0 z-0 opacity-20">
@@ -565,7 +589,19 @@ export const BookingFlow: React.FC = () => {
           <h1 className="font-display font-bold text-4xl text-white tracking-widest mb-2">
             {activeSettings.establishment_name || "BARBER"} <span style={{ color: activeSettings.primary_color }}>{activeSettings.establishment_name ? "" : "PRO"}</span>
           </h1>
-          <p className="text-textMuted">Agendamento Online</p>
+          <p className="text-textMuted mb-2">Agendamento Online</p>
+
+          {/* Address Display */}
+          {(activeSettings.address || activeSettings.city) && (
+            <div className="flex items-center justify-center gap-2 text-sm text-textMuted opacity-80">
+              <MapPin size={14} style={{ color: activeSettings.primary_color }} />
+              <p>
+                {activeSettings.address}
+                {activeSettings.address && activeSettings.city && " - "}
+                {activeSettings.city}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Progress Bar */}

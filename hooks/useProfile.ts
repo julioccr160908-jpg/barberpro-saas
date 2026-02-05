@@ -35,7 +35,8 @@ export function useProfile(userId: string | undefined) {
                 jobTitle: data.job_title,
                 phone: data.phone,
                 commissionRate: data.commission_rate,
-                loyaltyCount: data.loyalty_count
+                loyaltyCount: data.loyalty_count,
+                organization_id: data.organization_id
             };
 
             return profile;
