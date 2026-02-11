@@ -1,14 +1,15 @@
 
 import React, { useState } from 'react';
-import { Clock, Palette, Store, Bell, User } from 'lucide-react';
+import { Clock, Palette, Store, Bell, User, MessageSquare } from 'lucide-react';
 import { AdminTimeSettings } from './AdminTimeSettings';
 import { AdminAppearanceSettings } from './AdminAppearanceSettings';
 import { AdminGeneralSettings } from './AdminGeneralSettings';
 import { AdminNotificationSettings } from './admin/AdminNotificationSettings';
 import { AdminProfileSettings } from './AdminProfileSettings';
+import { AdminWhatsAppStatus } from './admin/AdminWhatsAppStatus';
 import { useSearchParams } from 'react-router-dom';
 
-type Tab = 'general' | 'schedule' | 'appearance' | 'notifications' | 'profile';
+type Tab = 'general' | 'schedule' | 'appearance' | 'notifications' | 'whatsapp' | 'profile';
 
 export const AdminSettings: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -16,7 +17,7 @@ export const AdminSettings: React.FC = () => {
 
     React.useEffect(() => {
         const tab = searchParams.get('tab');
-        if (tab && ['general', 'schedule', 'appearance', 'notifications', 'profile'].includes(tab)) {
+        if (tab && ['general', 'schedule', 'appearance', 'notifications', 'whatsapp', 'profile'].includes(tab)) {
             setActiveTab(tab as Tab);
         }
     }, [searchParams]);
@@ -79,6 +80,18 @@ export const AdminSettings: React.FC = () => {
                     Notificações
                 </button>
                 <button
+                    onClick={() => setActiveTab('whatsapp')}
+                    className={`
+            flex items-center gap-2 px-6 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap
+            ${activeTab === 'whatsapp'
+                            ? 'border-green-500 text-green-400'
+                            : 'border-transparent text-textMuted hover:text-white hover:bg-white/5'}
+          `}
+                >
+                    <MessageSquare size={18} />
+                    WhatsApp
+                </button>
+                <button
                     onClick={() => setActiveTab('profile')}
                     className={`
             flex items-center gap-2 px-6 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap
@@ -98,6 +111,7 @@ export const AdminSettings: React.FC = () => {
                 {activeTab === 'schedule' && <AdminTimeSettings />}
                 {activeTab === 'appearance' && <AdminAppearanceSettings />}
                 {activeTab === 'notifications' && <AdminNotificationSettings />}
+                {activeTab === 'whatsapp' && <AdminWhatsAppStatus />}
                 {activeTab === 'profile' && <AdminProfileSettings />}
             </div>
         </div>

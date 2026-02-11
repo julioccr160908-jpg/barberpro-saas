@@ -23,6 +23,7 @@ import { Skeleton } from './ui/Skeleton';
 import { Button } from './ui/Button';
 import { WhatsAppButton } from './ui/WhatsAppButton';
 import { toast } from 'sonner';
+import { NotificationService } from '../services/NotificationService';
 import { useSettings } from '../contexts/SettingsContext';
 import { Appointment, AppointmentStatus } from '../types';
 import { useAuth } from '../contexts/AuthContext';
@@ -231,6 +232,12 @@ export const Schedule: React.FC = () => {
                                 try {
                                   await updateStatus({ id: slot.appointment!.id, status: AppointmentStatus.CONFIRMED });
                                   toast.success('Agendamento confirmado!');
+                                  // Dispatch WhatsApp notification (async, non-blocking)
+                                  NotificationService.sendById({
+                                    appointmentId: slot.appointment!.id,
+                                    customerId: slot.appointment!.customerId,
+                                    type: 'confirmation'
+                                  });
                                 } catch (error) {
                                   toast.error('Erro ao confirmar');
                                 }
@@ -246,6 +253,12 @@ export const Schedule: React.FC = () => {
                                   try {
                                     await updateStatus({ id: slot.appointment!.id, status: AppointmentStatus.CANCELLED });
                                     toast.success('Agendamento cancelado');
+                                    // Dispatch WhatsApp cancellation notification
+                                    NotificationService.sendById({
+                                      appointmentId: slot.appointment!.id,
+                                      customerId: slot.appointment!.customerId,
+                                      type: 'cancelled'
+                                    });
                                   } catch (error) {
                                     toast.error('Erro ao cancelar');
                                   }
@@ -279,6 +292,12 @@ export const Schedule: React.FC = () => {
                                   try {
                                     await updateStatus({ id: slot.appointment!.id, status: AppointmentStatus.CANCELLED });
                                     toast.success('Agendamento cancelado');
+                                    // Dispatch WhatsApp cancellation notification
+                                    NotificationService.sendById({
+                                      appointmentId: slot.appointment!.id,
+                                      customerId: slot.appointment!.customerId,
+                                      type: 'cancelled'
+                                    });
                                   } catch (error) {
                                     toast.error('Erro ao cancelar');
                                   }

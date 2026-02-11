@@ -308,21 +308,12 @@ export const BookingFlow: React.FC = () => {
 
           // However, this is 'barberpro-saas'.
           // Let's assume we can get it from the Service or Staff.
-          // Actually, for this Phase 1, let's simplify.
-          // I will update NotificationService to FETCH the org_id from the appointment (after insertion)
-          // BEFORE fetching the template.
-
-          // So I will pass 'organizationId' as empty string here? No that's hacky.
-          // usage: NotificationService.sendById({ ... organizationId: ??? });
-
-          // I'll update NotificationService First to make organizationId optional in payload, 
-          // and derive it from appointment lookup.
-
-          organizationId: '', // Will be derived in Service if handled
+          organizationId: currentOrgId || '',
           appointmentId: newAppt.id,
           customerId: user.id,
           type: 'confirmation'
-        });
+        })
+          .catch(console.error);
 
         setShowSuccessModal(true);
       } catch (error: any) {
