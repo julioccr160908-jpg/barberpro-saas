@@ -44,7 +44,16 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     // Ideally, we use the server state, but if we want optimistic updates, useMutation is key.
     // For simplicity, let's proxy the query data, potentially falling back to defaults if not ready?
 
-    const settings = serverSettings || DEFAULT_SETTINGS;
+    const settings = React.useMemo(() => {
+        const base = serverSettings || DEFAULT_SETTINGS;
+        return {
+            ...DEFAULT_SETTINGS,
+            ...base,
+            // Ensure critical fields are never null/undefined
+            interval_minutes: base.interval_minutes || 30,
+            schedule: base.schedule || DEFAULT_SETTINGS.schedule
+        };
+    }, [serverSettings]);
 
     const { mutateAsync: updateSettingsMutation } = useMutation({
         mutationFn: async (newSettings: ShopSettings) => {

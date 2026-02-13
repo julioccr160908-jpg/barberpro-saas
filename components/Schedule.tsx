@@ -127,7 +127,7 @@ export const Schedule: React.FC = () => {
         // Increment
         const duration = appt
           ? (appt.service?.durationMinutes || settings.intervalMinutes)
-          : settings.intervalMinutes;
+          : (settings.intervalMinutes || 30);
 
         current = addMinutes(current, duration);
       }
