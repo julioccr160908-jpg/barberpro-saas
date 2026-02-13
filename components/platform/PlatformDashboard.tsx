@@ -64,7 +64,7 @@ export const PlatformDashboard: React.FC = () => {
     return (
         <div>
             <h1 className="text-3xl font-display font-bold text-white mb-2">Visão Geral da Plataforma</h1>
-            <p className="text-zinc-400 mb-8">Dados em tempo real do BarberHost SaaS.</p>
+            <p className="text-zinc-400 mb-8">Dados em tempo real do BarberHost.</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <StatCard

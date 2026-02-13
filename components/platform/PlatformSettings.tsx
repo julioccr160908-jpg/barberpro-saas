@@ -11,7 +11,7 @@ export const PlatformSettings: React.FC = () => {
         trialDays: 14,
         monthlyPrice: 97.00,
         currency: 'BRL',
-        appName: 'BarberHost SaaS'
+        appName: 'BarberHost'
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

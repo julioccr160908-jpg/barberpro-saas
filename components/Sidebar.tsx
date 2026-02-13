@@ -142,7 +142,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentRole, setCurrentView, c
           </div>
 
           <p className="text-center text-[10px] text-zinc-700 mt-4">
-            v1.2.0 • BarberHost SaaS
+            v1.2.0 • BarberHost
           </p>
         </div>
       </aside>
