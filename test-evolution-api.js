@@ -1,6 +1,6 @@
 const EVOLUTION_API_URL = "https://offline-copies-sympathy-mountains.trycloudflare.com";
 const EVOLUTION_API_KEY = "429683C4C977415CAAFCCE10F7D57E11";
-const INSTANCE = "barberpro-main";
+const INSTANCE = "barberhost-main";
 
 async function checkConnection() {
     try {
@@ -30,7 +30,7 @@ async function sendTestMessage(phoneNumber) {
             body: JSON.stringify({
                 number: cleanNumber,
                 textMessage: {
-                    text: "✅ Teste do BarberPro SaaS - Evolution API funcionando perfeitamente!"
+                    text: "✅ Teste do BarberHost SaaS - Evolution API funcionando perfeitamente!"
                 }
             })
         });

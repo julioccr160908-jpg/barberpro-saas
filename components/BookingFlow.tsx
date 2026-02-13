@@ -85,7 +85,7 @@ export const BookingFlow: React.FC = () => {
   // Persist Slug
   useEffect(() => {
     if (slug && org) {
-      localStorage.setItem('barberpro_last_slug', slug);
+      localStorage.setItem('barberhost_last_slug', slug);
     }
   }, [slug, org]);
 
@@ -206,23 +206,21 @@ export const BookingFlow: React.FC = () => {
         return;
       }
 
-      // Ensure profile exists (fix for missing trigger execution or legacy users)
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', user.id)
-        .maybeSingle();
+      // Ensure profile exists with correct organization_id
+      // Using upsert to handle both new and existing profiles in one call
+      // This avoids issues where RLS might block SELECT on profiles with NULL organization_id
+      const { error: profileError } = await supabase.from('profiles').upsert({
+        id: user.id,
+        email: user.email,
+        name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Novo Cliente',
+        role: Role.CUSTOMER,
+        organization_id: currentOrgId
+      }, { onConflict: 'id', ignoreDuplicates: false });
 
-      if (!profile) {
-        console.log("Profile missing for user, creating now...");
-        const { error: profileError } = await supabase.from('profiles').insert([{
-          id: user.id,
-          email: user.email,
-          name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Novo Cliente',
-          role: Role.CUSTOMER
-        }]);
-
-        if (profileError && profileError.code !== '23505') {
+      if (profileError) {
+        console.error("Profile upsert error:", profileError);
+        // Don't block booking if profile upsert fails for non-critical reasons
+        if (profileError.code !== '23505') {
           toast.error("Erro ao verificar seu perfil de usuário. Tente novamente ou contate o suporte.");
           return;
         }
@@ -578,7 +576,7 @@ export const BookingFlow: React.FC = () => {
             </div>
           ) : null}
           <h1 className="font-display font-bold text-4xl text-white tracking-widest mb-2">
-            {activeSettings.establishment_name || "BARBER"} <span style={{ color: activeSettings.primary_color }}>{activeSettings.establishment_name ? "" : "PRO"}</span>
+            {activeSettings.establishment_name || "BARBER"} <span style={{ color: activeSettings.primary_color }}>{activeSettings.establishment_name ? "" : "HOST"}</span>
           </h1>
           <p className="text-textMuted mb-2">Agendamento Online</p>
 

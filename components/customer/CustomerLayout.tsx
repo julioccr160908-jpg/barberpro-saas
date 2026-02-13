@@ -21,7 +21,7 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
         window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}`, '_blank');
     };
 
-    const lastSlug = localStorage.getItem('barberpro_last_slug');
+    const lastSlug = localStorage.getItem('barberhost_last_slug');
     const bookPath = lastSlug ? `/${lastSlug}` : '/book';
 
     const menuItems = [
@@ -51,7 +51,7 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                     <div className="w-8 h-8 rounded-sm flex items-center justify-center" style={{ backgroundColor: settings.primary_color || '#D4AF37' }}>
                         <Scissors size={18} className="text-black" />
                     </div>
-                    <span className="font-display font-bold text-lg text-white">BARBER<span style={{ color: settings.primary_color || '#D4AF37' }}>PRO</span></span>
+                    <span className="font-display font-bold text-lg text-white">BARBER<span style={{ color: settings.primary_color || '#D4AF37' }}>HOST</span></span>
                 </div>
                 <button onClick={() => setIsOpen(!isOpen)} className="text-white p-2">
                     <Menu />
@@ -74,7 +74,7 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                                 <div className="w-8 h-8 rounded-sm flex items-center justify-center" style={{ backgroundColor: settings.primary_color || '#D4AF37' }}>
                                     <Scissors size={18} className="text-black" />
                                 </div>
-                                <span className="font-display font-bold text-xl tracking-wider text-white">BARBER<span style={{ color: settings.primary_color || '#D4AF37' }}>PRO</span></span>
+                                <span className="font-display font-bold text-xl tracking-wider text-white">BARBER<span style={{ color: settings.primary_color || '#D4AF37' }}>HOST</span></span>
                             </div>
                         </div>
 

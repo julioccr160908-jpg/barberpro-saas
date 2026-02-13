@@ -2,7 +2,7 @@
 import { Service, User, Appointment, ShopSettings, AppointmentStatus } from '../types';
 import { SEED_SERVICES, SEED_STAFF, SEED_APPOINTMENTS } from '../constants';
 
-const DB_KEY = 'barberpro_db_v1';
+const DB_KEY = 'barberhost_db_v1';
 
 interface DatabaseSchema {
   services: Service[];

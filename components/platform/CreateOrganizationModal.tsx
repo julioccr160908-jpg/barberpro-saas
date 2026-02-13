@@ -123,7 +123,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                             icon={<LinkIcon size={18} />}
                         />
                         <p className="text-xs text-zinc-500 pl-1">
-                            Endereço final: barberpro.com/{slug || '...'}
+                            Endereço final: barberhost.com/{slug || '...'}
                         </p>
                     </div>
 

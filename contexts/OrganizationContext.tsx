@@ -78,7 +78,7 @@ export const OrganizationProvider: React.FC<{ children: React.ReactNode }> = ({ 
             }
 
             // 3. Fallback: Check for persisted Slug (Customer Context)
-            const lastSlug = localStorage.getItem('barberpro_last_slug');
+            const lastSlug = localStorage.getItem('barberhost_last_slug');
             console.log("OrgContext: Checking fallback slug:", lastSlug);
 
             if (lastSlug) {

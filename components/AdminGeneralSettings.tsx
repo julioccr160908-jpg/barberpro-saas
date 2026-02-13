@@ -114,7 +114,7 @@ export const AdminGeneralSettings: React.FC = () => {
                         <Globe className="absolute left-3 top-1/2 -translate-y-1/2 text-textMuted" size={18} />
                         <div className="flex items-center w-full bg-background border border-white/10 rounded-lg focus-within:border-primary transition-colors">
                             <span className="pl-10 pr-1 py-2 text-textMuted text-sm border-r border-white/10 bg-white/5 rounded-l-lg select-none">
-                                barberpro.com/
+                                barberhost.com/
                             </span>
                             <input
                                 type="text"

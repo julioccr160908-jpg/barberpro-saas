@@ -83,3 +83,6 @@ dist-ssr
 # Temporary Documentation
 /*.md
 !README.md
+
+.vercel
+.env*.local

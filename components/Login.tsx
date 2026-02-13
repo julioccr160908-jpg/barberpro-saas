@@ -186,7 +186,7 @@ export const Login: React.FC = () => {
               <>
                 <Input
                   label="E-mail Administrativo"
-                  placeholder="admin@barberpro.com"
+                  placeholder="admin@barberhost.com"
                   icon={<Mail size={18} />}
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -306,7 +306,7 @@ export const Login: React.FC = () => {
                 </p>
                 <div className="pt-4 border-t border-white/10 mt-4">
                   <p className="text-sm text-textMuted">
-                    Quer usar o BarberPro? <Link to="/register" className="text-primary font-medium hover:underline">Cadastrar minha Barbearia</Link>
+                    Quer usar o BarberHost? <Link to="/register" className="text-primary font-medium hover:underline">Cadastrar minha Barbearia</Link>
                   </p>
                 </div>
               </>

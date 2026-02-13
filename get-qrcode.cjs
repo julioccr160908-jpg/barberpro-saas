@@ -1,6 +1,6 @@
 const EVOLUTION_API_URL = "https://offline-copies-sympathy-mountains.trycloudflare.com";
 const EVOLUTION_API_KEY = "429683C4C977415CAAFCCE10F7D57E11";
-const INSTANCE = "barberpro-main";
+const INSTANCE = "barberhost-main";
 const fs = require('fs');
 
 async function main() {
@@ -16,7 +16,7 @@ async function main() {
         if (data.base64) {
             const html = `<!DOCTYPE html>
 <html>
-<head><title>BarberPro - QR Code WhatsApp</title></head>
+<head><title>BarberHost - QR Code WhatsApp</title></head>
 <body style="background:#111;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;font-family:Arial,sans-serif">
 <div style="text-align:center">
 <h1 style="color:#25D366">📱 Escaneie o QR Code</h1>

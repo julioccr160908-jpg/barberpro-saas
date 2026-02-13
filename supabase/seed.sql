@@ -203,7 +203,7 @@ INSERT INTO "auth"."refresh_tokens" ("instance_id", "id", "token", "user_id", "r
 --
 
 INSERT INTO "public"."organizations" ("id", "name", "slug", "owner_id", "created_at", "updated_at", "subscription_status", "plan_type", "logo_url", "banner_url", "primary_color", "secondary_color", "theme_mode") VALUES
-	('7ea72506-a86d-4588-9a0f-fc47ee1645ea', 'BarberPro Demo', 'barberpro-demo', 'cda2fce4-5cd2-4c42-a754-49cd837f02cc', '2026-02-03 13:56:59.603628+00', '2026-02-03 13:56:59.603628+00', 'active', 'premium', NULL, NULL, NULL, NULL, 'dark'),
+	('7ea72506-a86d-4588-9a0f-fc47ee1645ea', 'BarberHost Demo', 'barberhost-demo', 'cda2fce4-5cd2-4c42-a754-49cd837f02cc', '2026-02-03 13:56:59.603628+00', '2026-02-03 13:56:59.603628+00', 'active', 'premium', NULL, NULL, NULL, NULL, 'dark'),
 	('1edb6c78-0fed-4a97-8033-11a1ec990328', 'Barbearia Dono1', 'barbearia-1', '0b8aaf85-0d11-494a-a621-219c7d54604e', '2026-02-03 14:02:43.762998+00', '2026-02-03 14:02:43.762998+00', 'active', 'premium', NULL, NULL, '#3a55a6', '#8212a1', 'dark'),
 	('9c88d80d-e3c4-4374-abc2-093bfb119d85', 'Barbearia Dono 2', 'barbearia-2', '2cc4558b-bcc1-4d19-8adb-018c83351b05', '2026-02-03 14:02:43.948886+00', '2026-02-03 14:02:43.948886+00', 'active', 'basic', NULL, NULL, '#d43535', '#ffffff', 'dark');
 

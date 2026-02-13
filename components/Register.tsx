@@ -260,7 +260,7 @@ export const Register: React.FC = () => {
                                         className="opacity-75"
                                         icon={<Building2 size={18} />}
                                     />
-                                    <p className="text-xs text-zinc-500">barberpro.com/{formData.orgSlug}</p>
+                                    <p className="text-xs text-zinc-500">barberhost.com/{formData.orgSlug}</p>
                                 </div>
                                 <div className="flex gap-3">
                                     <Button type="button" variant="outline" onClick={() => setStep(1)} className="flex-1">
