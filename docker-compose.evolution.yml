@@ -30,7 +30,7 @@ services:
     volumes:
       - redis_data:/data
     networks:
-      - supabase_network_barberpro-saas
+      - supabase_network_barberhost-saas
 
 networks:
   supabase_network_barberhost-saas:

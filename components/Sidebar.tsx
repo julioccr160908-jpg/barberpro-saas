@@ -64,7 +64,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentRole, setCurrentView, c
               <Scissors size={20} className="text-black transform -rotate-45" />
             </div>
             <div className="flex flex-col">
-              <span className="font-display font-bold text-xl tracking-wider text-white leading-none">BARBER<span className="text-yellow-500">PRO</span></span>
+              <span className="font-display font-bold text-xl tracking-wider text-white leading-none">BARBER<span className="text-yellow-500">HOST</span></span>
               <span className="text-[10px] text-zinc-500 tracking-[0.2em] uppercase mt-1">Management</span>
             </div>
           </div>
@@ -142,7 +142,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentRole, setCurrentView, c
           </div>
 
           <p className="text-center text-[10px] text-zinc-700 mt-4">
-            v1.2.0 • BarberPro SaaS
+            v1.2.0 • BarberHost SaaS
           </p>
         </div>
       </aside>

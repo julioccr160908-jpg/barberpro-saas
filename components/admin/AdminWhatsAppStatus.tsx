@@ -20,7 +20,7 @@ export const AdminWhatsAppStatus: React.FC = () => {
     const [info, setInfo] = useState<ConnectionInfo | null>(null);
     const [loading, setLoading] = useState(true);
     const [testPhone, setTestPhone] = useState('');
-    const [testMessage, setTestMessage] = useState('✅ Mensagem de teste do BarberPro! Se você recebeu esta mensagem, a integração WhatsApp está funcionando perfeitamente. 🚀');
+    const [testMessage, setTestMessage] = useState('✅ Mensagem de teste do BarberHost! Se você recebeu esta mensagem, a integração WhatsApp está funcionando perfeitamente. 🚀');
     const [sending, setSending] = useState(false);
     const [checking, setChecking] = useState(false);
 
@@ -118,8 +118,8 @@ export const AdminWhatsAppStatus: React.FC = () => {
                             <h3 className="text-xl font-bold text-white flex items-center gap-2">
                                 WhatsApp
                                 <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full ${info?.connected
-                                        ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                                        : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                                    ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                                    : 'bg-red-500/20 text-red-400 border border-red-500/30'
                                     }`}>
                                     {loading ? '...' : info?.connected ? (
                                         <><CheckCircle size={12} /> Conectado</>

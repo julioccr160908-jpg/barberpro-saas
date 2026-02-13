@@ -214,7 +214,7 @@ export const Schedule: React.FC = () => {
                         <div className="mt-2">
                           <WhatsAppButton
                             phone={slot.appointment.customerPhone}
-                            message={`Olá ${slot.appointment.customerName}, confirmando seu agendamento para ${format(selectedDate, 'dd/MM')} às ${slot.appointment.serviceName} na BarberPro. Tudo certo?`}
+                            message={`Olá ${slot.appointment.customerName}, confirmando seu agendamento para ${format(selectedDate, 'dd/MM')} às ${slot.appointment.serviceName} na BarberHost. Tudo certo?`}
                             label="Enviar Msg"
                             size="sm"
                             variant="ghost"

@@ -64,7 +64,7 @@ export const PlatformDashboard: React.FC = () => {
     return (
         <div>
             <h1 className="text-3xl font-display font-bold text-white mb-2">Visão Geral da Plataforma</h1>
-            <p className="text-zinc-400 mb-8">Dados em tempo real do BarberPro SaaS.</p>
+            <p className="text-zinc-400 mb-8">Dados em tempo real do BarberHost SaaS.</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <StatCard
@@ -118,8 +118,8 @@ export const PlatformDashboard: React.FC = () => {
                                     </div>
                                 </div>
                                 <span className={`px-2 py-1 text-xs rounded-full border ${org.subscriptionStatus === 'active'
-                                        ? 'bg-green-500/10 text-green-500 border-green-500/20'
-                                        : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
+                                    ? 'bg-green-500/10 text-green-500 border-green-500/20'
+                                    : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
                                     }`}>
                                     {org.subscriptionStatus}
                                 </span>

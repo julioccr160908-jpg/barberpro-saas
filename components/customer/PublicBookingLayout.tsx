@@ -28,7 +28,7 @@ export const PublicBookingLayout: React.FC<PublicBookingLayoutProps> = ({ childr
         return {
             primary_color: org?.primary_color || settingsData?.primary_color || '#D4AF37',
             secondary_color: org?.secondary_color || settingsData?.secondary_color || '#1A1A1A',
-            establishment_name: settingsData?.establishment_name || org?.name || 'BarberPro',
+            establishment_name: settingsData?.establishment_name || org?.name || 'BarberHost',
             logo_url: org?.logo_url || settingsData?.logo_url,
         };
     }, [org, settingsData]);

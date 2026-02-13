@@ -168,7 +168,7 @@ export const AdminAppearanceSettings: React.FC = () => {
                             <input
                                 {...register('establishment_name')}
                                 className="w-full bg-background border border-border rounded-lg p-2.5 text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                                placeholder="Ex: Barber Pro"
+                                placeholder="Ex: BarberHost"
                             />
                         </div>
 
@@ -291,7 +291,7 @@ export const AdminAppearanceSettings: React.FC = () => {
                                         <span style={{ color: previewPrimary }}>B</span>
                                     )}
                                 </div>
-                                <span className="text-white font-bold text-lg">{previewName || 'BarberPro'}</span>
+                                <span className="text-white font-bold text-lg">{previewName || 'BarberHost'}</span>
                             </div>
                             <MenuIcon />
                         </div>

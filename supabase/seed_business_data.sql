@@ -33,7 +33,7 @@ INSERT INTO public.settings (
     json_build_object('dayId', 5, 'isOpen', true, 'openTime', '09:00', 'closeTime', '20:00', 'breakStart', '12:00', 'breakEnd', '13:00'), -- Sex
     json_build_object('dayId', 6, 'isOpen', true, 'openTime', '08:00', 'closeTime', '18:00', 'breakStart', '12:00', 'breakEnd', '12:30')  -- Sab
   )::jsonb,
-  'BarberPro SaaS',
+  'BarberHost SaaS',
   'Rua Exemplo, 123 - Centro',
   '(11) 99999-9999',
   'Cidade Exemplo',

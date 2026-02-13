@@ -304,7 +304,7 @@ export const BookingFlow: React.FC = () => {
           // It implies implicit organization or single tenant?
           // If strict multi-tenant, we have an issue.
 
-          // However, this is 'barberpro-saas'.
+          // However, this is 'barberhost-saas'.
           // Let's assume we can get it from the Service or Staff.
           organizationId: currentOrgId || '',
           appointmentId: newAppt.id,
