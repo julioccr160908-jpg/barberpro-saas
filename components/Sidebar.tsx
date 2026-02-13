@@ -14,7 +14,7 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ currentRole, setCurrentView, currentView, isOpen, setIsOpen }) => {
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { profile, signOut } = useAuth();
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, role: [Role.ADMIN] },
@@ -133,7 +133,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentRole, setCurrentView, c
             </div>
 
             <button
-              onClick={() => navigate('/')}
+              onClick={() => signOut()}
               className="p-2 -mr-2 text-zinc-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
               title="Sair"
             >
