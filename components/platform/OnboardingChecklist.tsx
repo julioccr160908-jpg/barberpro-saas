@@ -64,17 +64,17 @@ export const OnboardingChecklist: React.FC = () => {
 
     // Check if the user has dismissed the checklist before
     useEffect(() => {
-        if (profile?.organization_id) {
-            const key = DISMISS_KEY_PREFIX + profile.organization_id;
+        if (organization?.id) {
+            const key = DISMISS_KEY_PREFIX + organization.id;
             if (localStorage.getItem(key) === 'true') {
                 setDismissed(true);
             }
         }
-    }, [profile?.organization_id]);
+    }, [organization?.id]);
 
     useEffect(() => {
         const checkStatus = async () => {
-            if (!profile?.organization_id) {
+            if (!organization?.id) {
                 setLoading(false);
                 return;
             }
@@ -86,26 +86,26 @@ export const OnboardingChecklist: React.FC = () => {
                     supabase
                         .from('services')
                         .select('*', { count: 'exact', head: true })
-                        .eq('organization_id', profile.organization_id),
+                        .eq('organization_id', organization.id),
 
                     // 2. Check Schedule (Settings)
                     supabase
                         .from('settings')
                         .select('schedule, establishment_name')
-                        .eq('organization_id', profile.organization_id)
+                        .eq('organization_id', organization.id)
                         .maybeSingle(),
 
                     // 3. Check if org has any appointments (indicator of an established business)
                     supabase
                         .from('appointments')
                         .select('*', { count: 'exact', head: true })
-                        .eq('organization_id', profile.organization_id),
+                        .eq('organization_id', organization.id),
 
                     // 4. Check organization data
                     supabase
                         .from('organizations')
                         .select('slug, name')
-                        .eq('id', profile.organization_id)
+                        .eq('id', organization.id)
                         .single()
                 ]);
 
@@ -117,7 +117,7 @@ export const OnboardingChecklist: React.FC = () => {
                 // If the org already has appointments, it's an established business.
                 // Auto-dismiss the checklist and persist so it never shows again.
                 if (appointmentCount > 0) {
-                    const key = DISMISS_KEY_PREFIX + profile.organization_id;
+                    const key = DISMISS_KEY_PREFIX + organization.id;
                     localStorage.setItem(key, 'true');
                     setDismissed(true);
                     setLoading(false);
@@ -129,7 +129,7 @@ export const OnboardingChecklist: React.FC = () => {
                 const hasSchedule = !!settings;
 
                 // Profile check: avatar OR name filled (either means they engaged with profile)
-                const hasProfile = !!profile.avatarUrl || !!profile.phone;
+                const hasProfile = !!profile?.avatarUrl || !!profile?.phone;
 
                 // Service check
                 const hasServices = serviceCount > 0;
@@ -157,12 +157,12 @@ export const OnboardingChecklist: React.FC = () => {
 
     // Handle dismiss
     const handleDismiss = useCallback(() => {
-        if (profile?.organization_id) {
-            const key = DISMISS_KEY_PREFIX + profile.organization_id;
+        if (organization?.id) {
+            const key = DISMISS_KEY_PREFIX + organization.id;
             localStorage.setItem(key, 'true');
         }
         setDismissed(true);
-    }, [profile?.organization_id]);
+    }, [organization?.id]);
 
     // Calculate progress
     const completedCount = items.filter(i => i.completed).length;
@@ -173,8 +173,8 @@ export const OnboardingChecklist: React.FC = () => {
     if (dismissed) return null;
     if (completedCount === items.length) {
         // All done — auto-dismiss permanently
-        if (profile?.organization_id) {
-            const key = DISMISS_KEY_PREFIX + profile.organization_id;
+        if (organization?.id) {
+            const key = DISMISS_KEY_PREFIX + organization.id;
             localStorage.setItem(key, 'true');
         }
         return null;

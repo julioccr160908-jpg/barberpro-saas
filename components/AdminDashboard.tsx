@@ -38,7 +38,7 @@ export const AdminDashboard: React.FC = () => {
   const { profile, loading: authLoading } = useAuth();
   const { data: organization } = useOrganization();
 
-  // Use the new hook for data fetching and aggregation
+  // Use the context organization ID for stats fetching to support impersonation
   const {
     revenue,
     scheduledRevenue,
@@ -48,7 +48,7 @@ export const AdminDashboard: React.FC = () => {
     upcomingAppointments,
     chartData,
     hasAnyData
-  } = useAdminStats(profile?.organization_id);
+  } = useAdminStats(organization?.id);
 
   const loading = authLoading || statsLoading;
 

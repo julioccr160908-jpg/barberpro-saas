@@ -28,7 +28,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentRole, setCurrentView, c
     { id: 'settings', label: 'Configurações', icon: Settings, role: [Role.ADMIN] },
   ];
 
-  const filteredItems = menuItems.filter(item => item.role.includes(currentRole));
+  const filteredItems = menuItems.filter(item => 
+    item.role.includes(currentRole) || 
+    (currentRole === Role.SUPER_ADMIN && item.role.includes(Role.ADMIN))
+  );
 
   return (
     <>
@@ -129,7 +132,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentRole, setCurrentView, c
               <p className="text-sm font-bold text-white truncate group-hover:text-yellow-500 transition-colors">
                 {profile?.name || 'Carregando...'}
               </p>
-              <p className="text-xs text-zinc-500 truncate capitalize">{currentRole?.toLowerCase()}</p>
+              <p className="text-xs text-zinc-500 truncate capitalize">
+                {currentRole === Role.SUPER_ADMIN ? 'Modo Visualização' : currentRole?.toLowerCase()}
+              </p>
             </div>
 
             <button
