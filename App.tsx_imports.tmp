@@ -1,0 +1,49 @@
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { ProtectedRoute } from './components/ProtectedRoute';
+import { Sidebar } from './components/Sidebar';
+// Lazy Load Admin Components
+const AdminDashboard = React.lazy(() => import('./components/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
+const AdminStaffManager = React.lazy(() => import('./components/AdminStaffManager').then(module => ({ default: module.AdminStaffManager })));
+const AdminServicesManager = React.lazy(() => import('./components/AdminServicesManager').then(module => ({ default: module.AdminServicesManager })));
+const AdminCustomersManager = React.lazy(() => import('./components/AdminCustomersManager').then(module => ({ default: module.AdminCustomersManager })));
+const AdminTimeSettings = React.lazy(() => import('./components/AdminTimeSettings').then(module => ({ default: module.AdminTimeSettings })));
+const AdminSettings = React.lazy(() => import('./components/AdminSettings').then(module => ({ default: module.AdminSettings })));
+const AdminNotificationSettings = React.lazy(() => import('./components/admin/AdminNotificationSettings').then(module => ({ default: module.AdminNotificationSettings })));
+const AdminFinancials = React.lazy(() => import('./components/admin/AdminFinancials').then(module => ({ default: module.AdminFinancials })));
+const AdminLoyaltySettings = React.lazy(() => import('./components/admin/AdminLoyaltySettings').then(module => ({ default: module.AdminLoyaltySettings })));
+const Schedule = React.lazy(() => import('./components/Schedule').then(module => ({ default: module.Schedule })));
+
+// Lazy Load Platform Components
+const PlatformLayout = React.lazy(() => import('./components/platform/PlatformLayout').then(module => ({ default: module.PlatformLayout })));
+const PlatformDashboard = React.lazy(() => import('./components/platform/PlatformDashboard').then(module => ({ default: module.PlatformDashboard })));
+const OrganizationsList = React.lazy(() => import('./components/platform/OrganizationsList').then(module => ({ default: module.OrganizationsList })));
+const PlatformUsers = React.lazy(() => import('./components/platform/PlatformUsers').then(module => ({ default: module.PlatformUsers })));
+const PlatformSettings = React.lazy(() => import('./components/platform/PlatformSettings').then(module => ({ default: module.PlatformSettings })));
+const PlatformGrowth = React.lazy(() => import('./components/platform/PlatformGrowth').then(module => ({ default: module.PlatformGrowth })));
+const PlatformMonitoring = React.lazy(() => import('./components/platform/PlatformMonitoring').then(module => ({ default: module.PlatformMonitoring })));
+const PlatformBroadcasts = React.lazy(() => import('./components/platform/PlatformBroadcasts').then(module => ({ default: module.PlatformBroadcasts })));
+
+import { MockPaymentPage } from './components/checkout/MockPaymentPage';
+import { BookingSuccess } from './components/checkout/BookingSuccess';
+import { BookingFlow } from './components/BookingFlow';
+import { CustomerLayout } from './components/customer/CustomerLayout';
+import { ConditionalCustomerLayout } from './components/customer/ConditionalCustomerLayout';
+import { CustomerAppointments } from './components/customer/CustomerAppointments';
+import { CustomerProfile } from './components/customer/CustomerProfile';
+import { Login } from './components/Login';
+import { Register } from './components/Register';
+import { RegisterSuccess } from './components/RegisterSuccess';
+import { Role } from './types';
+import { Button } from './components/ui/Button';
+import { SettingsProvider } from './contexts/SettingsContext';
+import { db } from './services/database';
+import { supabase } from './services/supabase';
+import { Loader2, AlertTriangle, CreditCard } from 'lucide-react';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { OrganizationProvider, useOrganization } from './contexts/OrganizationContext';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from './lib/react-query';
+import { Toaster } from 'sonner';
+import { Landing } from './components/Landing';
+import { SystemBroadcastBanner } from './components/SystemBroadcastBanner';

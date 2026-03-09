@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -48,6 +46,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/react-query';
 import { Toaster } from 'sonner';
 import { Landing } from './components/Landing';
+import { SystemBroadcastBanner } from './components/SystemBroadcastBanner';
 
 
 // Wrapper for internal app layout (Sidebar + Content)
@@ -207,6 +206,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </div>
         )}
         <div className="mt-12 lg:mt-0 max-w-7xl mx-auto">
+          <SystemBroadcastBanner />
           {content}
         </div>
       </main>
