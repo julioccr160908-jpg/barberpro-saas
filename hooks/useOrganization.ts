@@ -8,16 +8,20 @@ export const useOrganization = (slug?: string) => {
         queryFn: async () => {
             if (slug) {
                 // Public Access: Resolve Slug
-                const { data, error } = await supabase.from('organizations').select('*').eq('slug', slug).single();
-                if (error) throw error;
-                return data;
+                const { data, error } = await supabase.from('organizations').select('*').eq('slug', slug).maybeSingle();
+                if (error && error.code !== 'PGRST116') {
+                    console.error('Error fetching org by slug:', error);
+                }
+                return data || null;
             } else {
                 // Internal Access: Resolve via Auth
                 const orgId = await db._getOrgId();
                 if (!orgId) return null;
-                const { data, error } = await supabase.from('organizations').select('*').eq('id', orgId).single();
-                if (error) throw error;
-                return data;
+                const { data, error } = await supabase.from('organizations').select('*').eq('id', orgId).maybeSingle();
+                if (error && error.code !== 'PGRST116') {
+                    console.error('Error fetching org by id:', error);
+                }
+                return data || null;
             }
         },
         staleTime: 1000 * 60 * 30, // 30 minutes

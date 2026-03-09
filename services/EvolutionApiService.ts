@@ -2,7 +2,6 @@
 
 const EVOLUTION_API_URL = import.meta.env.VITE_EVOLUTION_API_URL;
 const EVOLUTION_API_KEY = import.meta.env.VITE_EVOLUTION_API_KEY;
-const EVOLUTION_INSTANCE = import.meta.env.VITE_EVOLUTION_INSTANCE;
 
 interface SendMessagePayload {
     number: string;
@@ -22,16 +21,65 @@ export const EvolutionApiService = {
      * Check if Evolution API is configured (env vars present)
      */
     isConfigured(): boolean {
-        return !!(EVOLUTION_API_URL && EVOLUTION_API_KEY && EVOLUTION_INSTANCE);
+        return !!(EVOLUTION_API_URL && EVOLUTION_API_KEY);
     },
 
     /**
-     * Send a text message via WhatsApp
+     * Create a new instance in the Evolution API for an organization
      */
-    async sendMessage(payload: SendMessagePayload): Promise<{ success: boolean; error?: any; data?: any }> {
+    async createInstance(instanceName: string): Promise<{ success: boolean; error?: string }> {
+        if (!this.isConfigured()) {
+            return { success: false, error: 'Evolution API não configurada' };
+        }
+
+        try {
+            const response = await fetch(`${EVOLUTION_API_URL}/instance/create`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': EVOLUTION_API_KEY
+                },
+                body: JSON.stringify({
+                    instanceName,
+                    token: window.crypto.randomUUID(),
+                    integration: 'WHATSAPP-BAILEYS',
+                    qrcode: true,
+                    rejectCall: false,
+                    groupsIgnore: true,
+                    alwaysOnline: false,
+                    readMessages: false,
+                    readStatus: false,
+                    syncFullHistory: false
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                // If instance already exists, that's OK
+                if (data?.message?.includes?.('already') || data?.error?.includes?.('already')) {
+                    return { success: true };
+                }
+                return { success: false, error: data?.message || data?.error || 'Erro ao criar instância' };
+            }
+
+            return { success: true };
+        } catch (error: any) {
+            return { success: false, error: error?.message || 'Erro de conexão' };
+        }
+    },
+
+    /**
+     * Send a text message via WhatsApp using a specific instance
+     */
+    async sendMessage(instanceName: string, payload: SendMessagePayload): Promise<{ success: boolean; error?: any; data?: any }> {
         if (!this.isConfigured()) {
             console.warn("Evolution API not configured");
             return { success: false, error: "Configuração da Evolution API ausente" };
+        }
+
+        if (!instanceName) {
+            return { success: false, error: "Instância WhatsApp não configurada para esta barbearia" };
         }
 
         try {
@@ -47,7 +95,7 @@ export const EvolutionApiService = {
                 return { success: false, error: "Número de telefone inválido" };
             }
 
-            const response = await fetch(`${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
+            const response = await fetch(`${EVOLUTION_API_URL}/message/sendText/${instanceName}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -86,13 +134,13 @@ export const EvolutionApiService = {
     },
 
     /**
-     * Check if WhatsApp is connected (returns boolean)
+     * Check if WhatsApp is connected for a specific instance
      */
-    async checkConnection(): Promise<boolean> {
-        if (!this.isConfigured()) return false;
+    async checkConnection(instanceName: string): Promise<boolean> {
+        if (!this.isConfigured() || !instanceName) return false;
 
         try {
-            const response = await fetch(`${EVOLUTION_API_URL}/instance/connectionState/${EVOLUTION_INSTANCE}`, {
+            const response = await fetch(`${EVOLUTION_API_URL}/instance/connectionState/${instanceName}`, {
                 method: 'GET',
                 headers: { 'apikey': EVOLUTION_API_KEY }
             });
@@ -107,19 +155,48 @@ export const EvolutionApiService = {
     },
 
     /**
-     * Get detailed instance info (connection state, phone number, profile)
+     * Get QR Code to connect a specific instance
      */
-    async getInstanceInfo(): Promise<InstanceInfo> {
+    async getQrCode(instanceName: string): Promise<{ success: boolean; qr?: string; error?: string }> {
+        if (!this.isConfigured()) return { success: false, error: 'Não configurado' };
+        if (!instanceName) return { success: false, error: 'Instância não definida' };
+
+        try {
+            const response = await fetch(`${EVOLUTION_API_URL}/instance/connect/${instanceName}`, {
+                method: 'GET',
+                headers: { 'apikey': EVOLUTION_API_KEY }
+            });
+
+            const data = await response.json();
+
+            if (data?.instance?.state === 'open') {
+                return { success: true, error: 'Já conectado' }; // Already connected
+            }
+
+            if (data?.base64) {
+                return { success: true, qr: data.base64 };
+            }
+
+            return { success: false, error: data?.message || 'QR Code não disponível' };
+        } catch (error: any) {
+            return { success: false, error: 'Erro de conexão com a API' };
+        }
+    },
+
+    /**
+     * Get detailed instance info for a specific instance
+     */
+    async getInstanceInfo(instanceName: string): Promise<InstanceInfo> {
         const defaultInfo: InstanceInfo = {
             connected: false,
-            instanceName: EVOLUTION_INSTANCE || 'N/A'
+            instanceName: instanceName || 'N/A'
         };
 
-        if (!this.isConfigured()) return defaultInfo;
+        if (!this.isConfigured() || !instanceName) return defaultInfo;
 
         try {
             // Check connection state
-            const stateRes = await fetch(`${EVOLUTION_API_URL}/instance/connectionState/${EVOLUTION_INSTANCE}`, {
+            const stateRes = await fetch(`${EVOLUTION_API_URL}/instance/connectionState/${instanceName}`, {
                 headers: { 'apikey': EVOLUTION_API_KEY }
             });
 
@@ -132,7 +209,7 @@ export const EvolutionApiService = {
 
             // If connected, try to get instance details
             try {
-                const infoRes = await fetch(`${EVOLUTION_API_URL}/instance/fetchInstances?instanceName=${EVOLUTION_INSTANCE}`, {
+                const infoRes = await fetch(`${EVOLUTION_API_URL}/instance/fetchInstances?instanceName=${instanceName}`, {
                     headers: { 'apikey': EVOLUTION_API_KEY }
                 });
 
@@ -142,7 +219,7 @@ export const EvolutionApiService = {
 
                     return {
                         connected: true,
-                        instanceName: instance?.instance?.instanceName || EVOLUTION_INSTANCE,
+                        instanceName: instance?.instance?.instanceName || instanceName,
                         ownerJid: instance?.instance?.owner || undefined,
                         profileName: instance?.instance?.profileName || undefined,
                         profilePicUrl: instance?.instance?.profilePictureUrl || undefined
@@ -156,6 +233,38 @@ export const EvolutionApiService = {
 
         } catch {
             return defaultInfo;
+        }
+    },
+
+    /**
+     * Logout of an instance
+     */
+    async logoutInstance(instanceName: string): Promise<boolean> {
+        if (!this.isConfigured() || !instanceName) return false;
+        try {
+            const response = await fetch(`${EVOLUTION_API_URL}/instance/logout/${instanceName}`, {
+                method: 'DELETE',
+                headers: { 'apikey': EVOLUTION_API_KEY }
+            });
+            return response.ok;
+        } catch {
+            return false;
+        }
+    },
+
+    /**
+     * Delete an instance
+     */
+    async deleteInstance(instanceName: string): Promise<boolean> {
+        if (!this.isConfigured() || !instanceName) return false;
+        try {
+            const response = await fetch(`${EVOLUTION_API_URL}/instance/delete/${instanceName}`, {
+                method: 'DELETE',
+                headers: { 'apikey': EVOLUTION_API_KEY }
+            });
+            return response.ok;
+        } catch {
+            return false;
         }
     },
 

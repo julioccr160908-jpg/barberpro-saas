@@ -1,15 +1,16 @@
 
 import React, { useState } from 'react';
-import { Clock, Palette, Store, Bell, User, MessageSquare } from 'lucide-react';
+import { Clock, Palette, Store, Bell, User, MessageSquare, CreditCard } from 'lucide-react';
 import { AdminTimeSettings } from './AdminTimeSettings';
 import { AdminAppearanceSettings } from './AdminAppearanceSettings';
 import { AdminGeneralSettings } from './AdminGeneralSettings';
 import { AdminNotificationSettings } from './admin/AdminNotificationSettings';
 import { AdminProfileSettings } from './AdminProfileSettings';
 import { AdminWhatsAppStatus } from './admin/AdminWhatsAppStatus';
+import { SubscriptionPlans } from './admin/SubscriptionPlans';
 import { useSearchParams } from 'react-router-dom';
 
-type Tab = 'general' | 'schedule' | 'appearance' | 'notifications' | 'whatsapp' | 'profile';
+type Tab = 'general' | 'schedule' | 'appearance' | 'notifications' | 'whatsapp' | 'profile' | 'subscription';
 
 export const AdminSettings: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -17,7 +18,7 @@ export const AdminSettings: React.FC = () => {
 
     React.useEffect(() => {
         const tab = searchParams.get('tab');
-        if (tab && ['general', 'schedule', 'appearance', 'notifications', 'whatsapp', 'profile'].includes(tab)) {
+        if (tab && ['general', 'schedule', 'appearance', 'notifications', 'whatsapp', 'profile', 'subscription'].includes(tab)) {
             setActiveTab(tab as Tab);
         }
     }, [searchParams]);
@@ -103,6 +104,18 @@ export const AdminSettings: React.FC = () => {
                     <User size={18} />
                     Perfil
                 </button>
+                <button
+                    onClick={() => setActiveTab('subscription')}
+                    className={`
+            flex items-center gap-2 px-6 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap
+            ${activeTab === 'subscription'
+                            ? 'border-amber-500 text-amber-400'
+                            : 'border-transparent text-textMuted hover:text-white hover:bg-white/5'}
+          `}
+                >
+                    <CreditCard size={18} />
+                    Assinatura
+                </button>
             </div>
 
             {/* Content */}
@@ -113,6 +126,7 @@ export const AdminSettings: React.FC = () => {
                 {activeTab === 'notifications' && <AdminNotificationSettings />}
                 {activeTab === 'whatsapp' && <AdminWhatsAppStatus />}
                 {activeTab === 'profile' && <AdminProfileSettings />}
+                {activeTab === 'subscription' && <SubscriptionPlans />}
             </div>
         </div>
     );

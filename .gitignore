@@ -11,6 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
+backups/
 
 # Editor directories and files
 .vscode/*
@@ -22,20 +23,16 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
-# Temporary Maintenance & Migration Scripts
-/*.sql
-/*.ps1
-/*.txt
-/*.json
-/*.mjs
+*.sql
+*.ps1
+*.txt
+*.json
+*.mjs
 !package.json
 !tsconfig.json
 !vercel.json
 !metadata.json
 !supabase/status.json
-
-# Temporary JS/TS Scripts in root (Keep config files)
 /add_*.js
 /add_*.cjs
 /apply_*.js
@@ -79,8 +76,6 @@ dist-ssr
 /verify_*.js
 /verify_*.cjs
 /visual_*.js
-
-# Temporary Documentation
 /*.md
 !README.md
 

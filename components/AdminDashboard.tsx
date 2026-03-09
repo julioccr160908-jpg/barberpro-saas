@@ -41,11 +41,13 @@ export const AdminDashboard: React.FC = () => {
   // Use the new hook for data fetching and aggregation
   const {
     revenue,
+    scheduledRevenue,
     count,
     uniqueCustomers,
     isLoading: statsLoading,
     upcomingAppointments,
-    chartData
+    chartData,
+    hasAnyData
   } = useAdminStats(profile?.organization_id);
 
   const loading = authLoading || statsLoading;
@@ -103,8 +105,9 @@ export const AdminDashboard: React.FC = () => {
         <StatCard
           title="Receita Realizada"
           value={revenue > 0 ? `R$ ${revenue.toFixed(2)}` : 'R$ 0,00'}
-          trend={revenue > 0 ? "Total acumulado" : "Sem dados"}
+          trend={revenue > 0 ? "Total acumulado" : scheduledRevenue > 0 ? `R$ ${scheduledRevenue.toFixed(2)} agendado` : "Sem dados"}
           icon={DollarSign}
+          isPositive={revenue > 0 || scheduledRevenue > 0}
         />
         <StatCard
           title="Agendamentos"
@@ -132,50 +135,68 @@ export const AdminDashboard: React.FC = () => {
         {/* Revenue Chart */}
         <div className="lg:col-span-2">
           <Card className="h-96">
-            <CardHeader title="Receita (Últimos 7 dias)" subtitle="Baseado em cortes realizados" />
-            <div className="h-72 w-full">
-              {revenue === 0 ? (
-                <div className="h-full flex items-center justify-center text-textMuted">Sem dados financeiros para exibir</div>
-              ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={chartData}>
-                    <defs>
-                      <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#D4AF37" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#D4AF37" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
-                    <XAxis
-                      dataKey="name"
-                      stroke="#666"
-                      tick={{ fill: '#666', fontSize: 12 }}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <YAxis
-                      stroke="#666"
-                      tick={{ fill: '#666', fontSize: 12 }}
-                      tickLine={false}
-                      axisLine={false}
-                      tickFormatter={(value) => `R$${value}`}
-                    />
-                    <Tooltip
-                      contentStyle={{ backgroundColor: '#1E1E1E', borderColor: '#333', color: '#fff' }}
-                      itemStyle={{ color: '#D4AF37' }}
-                      formatter={(value: number) => [`R$ ${value.toFixed(2)}`, 'Receita']}
-                      labelFormatter={(label, payload) => payload[0]?.payload.fullDate || label}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="value"
-                      stroke="#D4AF37"
-                      strokeWidth={2}
-                      fillOpacity={1}
-                      fill="url(#colorRevenue)"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
+            <CardHeader title="Receita (Últimos 7 dias)" subtitle={hasAnyData ? 'Realizada + Agendada' : 'Baseado em cortes realizados'} />
+            <div className="h-72 w-full relative min-h-[288px]">
+              <ResponsiveContainer width="100%" height="100%" minHeight={288}>
+                <AreaChart data={chartData}>
+                  <defs>
+                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#D4AF37" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#D4AF37" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="colorScheduled" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#60A5FA" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#60A5FA" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                  <XAxis
+                    dataKey="name"
+                    stroke="#666"
+                    tick={{ fill: '#666', fontSize: 12 }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis
+                    stroke="#666"
+                    tick={{ fill: '#666', fontSize: 12 }}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(value) => `R$${value}`}
+                  />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#1E1E1E', borderColor: '#333', color: '#fff' }}
+                    formatter={(value: number, name: string) => [
+                      `R$ ${value.toFixed(2)}`,
+                      name === 'value' ? 'Realizada' : 'Agendada'
+                    ]}
+                    labelFormatter={(label, payload) => payload[0]?.payload.fullDate || label}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="scheduled"
+                    stroke="#60A5FA"
+                    strokeWidth={2}
+                    strokeDasharray="5 5"
+                    fillOpacity={1}
+                    fill="url(#colorScheduled)"
+                    name="scheduled"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="value"
+                    stroke="#D4AF37"
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#colorRevenue)"
+                    name="value"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+              {!hasAnyData && (
+                <div className="absolute inset-0 flex items-center justify-center text-textMuted text-sm pointer-events-none">
+                  Nenhuma receita nos últimos 7 dias
+                </div>
               )}
             </div>
           </Card>

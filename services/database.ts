@@ -337,36 +337,43 @@ export const db = {
       const orgId = await db._getOrgId();
       if (!orgId) throw new Error("Organization ID required");
 
-      // 1. Fetch existing to merge (safe partial update)
-      const { data: existing } = await supabase.from('settings').select('*').eq('organization_id', orgId).single();
+      // Build update payload - only include fields that are defined
+      const updatePayload: Record<string, any> = {};
+      const fields = [
+        'interval_minutes', 'schedule', 'establishment_name',
+        'address', 'phone', 'city', 'state', 'zip_code',
+        'primary_color', 'secondary_color',
+        'loyalty_enabled', 'loyalty_target'
+      ];
 
-      const merged: any = {
-        organization_id: orgId,
-        ...existing,
-        ...settings
-      };
+      for (const field of fields) {
+        if ((settings as any)[field] !== undefined) {
+          updatePayload[field] = (settings as any)[field];
+        }
+      }
 
-      // Ensure NO undefineds are passed to DB (which might not happen with spread but good to be safe)
-      // Upsert needs to know the conflict key if we rely on it, but here we provide organization_id.
+      // Try to update existing settings
+      const { data: updated, error: updateError } = await supabase
+        .from('settings')
+        .update(updatePayload)
+        .eq('organization_id', orgId)
+        .select()
+        .maybeSingle();
 
-      // Update settings using snake_case properties directly
-      const { error } = await supabase.from('settings').upsert({
-        organization_id: orgId,
-        interval_minutes: merged.interval_minutes,
-        schedule: merged.schedule,
-        establishment_name: merged.establishment_name,
-        address: merged.address,
-        phone: merged.phone,
-        city: merged.city,
-        state: merged.state,
-        zip_code: merged.zip_code,
-        primary_color: merged.primary_color,
-        secondary_color: merged.secondary_color,
-        loyalty_enabled: merged.loyalty_enabled,
-        loyalty_target: merged.loyalty_target
-      }, { onConflict: 'organization_id' });
+      if (updateError) throw updateError;
 
-      if (error) throw error;
+      // If no row was updated, insert a new one
+      if (!updated) {
+        const { error: insertError } = await supabase
+          .from('settings')
+          .insert({
+            organization_id: orgId,
+            interval_minutes: (settings as any).interval_minutes || 30,
+            schedule: (settings as any).schedule || [],
+            ...updatePayload
+          });
+        if (insertError) throw insertError;
+      }
     }
 
     // Note: Slug update was previously here but removed because 'slug' is not in settings table type anymore.

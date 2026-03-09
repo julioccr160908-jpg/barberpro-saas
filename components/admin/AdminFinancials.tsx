@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardHeader } from '../ui/Card';
 import { Button } from '../ui/Button';
@@ -8,6 +7,7 @@ import { DollarSign, TrendingDown, TrendingUp, Plus, Trash2, Edit2, Loader2, X }
 import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns';
 import { AppointmentStatus, Expense } from '../../types';
 import { toast } from 'sonner';
+import { FeatureGate } from '../ui/FeatureGate';
 
 interface ExpenseModalProps {
     isOpen: boolean;
@@ -261,96 +261,102 @@ export const AdminFinancials: React.FC = () => {
     if (loading) return <div className="flex h-96 items-center justify-center"><Loader2 className="animate-spin text-primary" /></div>;
 
     return (
-        <div className="space-y-6 animate-fade-in">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-display font-bold text-white">Financeiro</h1>
-                    <p className="text-textMuted">Gestão de receitas e despesas.</p>
+        <FeatureGate
+            requiredPlan="pro"
+            title="Controle Financeiro"
+            description="Acompanhe suas receitas, despesas e lucro líquido de forma automatizada. Recurso disponível a partir do plano Pro."
+        >
+            <div className="space-y-6 animate-fade-in">
+                <div className="flex justify-between items-center">
+                    <div>
+                        <h1 className="text-3xl font-display font-bold text-white">Financeiro</h1>
+                        <p className="text-textMuted">Gestão de receitas e despesas.</p>
+                    </div>
+                    <Button onClick={openNewModal}>
+                        <Plus size={16} className="mr-2" />
+                        Nova Despesa
+                    </Button>
                 </div>
-                <Button onClick={openNewModal}>
-                    <Plus size={16} className="mr-2" />
-                    Nova Despesa
-                </Button>
-            </div>
 
-            {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card className="p-6 bg-green-500/10 border-green-500/20">
-                    <p className="text-xs font-semibold text-green-400 uppercase tracking-wider mb-1">Receita Bruta</p>
-                    <h3 className="text-2xl font-bold text-white">R$ {metrics.revenue.toFixed(2)}</h3>
-                    <TrendingUp className="text-green-500 absolute top-4 right-4 opacity-20" size={40} />
-                </Card>
+                {/* KPI Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <Card className="p-6 bg-green-500/10 border-green-500/20">
+                        <p className="text-xs font-semibold text-green-400 uppercase tracking-wider mb-1">Receita Bruta</p>
+                        <h3 className="text-2xl font-bold text-white">R$ {metrics.revenue.toFixed(2)}</h3>
+                        <TrendingUp className="text-green-500 absolute top-4 right-4 opacity-20" size={40} />
+                    </Card>
 
-                <Card className="p-6 bg-red-500/10 border-red-500/20">
-                    <p className="text-xs font-semibold text-red-400 uppercase tracking-wider mb-1">Despesas</p>
-                    <h3 className="text-2xl font-bold text-white">R$ {metrics.totalExpenses.toFixed(2)}</h3>
-                    <TrendingDown className="text-red-500 absolute top-4 right-4 opacity-20" size={40} />
-                </Card>
+                    <Card className="p-6 bg-red-500/10 border-red-500/20">
+                        <p className="text-xs font-semibold text-red-400 uppercase tracking-wider mb-1">Despesas</p>
+                        <h3 className="text-2xl font-bold text-white">R$ {metrics.totalExpenses.toFixed(2)}</h3>
+                        <TrendingDown className="text-red-500 absolute top-4 right-4 opacity-20" size={40} />
+                    </Card>
 
-                <Card className="p-6 bg-yellow-500/10 border-yellow-500/20">
-                    <p className="text-xs font-semibold text-yellow-400 uppercase tracking-wider mb-1">Comissões</p>
-                    <h3 className="text-2xl font-bold text-white">R$ {metrics.commissions.toFixed(2)}</h3>
-                    <DollarSign className="text-yellow-500 absolute top-4 right-4 opacity-20" size={40} />
-                </Card>
+                    <Card className="p-6 bg-yellow-500/10 border-yellow-500/20">
+                        <p className="text-xs font-semibold text-yellow-400 uppercase tracking-wider mb-1">Comissões</p>
+                        <h3 className="text-2xl font-bold text-white">R$ {metrics.commissions.toFixed(2)}</h3>
+                        <DollarSign className="text-yellow-500 absolute top-4 right-4 opacity-20" size={40} />
+                    </Card>
 
-                <Card className={`p-6 ${metrics.netProfit >= 0 ? 'bg-primary/10 border-primary/20' : 'bg-red-500/10 border-red-500/20'}`}>
-                    <p className={`text-xs font-semibold uppercase tracking-wider mb-1 ${metrics.netProfit >= 0 ? 'text-primary' : 'text-red-400'}`}>Lucro Líquido</p>
-                    <h3 className="text-2xl font-bold text-white">R$ {metrics.netProfit.toFixed(2)}</h3>
-                    <DollarSign className="text-white absolute top-4 right-4 opacity-20" size={40} />
-                </Card>
-            </div>
-
-            {/* Expenses List */}
-            <Card>
-                <CardHeader title="Despesas Recentes" />
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead>
-                            <tr className="border-b border-white/10 text-xs text-textMuted uppercase">
-                                <th className="px-6 py-3">Data</th>
-                                <th className="px-6 py-3">Título</th>
-                                <th className="px-6 py-3">Categoria</th>
-                                <th className="px-6 py-3 text-right">Valor</th>
-                                <th className="px-6 py-3 text-right">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/5">
-                            {expenses.length === 0 ? (
-                                <tr><td colSpan={5} className="px-6 py-4 text-center text-textMuted">Nenhuma despesa registrada.</td></tr>
-                            ) : (
-                                expenses.map(e => (
-                                    <tr key={e.id} className="hover:bg-white/5 transition-colors group">
-                                        <td className="px-6 py-3 text-sm text-gray-300">{format(parseISO(e.date), 'dd/MM/yyyy')}</td>
-                                        <td className="px-6 py-3 font-medium text-white">{e.title}</td>
-                                        <td className="px-6 py-3 text-sm text-gray-400">
-                                            <span className="bg-white/10 px-2 py-1 rounded text-xs">{e.category}</span>
-                                        </td>
-                                        <td className="px-6 py-3 text-right text-red-400 font-mono">- R$ {Number(e.amount).toFixed(2)}</td>
-                                        <td className="px-6 py-3 text-right flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button onClick={() => openEditModal(e)} className="text-zinc-400 hover:text-white" title="Editar">
-                                                <Edit2 size={16} />
-                                            </button>
-                                            <button onClick={() => handleDeleteExpense(e.id)} className="text-zinc-400 hover:text-red-500" title="Excluir">
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
+                    <Card className={`p-6 ${metrics.netProfit >= 0 ? 'bg-primary/10 border-primary/20' : 'bg-red-500/10 border-red-500/20'}`}>
+                        <p className={`text-xs font-semibold uppercase tracking-wider mb-1 ${metrics.netProfit >= 0 ? 'text-primary' : 'text-red-400'}`}>Lucro Líquido</p>
+                        <h3 className="text-2xl font-bold text-white">R$ {metrics.netProfit.toFixed(2)}</h3>
+                        <DollarSign className="text-white absolute top-4 right-4 opacity-20" size={40} />
+                    </Card>
                 </div>
-            </Card>
 
-            <ExpenseModal
-                isOpen={modalOpen}
-                onClose={() => {
-                    setModalOpen(false);
-                    setEditingExpense(null); // Clear editing expense when closing
-                }}
-                onSave={handleSaveExpense}
-                expense={editingExpense}
-            />
-        </div>
+                {/* Expenses List */}
+                <Card>
+                    <CardHeader title="Despesas Recentes" />
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead>
+                                <tr className="border-b border-white/10 text-xs text-textMuted uppercase">
+                                    <th className="px-6 py-3">Data</th>
+                                    <th className="px-6 py-3">Título</th>
+                                    <th className="px-6 py-3">Categoria</th>
+                                    <th className="px-6 py-3 text-right">Valor</th>
+                                    <th className="px-6 py-3 text-right">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-white/5">
+                                {expenses.length === 0 ? (
+                                    <tr><td colSpan={5} className="px-6 py-4 text-center text-textMuted">Nenhuma despesa registrada.</td></tr>
+                                ) : (
+                                    expenses.map(e => (
+                                        <tr key={e.id} className="hover:bg-white/5 transition-colors group">
+                                            <td className="px-6 py-3 text-sm text-gray-300">{format(parseISO(e.date), 'dd/MM/yyyy')}</td>
+                                            <td className="px-6 py-3 font-medium text-white">{e.title}</td>
+                                            <td className="px-6 py-3 text-sm text-gray-400">
+                                                <span className="bg-white/10 px-2 py-1 rounded text-xs">{e.category}</span>
+                                            </td>
+                                            <td className="px-6 py-3 text-right text-red-400 font-mono">- R$ {Number(e.amount).toFixed(2)}</td>
+                                            <td className="px-6 py-3 text-right flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button onClick={() => openEditModal(e)} className="text-zinc-400 hover:text-white" title="Editar">
+                                                    <Edit2 size={16} />
+                                                </button>
+                                                <button onClick={() => handleDeleteExpense(e.id)} className="text-zinc-400 hover:text-red-500" title="Excluir">
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </Card>
+
+                <ExpenseModal
+                    isOpen={modalOpen}
+                    onClose={() => {
+                        setModalOpen(false);
+                        setEditingExpense(null); // Clear editing expense when closing
+                    }}
+                    onSave={handleSaveExpense}
+                    expense={editingExpense}
+                />
+            </div>
+        </FeatureGate>
     );
 };

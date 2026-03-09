@@ -15,6 +15,7 @@ interface NotificationPayload {
 interface DirectMessagePayload {
     phone: string;
     text: string;
+    instanceName: string;
 }
 
 export const NotificationService = {
@@ -32,7 +33,7 @@ export const NotificationService = {
                     *,
                     service:services(name),
                     customer:profiles!customer_id(name, email, phone),
-                    organization:organizations(name)
+                    organization:organizations(name, whatsapp_instance_name)
                 `)
                 .eq('id', payload.appointmentId)
                 .single();
@@ -82,11 +83,8 @@ export const NotificationService = {
                 return;
             }
 
-            // Prioritize WhatsApp, fallback to Email
+            // Get WhatsApp template
             let template = templates.find(t => t.channel === 'whatsapp');
-            if (!template) {
-                template = templates.find(t => t.channel === 'email');
-            }
 
             if (!template) {
                 await this._logError({ ...payload, organizationId: orgId }, `No template found for ${payload.type}`);
@@ -115,22 +113,23 @@ export const NotificationService = {
             let sendResult: { success: boolean; error?: any } = { success: false };
 
             if (template.channel === 'whatsapp' && appointment.customer?.phone) {
-                console.log("📱 Sending WhatsApp to:", appointment.customer.phone);
-                sendResult = await EvolutionApiService.sendMessage({
-                    number: appointment.customer.phone,
-                    text: content
-                });
+                const instanceName = appointment.organization?.whatsapp_instance_name;
+                if (!instanceName) {
+                    console.warn("⚠️ Organization has no WhatsApp instance configured");
+                    sendResult = { success: false, error: 'Instância WhatsApp não configurada para esta barbearia' };
+                } else {
+                    console.log("📱 Sending WhatsApp via instance:", instanceName, "to:", appointment.customer.phone);
+                    sendResult = await EvolutionApiService.sendMessage(instanceName, {
+                        number: appointment.customer.phone,
+                        text: content
+                    });
+                }
 
                 if (sendResult.success) {
                     console.log("✅ WhatsApp sent successfully!");
                 } else {
                     console.warn("⚠️ WhatsApp failed, error:", sendResult.error);
                 }
-            } else if (template.channel === 'email') {
-                console.log("📧 Email (simulated):", appointment.customer?.email);
-                console.log("Subject:", subject);
-                console.log("Body:", content);
-                sendResult = { success: true };
             }
 
             // 5. Log the notification
@@ -170,7 +169,7 @@ export const NotificationService = {
             return { success: false, error: "Evolution API não configurada" };
         }
 
-        const result = await EvolutionApiService.sendMessage({
+        const result = await EvolutionApiService.sendMessage(payload.instanceName, {
             number: payload.phone,
             text: payload.text
         });

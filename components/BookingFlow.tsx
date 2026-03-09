@@ -540,6 +540,20 @@ export const BookingFlow: React.FC = () => {
     );
   }
 
+  // Show not-found page if slug doesn't match any organization
+  if (!isLoading && slug && !org) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center text-white px-4">
+        <Store size={64} className="text-textMuted mb-4" />
+        <h2 className="text-2xl font-bold mb-2">Barbearia não encontrada</h2>
+        <p className="text-textMuted text-center max-w-md mb-6">
+          O endereço <span className="font-mono bg-white/10 px-2 py-0.5 rounded">/{slug}</span> não corresponde a nenhuma barbearia cadastrada.
+        </p>
+        <Button variant="outline" onClick={() => navigate('/')}>Voltar ao Início</Button>
+      </div>
+    );
+  }
+
   // Auth Check for Admin Navigation
   const isAdmin = profile?.role === Role.ADMIN || profile?.role === Role.SUPER_ADMIN;
 

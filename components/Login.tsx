@@ -66,18 +66,36 @@ export const Login: React.FC = () => {
     if (error) throw error;
 
     if (data.user) {
-      // Check Profile Role
-      const { data: profile } = await supabase
+      // Check Profile Role (with retry for trigger race condition)
+      let { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, organization_id')
         .eq('id', data.user.id)
         .single();
+
+      // If profile not found, wait briefly and retry (auth trigger may still be creating it)
+      if (!profile && (profileError?.code === 'PGRST116' || !profile)) {
+        console.warn("LOGIN: Profile not found on first attempt, retrying in 1s...", profileError);
+        await new Promise(r => setTimeout(r, 1000));
+        const retry = await supabase
+          .from('profiles')
+          .select('role, organization_id')
+          .eq('id', data.user.id)
+          .single();
+        profile = retry.data;
+        profileError = retry.error;
+      }
+
+      if (profileError) {
+        console.error("LOGIN: Profile query error:", profileError);
+      }
 
       const userRole = profile?.role || Role.CUSTOMER;
 
       console.log("LOGIN DEBUG:", {
         authId: data.user.id,
         profileData: profile,
+        profileError: profileError,
         resolvedRole: userRole,
         isAdminParam: isAdmin
       });

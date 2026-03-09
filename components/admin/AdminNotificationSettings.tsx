@@ -6,11 +6,12 @@ import { supabase } from '../../services/supabase';
 import { db } from '../../services/database';
 import { Loader2, Save, Mail, MessageSquare, Check, Wand2, Plus } from 'lucide-react';
 import { toast } from 'sonner';
+import { FeatureGate } from '../ui/FeatureGate';
 
 interface Template {
     id: string;
     type: 'confirmation' | 'reminder_24h' | 'reminder_1h' | 'welcome' | 'cancelled';
-    channel: 'email' | 'whatsapp';
+    channel: 'whatsapp';
     subject: string | null;
     content: string;
     is_active: boolean;
@@ -108,9 +109,9 @@ export const AdminNotificationSettings: React.FC = () => {
         if (!acc[type]) acc[type] = {};
         acc[type][t.channel] = t;
         return acc;
-    }, {} as Record<string, { email?: Template, whatsapp?: Template }>);
+    }, {} as Record<string, { whatsapp?: Template }>);
 
-    const renderChannelSection = (template: Template | undefined, channel: 'email' | 'whatsapp') => {
+    const renderChannelSection = (template: Template | undefined, channel: 'whatsapp') => {
         if (!template) return (
             <div className="p-6 text-center text-textMuted italic">
                 Template de {channel} não encontrado.
@@ -124,11 +125,11 @@ export const AdminNotificationSettings: React.FC = () => {
                 {/* Header: Toggle & Icon */}
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${channel === 'whatsapp' ? 'bg-green-500/20 text-green-400' : 'bg-blue-500/20 text-blue-400'}`}>
-                            {channel === 'whatsapp' ? <MessageSquare size={18} /> : <Mail size={18} />}
+                        <div className="p-2 rounded-lg bg-green-500/20 text-green-400">
+                            <MessageSquare size={18} />
                         </div>
                         <span className="font-medium text-white uppercase text-sm tracking-wide">
-                            Via {channel === 'whatsapp' ? 'WhatsApp' : 'E-mail'}
+                            Via WhatsApp
                         </span>
                     </div>
 
@@ -146,18 +147,6 @@ export const AdminNotificationSettings: React.FC = () => {
 
                 {/* Editor */}
                 <div className="space-y-4">
-                    {channel === 'email' && (
-                        <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-textMuted uppercase tracking-wider">Assunto</label>
-                            <Input
-                                value={template.subject || ''}
-                                onChange={(e) => handleUpdate(template.id, 'subject', e.target.value)}
-                                className="bg-black/20 border-white/10 h-9 text-sm"
-                                placeholder="Assunto do e-mail"
-                            />
-                        </div>
-                    )}
-
                     <div className="space-y-2">
                         <div className="flex justify-between items-end">
                             <label className="text-[10px] font-bold text-textMuted uppercase tracking-wider">Mensagem</label>
@@ -217,7 +206,7 @@ export const AdminNotificationSettings: React.FC = () => {
                     if (!group) return null; // Should not happen given seed
 
                     // Check if any active in group to highlight card?
-                    const anyActive = group.email?.is_active || group.whatsapp?.is_active;
+                    const anyActive = group.whatsapp?.is_active;
 
                     return (
                         <Card key={type} className={`overflow-hidden transition-all duration-300 ${anyActive ? 'border-primary/10' : 'border-white/5 opacity-75 hover:opacity-100'}`}>
@@ -225,13 +214,14 @@ export const AdminNotificationSettings: React.FC = () => {
                                 <h2 className="text-lg font-bold text-white">{label}</h2>
                             </div>
 
-                            <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-white/5 bg-black/20">
-                                <div className="flex-1">
-                                    {renderChannelSection(group.email, 'email')}
-                                </div>
-                                <div className="flex-1">
+                            <div className="bg-black/20 relative">
+                                <FeatureGate
+                                    requiredPlan="pro"
+                                    title="Notificações Automáticas via WhatsApp"
+                                    description="Integre seu WhatsApp para enviar lembretes. Recurso Pro."
+                                >
                                     {renderChannelSection(group.whatsapp, 'whatsapp')}
-                                </div>
+                                </FeatureGate>
                             </div>
                         </Card>
                     );

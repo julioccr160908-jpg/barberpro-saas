@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Card } from '../ui/Card';
-import { CheckCircle2, Circle, ArrowRight, ExternalLink, Calendar, Users, Scissors } from 'lucide-react';
+import { CheckCircle2, ArrowRight, ExternalLink, Calendar, Users, Scissors, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../services/supabase';
 import { useAuth } from '../../contexts/AuthContext';
@@ -16,10 +16,13 @@ interface ChecklistItem {
     icon: React.ElementType;
 }
 
+const DISMISS_KEY_PREFIX = 'barberhost_onboarding_dismissed_';
+
 export const OnboardingChecklist: React.FC = () => {
-    const { user, profile } = useAuth();
+    const { profile } = useAuth();
     const { organization } = useOrganization();
     const [loading, setLoading] = useState(true);
+    const [dismissed, setDismissed] = useState(false);
     const [items, setItems] = useState<ChecklistItem[]>([
         {
             id: 'profile',
@@ -52,12 +55,22 @@ export const OnboardingChecklist: React.FC = () => {
             id: 'share',
             label: 'Divulgar Barbearia',
             description: 'Compartilhe seu link exclusivo.',
-            link: `/${organization?.slug || ''}`, // Link para página pública da organização
+            link: `/${organization?.slug || ''}`,
             linkText: 'Acessar Link Público',
             completed: false,
             icon: ExternalLink
         }
     ]);
+
+    // Check if the user has dismissed the checklist before
+    useEffect(() => {
+        if (profile?.organization_id) {
+            const key = DISMISS_KEY_PREFIX + profile.organization_id;
+            if (localStorage.getItem(key) === 'true') {
+                setDismissed(true);
+            }
+        }
+    }, [profile?.organization_id]);
 
     useEffect(() => {
         const checkStatus = async () => {
@@ -67,30 +80,68 @@ export const OnboardingChecklist: React.FC = () => {
             }
 
             try {
-                // 1. Check Services
-                const { count: serviceCount } = await supabase
-                    .from('services')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('organization_id', profile.organization_id);
+                // Run all checks in parallel for performance
+                const [servicesRes, settingsRes, appointmentsRes, orgRes] = await Promise.all([
+                    // 1. Check Services
+                    supabase
+                        .from('services')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('organization_id', profile.organization_id),
 
-                // 2. Check Schedule (Settings)
-                const { data: settings } = await supabase
-                    .from('settings')
-                    .select('schedule')
-                    .eq('organization_id', profile.organization_id)
-                    .maybeSingle(); // Changed from single() to avoid 406 on null
+                    // 2. Check Schedule (Settings)
+                    supabase
+                        .from('settings')
+                        .select('schedule, establishment_name')
+                        .eq('organization_id', profile.organization_id)
+                        .maybeSingle(),
 
-                const hasSchedule = settings?.schedule && settings.schedule.length > 0;
+                    // 3. Check if org has any appointments (indicator of an established business)
+                    supabase
+                        .from('appointments')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('organization_id', profile.organization_id),
 
-                // 3. Check Profile photo (User metadata or Profile table)
-                // Using avatarUrl from User interface (camelCase)
-                const hasAvatar = !!profile.avatarUrl;
+                    // 4. Check organization data
+                    supabase
+                        .from('organizations')
+                        .select('slug, name')
+                        .eq('id', profile.organization_id)
+                        .single()
+                ]);
+
+                const serviceCount = servicesRes.count || 0;
+                const settings = settingsRes.data;
+                const appointmentCount = appointmentsRes.count || 0;
+                const org = orgRes.data;
+
+                // If the org already has appointments, it's an established business.
+                // Auto-dismiss the checklist and persist so it never shows again.
+                if (appointmentCount > 0) {
+                    const key = DISMISS_KEY_PREFIX + profile.organization_id;
+                    localStorage.setItem(key, 'true');
+                    setDismissed(true);
+                    setLoading(false);
+                    return;
+                }
+
+                // Schedule check: consider valid if settings row exists 
+                // (even empty schedule means they visited and saved settings)
+                const hasSchedule = !!settings;
+
+                // Profile check: avatar OR name filled (either means they engaged with profile)
+                const hasProfile = !!profile.avatarUrl || !!profile.phone;
+
+                // Service check
+                const hasServices = serviceCount > 0;
+
+                // Share check: org has a non-empty slug AND name
+                const hasSlug = !!(org?.slug && org.slug.trim().length > 0);
 
                 setItems(prev => prev.map(item => {
-                    if (item.id === 'service') return { ...item, completed: (serviceCount || 0) > 0 };
-                    if (item.id === 'schedule') return { ...item, completed: !!hasSchedule };
-                    if (item.id === 'profile') return { ...item, completed: hasAvatar };
-                    if (item.id === 'share') return { ...item, completed: !!organization?.slug };
+                    if (item.id === 'service') return { ...item, completed: hasServices };
+                    if (item.id === 'schedule') return { ...item, completed: hasSchedule };
+                    if (item.id === 'profile') return { ...item, completed: hasProfile };
+                    if (item.id === 'share') return { ...item, completed: hasSlug };
                     return item;
                 }));
 
@@ -104,14 +155,42 @@ export const OnboardingChecklist: React.FC = () => {
         checkStatus();
     }, [profile, organization]);
 
+    // Handle dismiss
+    const handleDismiss = useCallback(() => {
+        if (profile?.organization_id) {
+            const key = DISMISS_KEY_PREFIX + profile.organization_id;
+            localStorage.setItem(key, 'true');
+        }
+        setDismissed(true);
+    }, [profile?.organization_id]);
+
     // Calculate progress
     const completedCount = items.filter(i => i.completed).length;
     const progress = (completedCount / items.length) * 100;
 
-    if (loading) return null; // Or keep a skeleton, but for now silent loading is better than "Carregando..." text
-    if (completedCount === items.length) return null; // Hide when done
+    // Don't show if loading, dismissed, or all completed
+    if (loading) return null;
+    if (dismissed) return null;
+    if (completedCount === items.length) {
+        // All done — auto-dismiss permanently
+        if (profile?.organization_id) {
+            const key = DISMISS_KEY_PREFIX + profile.organization_id;
+            localStorage.setItem(key, 'true');
+        }
+        return null;
+    }
+
     return (
-        <Card className="mb-6 border-primary/20 bg-gradient-to-r from-surface to-surfaceHighlight">
+        <Card className="mb-6 border-primary/20 bg-gradient-to-r from-surface to-surfaceHighlight relative">
+            {/* Dismiss Button */}
+            <button
+                onClick={handleDismiss}
+                className="absolute top-4 right-4 p-1.5 rounded-full text-textMuted hover:text-white hover:bg-white/10 transition-colors z-10"
+                title="Dispensar tutorial"
+            >
+                <X size={18} />
+            </button>
+
             <div className="p-6">
                 <div className="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-4">
                     <div>

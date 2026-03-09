@@ -90,11 +90,18 @@ export interface Organization {
   name: string;
   slug: string;
   ownerId: string;
-  subscriptionStatus: 'trial' | 'active' | 'past_due' | 'canceled';
+  ownerEmail?: string;
+  subscriptionStatus: 'trial' | 'active' | 'past_due' | 'canceled' | 'pending';
   planType: 'basic' | 'pro' | 'enterprise';
   createdAt?: string;
   logoUrl?: string;
   bannerUrl?: string;
+  whatsappInstanceName?: string;
+  whatsappConnected?: boolean;
+  mpSubscriptionId?: string;
+  mpPayerEmail?: string;
+  staffLimit?: number;
+  activeStaffCount?: number;
 }
 
 export interface Expense {

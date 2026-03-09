@@ -3,7 +3,7 @@
 
 export interface DefaultTemplate {
     type: 'confirmation' | 'reminder_24h' | 'reminder_1h' | 'welcome' | 'cancelled';
-    channel: 'whatsapp' | 'email';
+    channel: 'whatsapp';
     subject: string | null;
     content: string;
     is_active: boolean;
@@ -79,36 +79,6 @@ Olá, {customer_name}. Infelizmente seu agendamento foi cancelado:
 Para reagendar, acesse nosso sistema online ou entre em contato.
 
 🏠 {establishment_name}`,
-        is_active: true
-    },
-
-    // --- Email Templates (fallback) ---
-    {
-        type: 'confirmation',
-        channel: 'email',
-        subject: '✅ Agendamento Confirmado - {establishment_name}',
-        content: `Olá {customer_name},
-
-Seu agendamento foi confirmado!
-
-Serviço: {service_name}
-Data: {date_time}
-Local: {establishment_name}
-
-Esperamos você!`,
-        is_active: true
-    },
-    {
-        type: 'cancelled',
-        channel: 'email',
-        subject: '❌ Agendamento Cancelado - {establishment_name}',
-        content: `Olá {customer_name},
-
-Seu agendamento para {service_name} em {date_time} foi cancelado.
-
-Para reagendar, acesse nosso sistema online.
-
-{establishment_name}`,
         is_active: true
     }
 ];

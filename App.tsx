@@ -38,9 +38,9 @@ import { Button } from './components/ui/Button';
 import { SettingsProvider } from './contexts/SettingsContext';
 import { db } from './services/database';
 import { supabase } from './services/supabase';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertTriangle, CreditCard } from 'lucide-react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { OrganizationProvider } from './contexts/OrganizationContext';
+import { OrganizationProvider, useOrganization } from './contexts/OrganizationContext';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/react-query';
 import { Toaster } from 'sonner';
@@ -52,15 +52,21 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentView, setCurrentView] = useState('dashboard');
   const { role, loading: authLoading, user } = useAuth();
+  const { organization, loading: orgLoading } = useOrganization();
   const navigate = useNavigate();
   const location = useLocation();
   const [isImpersonating, setIsImpersonating] = useState(false);
 
   useEffect(() => {
-    if (localStorage.getItem('su_org_override')) {
+    const hasOverride = localStorage.getItem('su_org_override');
+    if (hasOverride && role === Role.SUPER_ADMIN) {
       setIsImpersonating(true);
+    } else if (hasOverride && role && role !== Role.SUPER_ADMIN) {
+      // Clear stale override for non-super-admin users
+      localStorage.removeItem('su_org_override');
+      setIsImpersonating(false);
     }
-  }, []);
+  }, [role]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -122,6 +128,59 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // If impersonating, force ADMIN view regardless of actual role
   const safeRole = isImpersonating ? Role.ADMIN : (role || Role.CUSTOMER);
 
+  // Downgrade Enforcement Logic
+  const isOverStaffLimit = organization
+      && typeof organization.activeStaffCount === 'number'
+      && typeof organization.staffLimit === 'number'
+      && organization.activeStaffCount > organization.staffLimit;
+
+  const shouldBlockDowngrade = isOverStaffLimit && safeRole !== Role.SUPER_ADMIN && safeRole !== Role.CUSTOMER;
+  const isAllowedDowngradeRoute = location.pathname.includes('/admin/staff') || location.pathname.includes('/admin/settings');
+  
+  // Past Due Enforcement Logic
+  const isPastDue = organization?.subscriptionStatus === 'past_due';
+  const shouldBlockPastDue = isPastDue && safeRole !== Role.SUPER_ADMIN && safeRole !== Role.CUSTOMER;
+  const isAllowedPastDueRoute = location.pathname.includes('/admin/settings');
+
+  let content = children;
+  
+  if (shouldBlockPastDue && !isAllowedPastDueRoute) {
+      content = (
+          <div className="flex flex-col items-center justify-center h-[70vh] text-center animate-fade-in">
+              <div className="bg-orange-500/10 p-4 rounded-full mb-6">
+                  <CreditCard size={48} className="text-orange-500" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">Pagamento Pendente</h2>
+              <p className="text-zinc-400 max-w-md mb-8">
+                  Identificamos uma pendência no pagamento da sua assinatura. Para continuar acessando o sistema e recebendo agendamentos, por favor regularize o pagamento.
+              </p>
+              <Button onClick={() => navigate('/admin/settings?tab=subscription')} className="bg-orange-500 text-white hover:bg-orange-600 w-full sm:w-auto">
+                  Regularizar Assinatura
+              </Button>
+          </div>
+      );
+  } else if (shouldBlockDowngrade && !isAllowedDowngradeRoute && !shouldBlockPastDue) {
+      content = (
+          <div className="flex flex-col items-center justify-center h-[70vh] text-center animate-fade-in">
+              <div className="bg-red-500/10 p-4 rounded-full mb-6">
+                  <AlertTriangle size={48} className="text-red-500" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">Limite de Profissionais Excedido</h2>
+              <p className="text-zinc-400 max-w-md mb-8">
+                  O plano atual da sua barbearia permite até {organization.staffLimit} profissionais, mas você tem {organization.activeStaffCount} ativos no momento. Para continuar usando as outras funções do sistema, por favor se adeque ao limite.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Button onClick={() => navigate('/admin/staff')} variant="outline" className="border-red-500/20 text-red-500 hover:bg-red-500/10 w-full sm:w-auto">
+                      Gerenciar Profissionais
+                  </Button>
+                  <Button onClick={() => navigate('/admin/settings?tab=subscription')} className="bg-primary text-black hover:bg-primary/90 w-full sm:w-auto">
+                      Assinar o Plano Pro
+                  </Button>
+              </div>
+          </div>
+      );
+  }
+
   return (
     <div className="min-h-screen bg-background text-textMain font-sans flex overflow-hidden">
       <Sidebar
@@ -145,7 +204,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </div>
         )}
         <div className="mt-12 lg:mt-0 max-w-7xl mx-auto">
-          {children}
+          {content}
         </div>
       </main>
     </div>

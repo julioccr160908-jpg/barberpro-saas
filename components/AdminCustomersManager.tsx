@@ -40,31 +40,39 @@ export const AdminCustomersManager: React.FC = () => {
                 return;
             }
 
-            // Get customers who have appointments in this organization
-            const { data, error } = await supabase
+            const uniqueCustomers = new Map<string, Customer>();
+
+            // 1. Get customers directly linked to this org via profiles
+            const { data: orgCustomers } = await supabase
+                .from('profiles')
+                .select('id, name, email, phone, avatar_url')
+                .eq('organization_id', orgId)
+                .eq('role', 'CUSTOMER');
+
+            orgCustomers?.forEach((c: any) => {
+                if (c.id && !uniqueCustomers.has(c.id)) {
+                    uniqueCustomers.set(c.id, {
+                        id: c.id, name: c.name, email: c.email,
+                        phone: c.phone, avatar_url: c.avatar_url
+                    });
+                }
+            });
+
+            // 2. Also get customers who have appointments in this organization
+            const { data } = await supabase
                 .from('appointments')
                 .select(`
                     customer:customer_id (
-                        id,
-                        name,
-                        email,
-                        phone,
-                        avatar_url
+                        id, name, email, phone, avatar_url
                     )
                 `)
                 .eq('organization_id', orgId);
 
-            if (error) throw error;
-
-            // Extract unique customers (a customer may have multiple appointments)
-            const uniqueCustomers = new Map<string, Customer>();
             data?.forEach((appointment: any) => {
                 if (appointment.customer && !uniqueCustomers.has(appointment.customer.id)) {
                     uniqueCustomers.set(appointment.customer.id, {
-                        id: appointment.customer.id,
-                        name: appointment.customer.name,
-                        email: appointment.customer.email,
-                        phone: appointment.customer.phone,
+                        id: appointment.customer.id, name: appointment.customer.name,
+                        email: appointment.customer.email, phone: appointment.customer.phone,
                         avatar_url: appointment.customer.avatar_url
                     });
                 }

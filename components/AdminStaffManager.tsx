@@ -2,17 +2,24 @@ import React, { useState, useEffect } from 'react';
 import { Card } from './ui/Card';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
-import { Plus, Edit2, Trash2, X, User, Mail, Briefcase, Shield, Upload, Loader2, Lock, DollarSign } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, User, Mail, Briefcase, Shield, Upload, Loader2, Lock, DollarSign, AlertTriangle, CreditCard } from 'lucide-react';
 import { User as UserType, Role } from '../types';
 import { db } from '../services/database';
 import { supabase } from '../services/supabase';
 import { toast } from 'sonner';
+import { useOrganization } from '../contexts/OrganizationContext';
+import { useNavigate } from 'react-router-dom';
 
 export const AdminStaffManager: React.FC = () => {
   const [staff, setStaff] = useState<UserType[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { organization } = useOrganization();
+  const navigate = useNavigate();
+
+  const staffLimit = organization?.staffLimit ?? 3;
+  const isAtLimit = staff.length >= staffLimit && staffLimit < 999;
 
   // Load staff from DB
   const fetchStaff = async () => {
@@ -41,6 +48,10 @@ export const AdminStaffManager: React.FC = () => {
   });
 
   const handleOpenModal = (user?: UserType) => {
+    if (!user && isAtLimit) {
+      toast.error(`Seu plano permite até ${staffLimit} profissionais. Faça upgrade para adicionar mais.`);
+      return;
+    }
     if (user) {
       setEditingUser(user);
       setFormData({ ...user, password: '' });
@@ -60,6 +71,12 @@ export const AdminStaffManager: React.FC = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Double-check staff limit before saving new member
+    if (!editingUser && isAtLimit) {
+      toast.error(`Limite de ${staffLimit} profissionais atingido.`);
+      return;
+    }
 
     if (!formData.name || !formData.email) return;
 

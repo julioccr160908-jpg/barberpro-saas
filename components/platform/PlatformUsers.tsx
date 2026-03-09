@@ -7,7 +7,7 @@ import { Button } from '../ui/Button';
 interface Profile {
     id: string;
     email: string;
-    full_name: string;
+    name: string;
     role: string;
     organization_id: string;
     created_at: string;
@@ -48,7 +48,7 @@ export const PlatformUsers: React.FC = () => {
 
     const filteredUsers = users.filter(user =>
         user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.organizations?.name?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -84,14 +84,14 @@ export const PlatformUsers: React.FC = () => {
                         <div key={user.id} className="p-4 flex items-center justify-between hover:bg-zinc-800/50 transition-colors">
                             <div className="flex items-center gap-4">
                                 <div className="w-10 h-10 bg-zinc-800 rounded-full flex items-center justify-center text-zinc-400 font-bold">
-                                    {user.full_name ? user.full_name.substring(0, 2).toUpperCase() : <Users size={20} />}
+                                    {user.name ? user.name.substring(0, 2).toUpperCase() : <Users size={20} />}
                                 </div>
                                 <div>
                                     <h3 className="font-bold text-white text-sm flex items-center gap-2">
-                                        {user.full_name || 'Sem nome'}
+                                        {user.name || 'Sem nome'}
                                         <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono uppercase ${user.role === 'SUPER_ADMIN' ? 'bg-purple-500/20 text-purple-400' :
-                                                user.role === 'ADMIN' ? 'bg-blue-500/20 text-blue-400' :
-                                                    'bg-zinc-700 text-zinc-400'
+                                            user.role === 'ADMIN' ? 'bg-blue-500/20 text-blue-400' :
+                                                'bg-zinc-700 text-zinc-400'
                                             }`}>
                                             {user.role}
                                         </span>
