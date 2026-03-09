@@ -8,6 +8,7 @@ import { Plus, Search, Building2, ExternalLink, MoreVertical, Ban, CheckCircle, 
 import { CreateOrganizationModal } from './CreateOrganizationModal';
 import { SubscriptionDetailsModal } from './SubscriptionDetailsModal';
 import { ConfirmDeleteModal } from './ConfirmDeleteModal';
+import { PlatformService } from '../../services/PlatformService';
 
 export const OrganizationsList: React.FC = () => {
     const [orgs, setOrgs] = useState<Organization[]>([]);
@@ -85,7 +86,17 @@ export const OrganizationsList: React.FC = () => {
             if (orgToDelete.subscriptionStatus !== 'canceled') {
                 const { error } = await supabase.from('organizations').update({ subscription_status: 'canceled' }).eq('id', orgToDelete.id);
                 if (error) { toast.error('Erro ao cancelar: ' + error.message); }
-                else { toast.success('Assinatura cancelada!'); loadOrgs(); }
+                else { 
+                    toast.success('Assinatura cancelada!'); 
+                    await PlatformService.logAction({
+                        action: 'CANCELED_SUBSCRIPTION',
+                        entity_type: 'organization',
+                        entity_id: orgToDelete.id,
+                        organization_id: orgToDelete.id,
+                        new_data: { status: 'canceled' }
+                    });
+                    loadOrgs(); 
+                }
             } else {
                 // Delete
                 const { error } = await supabase.from('organizations').delete().eq('id', orgToDelete.id);
@@ -94,6 +105,12 @@ export const OrganizationsList: React.FC = () => {
                     toast.error('Erro ao excluir do banco de dados devido a registros dependentes. Contate o suporte ou certifique-se que o Supabase aplicou ON DELETE CASCADE nas migrações.');
                 } else {
                     toast.success('Barbearia excluída com sucesso!');
+                    await PlatformService.logAction({
+                        action: 'DELETED_ORGANIZATION',
+                        entity_type: 'organization',
+                        entity_id: orgToDelete.id,
+                        old_data: orgToDelete
+                    });
                     loadOrgs();
                 }
             }
@@ -184,6 +201,12 @@ export const OrganizationsList: React.FC = () => {
                                                 } else {
                                                     loadOrgs();
                                                     toast.success('Barbearia aprovada com sucesso!');
+                                                    await PlatformService.logAction({
+                                                        action: 'APPROVED_ORGANIZATION',
+                                                        entity_type: 'organization',
+                                                        entity_id: org.id,
+                                                        organization_id: org.id
+                                                    });
                                                 }
                                             } catch (err: any) {
                                                 console.error('Exception approving org:', err);
@@ -242,6 +265,14 @@ export const OrganizationsList: React.FC = () => {
                                                         toast.error('Erro ao mudar plano');
                                                     } else {
                                                         toast.success(`Plano alterado para ${plan.toUpperCase()}`);
+                                                        await PlatformService.logAction({
+                                                            action: 'CHANGED_PLAN',
+                                                            entity_type: 'organization',
+                                                            entity_id: org.id,
+                                                            organization_id: org.id,
+                                                            old_data: { plan: org.planType },
+                                                            new_data: { plan }
+                                                        });
                                                         loadOrgs();
                                                     }
                                                 }}

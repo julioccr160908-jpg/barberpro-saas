@@ -1,8 +1,9 @@
 
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Settings, LogOut, Globe, Loader2, Search, Zap, ShieldAlert, BarChart3, Megaphone } from 'lucide-react';
+import { LayoutDashboard, Users, Settings, LogOut, Globe, Loader2, Search, Zap, ShieldAlert, BarChart3, Megaphone, X, Bell } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { PlatformService } from '../../services/PlatformService';
 import { Role } from '../../types';
 
 const PlatformSidebar: React.FC = () => {
@@ -63,6 +64,19 @@ const PlatformSidebar: React.FC = () => {
 export const PlatformLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { user, role, loading } = useAuth();
     const navigate = useNavigate();
+    const [activeBroadcast, setActiveBroadcast] = React.useState<any>(null);
+
+    useEffect(() => {
+        const loadBroadcasts = async () => {
+            const data = await PlatformService.getActiveBroadcasts();
+            if (data && data.length > 0) {
+                setActiveBroadcast(data[0]);
+            }
+        };
+        if (user && role === Role.SUPER_ADMIN) {
+            loadBroadcasts();
+        }
+    }, [user, role]);
 
     useEffect(() => {
         if (!loading) {
@@ -94,6 +108,21 @@ export const PlatformLayout: React.FC<{ children: React.ReactNode }> = ({ childr
         <div className="min-h-screen bg-black text-white flex">
             <PlatformSidebar />
             <div className="flex-1 flex flex-col h-screen overflow-hidden">
+                {activeBroadcast && (
+                    <div className={`px-8 py-2 flex items-center justify-between text-xs font-bold uppercase tracking-widest ${
+                        activeBroadcast.type === 'warning' ? 'bg-amber-500 text-black' :
+                        activeBroadcast.type === 'error' ? 'bg-red-600 text-white' :
+                        activeBroadcast.type === 'success' ? 'bg-emerald-500 text-black' : 'bg-blue-600 text-white'
+                    }`}>
+                        <div className="flex items-center gap-3">
+                            <Megaphone size={14} />
+                            <span>{activeBroadcast.title}: {activeBroadcast.content}</span>
+                        </div>
+                        <button onClick={() => setActiveBroadcast(null)} className="hover:opacity-70 transition-opacity">
+                            <X size={14} />
+                        </button>
+                    </div>
+                )}
                 <header className="h-16 border-b border-zinc-800 flex items-center justify-between px-8 bg-zinc-900/50 backdrop-blur-md">
                     <div className="relative w-96">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
