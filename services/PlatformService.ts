@@ -39,8 +39,6 @@ export const PlatformService = {
 
         try {
             // 3. Check WhatsApp (Evolution API)
-            // This is complex as it depends on the global instance status
-            // For now, we check if the API itself responds
             const apiUrl = import.meta.env.VITE_EVOLUTION_API_URL;
             if (!apiUrl) {
                 health.whatsapp = 'unconfigured';
@@ -90,14 +88,20 @@ export const PlatformService = {
     /**
      * Fetch active system broadcasts
      */
-    async getActiveBroadcasts() {
+    async getActiveBroadcasts(targetRole?: string) {
         try {
-            const { data, error } = await supabase
+            let query = supabase
                 .from('system_broadcasts')
                 .select('*')
                 .eq('is_active', true)
                 .lte('starts_at', new Date().toISOString())
                 .or(`ends_at.is.null,ends_at.gt.${new Date().toISOString()}`);
+            
+            if (targetRole && targetRole !== 'all') {
+                query = query.or(`target_role.eq.all,target_role.eq.${targetRole}`);
+            }
+
+            const { data, error } = await query;
             
             if (error) throw error;
             return data;

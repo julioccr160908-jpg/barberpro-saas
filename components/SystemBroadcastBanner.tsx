@@ -18,23 +18,24 @@ export const SystemBroadcastBanner: React.FC = () => {
 
     useEffect(() => {
         const fetchBroadcasts = async () => {
-            const data = await PlatformService.getActiveBroadcasts();
+            // Pass the current role to filter targeted broadcasts
+            const data = await PlatformService.getActiveBroadcasts(role || undefined);
             if (data) {
-                // Filter by role if needed in the future, currently PlatformService filters basic active status
                 setBroadcasts(data as Broadcast[]);
             }
         };
 
-        fetchBroadcasts();
+        if (role) {
+            fetchBroadcasts();
+        }
         
         // Refresh every 5 minutes
         const interval = setInterval(fetchBroadcasts, 5 * 60 * 1000);
         return () => clearInterval(interval);
-    }, []);
+    }, [role]);
 
     const handleDismiss = (id: string) => {
         setDismissed(prev => [...prev, id]);
-        // Optional: Persist dismissal in localStorage
         const saved = JSON.parse(localStorage.getItem('dismissed_broadcasts') || '[]');
         localStorage.setItem('dismissed_broadcasts', JSON.stringify([...saved, id]));
     };
@@ -88,7 +89,6 @@ export const SystemBroadcastBanner: React.FC = () => {
                         )}
                     </div>
 
-                    {/* Subtle Progress/Status decoration */}
                     <div className={`absolute bottom-0 left-0 h-1 w-full opacity-30 ${
                         broadcast.type === 'warning' ? 'bg-amber-500' :
                         broadcast.type === 'error' ? 'bg-red-500' :
