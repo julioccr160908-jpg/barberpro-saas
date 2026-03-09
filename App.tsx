@@ -22,6 +22,9 @@ const PlatformDashboard = React.lazy(() => import('./components/platform/Platfor
 const OrganizationsList = React.lazy(() => import('./components/platform/OrganizationsList').then(module => ({ default: module.OrganizationsList })));
 const PlatformUsers = React.lazy(() => import('./components/platform/PlatformUsers').then(module => ({ default: module.PlatformUsers })));
 const PlatformSettings = React.lazy(() => import('./components/platform/PlatformSettings').then(module => ({ default: module.PlatformSettings })));
+const PlatformGrowth = React.lazy(() => import('./components/platform/PlatformGrowth').then(module => ({ default: module.PlatformGrowth })));
+const PlatformMonitoring = React.lazy(() => import('./components/platform/PlatformMonitoring').then(module => ({ default: module.PlatformMonitoring })));
+const PlatformBroadcasts = React.lazy(() => import('./components/platform/PlatformBroadcasts').then(module => ({ default: module.PlatformBroadcasts })));
 
 import { MockPaymentPage } from './components/checkout/MockPaymentPage';
 import { BookingSuccess } from './components/checkout/BookingSuccess';
@@ -274,6 +277,9 @@ const App: React.FC = () => {
                           <Route path="dashboard" element={<PlatformDashboard />} />
                           <Route path="organizations" element={<OrganizationsList />} />
                           <Route path="users" element={<PlatformUsers />} />
+                          <Route path="growth" element={<PlatformGrowth />} />
+                          <Route path="monitoring" element={<PlatformMonitoring />} />
+                          <Route path="broadcasts" element={<PlatformBroadcasts />} />
                           <Route path="settings" element={<PlatformSettings />} />
                         </Routes>
                       </PlatformLayout>

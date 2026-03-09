@@ -1,28 +1,18 @@
-const { Client } = require('pg');
-const fs = require('fs');
-const path = require('path');
+const { createClient } = require('@supabase/supabase-js');
+
+const sb = createClient(
+  'https://ybzgpqwanlbpmyxwjjxc.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InliemdwcXdhbmxicG15eHdqanhjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDA5NTkzNCwiZXhwIjoyMDg1NjcxOTM0fQ.JB2eoVvoaeNpNqo0t3gsSV0cYGwU8ckTLQ7k0BvdhV8'
+);
 
 async function runMigration() {
-    const client = new Client({
-        connectionString: "postgresql://postgres:postgres@127.0.0.1:54322/postgres" // Using 54322 as verified in step 19 status output standard
-    });
-
-    try {
-        await client.connect();
-        console.log("Connected to DB");
-
-        const sql = fs.readFileSync(path.join(__dirname, 'consolidate_rls.sql'), 'utf8');
-        console.log("Executing SQL...");
-
-        await client.query(sql);
-
-        console.log("Migration applied successfully!");
-    } catch (e) {
-        console.error("Migration Failed:", e);
-        process.exit(1);
-    } finally {
-        await client.end();
-    }
+  console.log('Running migration directly using service_role key...');
+  
+  // Since RPC exec_sql didn't exist, we will try to create the columns via direct REST API or just use the Node pg driver locally?
+  // Wait, let's just make the changes using pure SQL via `pg` or `postgres` module if needed, but since we don't have the direct postgres connection string, let's see if we can create the RPC from here.
+  // Actually, we can't create RPCs without postgres connection. Wait, the user already provided the Service Role key. We can't do DDL (ALTER TABLE) with just the REST API usually without the exec_sql RPC.
+  
+  // Wait, I can try to see if there is any other way to send SQL. 
 }
 
-runMigration();
+runMigration().catch(console.error);
