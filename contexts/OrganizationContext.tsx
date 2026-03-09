@@ -24,14 +24,19 @@ export const OrganizationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
     const getActiveStaffCount = async (orgId: string) => {
         try {
-            const { data } = await supabase
+            const { data, error } = await supabase
                 .from('profiles')
-                .select('is_active')
+                .select('id')
                 .eq('organization_id', orgId)
                 .in('role', ['BARBER', 'ADMIN']);
             
-            return data ? data.filter(s => s.is_active !== false).length : 0;
-        } catch {
+            if (error) {
+                console.warn("Error fetching staff count:", error);
+                return 0;
+            }
+            return data ? data.length : 0;
+        } catch (error) {
+            console.error("Failed to query profiles:", error);
             return 0;
         }
     };

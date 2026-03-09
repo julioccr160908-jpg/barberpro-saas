@@ -64,7 +64,7 @@ export const PlatformMonitoring: React.FC = () => {
                         <h3 className="font-bold text-white">Performance Técnica (Latência API)</h3>
                     </div>
                     <div className="h-48">
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height="100%" minHeight={288}>
                             <LineChart data={perfData}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
                                 <XAxis dataKey="time" stroke="#71717a" fontSize={10} tickLine={false} axisLine={false} />
