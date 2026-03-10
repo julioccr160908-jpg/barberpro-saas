@@ -34,6 +34,7 @@ const DEFAULT_SETTINGS: ShopSettings = {
   zip_code: null,
   primary_color: null,
   secondary_color: null,
+  amenities: [],
   loyalty_enabled: false,
   loyalty_target: null
 };
@@ -343,7 +344,7 @@ export const db = {
         'interval_minutes', 'schedule', 'establishment_name',
         'address', 'phone', 'city', 'state', 'zip_code',
         'primary_color', 'secondary_color',
-        'loyalty_enabled', 'loyalty_target'
+        'loyalty_enabled', 'loyalty_target', 'amenities'
       ];
 
       for (const field of fields) {
