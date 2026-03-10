@@ -121,30 +121,30 @@ export interface Expense {
 }
 
 export interface Product {
-    id: string;
-    organization_id: string;
-    name: string;
-    description?: string;
-    price: number;
-    stock_quantity: number;
-    min_stock_level: number;
-    image_url?: string;
-    category?: string;
-    is_active: boolean;
-    created_at?: string;
-    updated_at?: string;
+  id: string;
+  organization_id: string;
+  name: string;
+  description?: string;
+  price: number;
+  stock_quantity: number;
+  min_stock_level: number;
+  image_url?: string;
+  category?: string;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Sale {
-    id: string;
-    organization_id: string;
-    appointment_id?: string;
-    customer_id?: string;
-    barber_id?: string;
-    total_amount: number;
-    payment_method?: string;
-    status: 'completed' | 'cancelled';
-    created_at?: string;
+  id: string;
+  organization_id: string;
+  appointment_id?: string;
+  customer_id?: string;
+  barber_id?: string;
+  total_amount: number;
+  payment_method?: string;
+  status: 'completed' | 'cancelled';
+  created_at?: string;
 }
 
 export interface SubscriptionPlan {
@@ -157,6 +157,15 @@ export interface SubscriptionPlan {
   is_active: boolean;
   created_at?: string;
   updated_at?: string;
+}
+
+export interface GalleryImage {
+  id: string;
+  organization_id: string;
+  profile_id?: string;
+  image_url: string;
+  description?: string;
+  created_at?: string;
 }
 
 export interface CustomerSubscription {
@@ -190,22 +199,22 @@ export interface Review {
 }
 
 export interface Sale {
-    id: string;
-    organization_id: string;
-    appointment_id?: string;
-    customer_id?: string;
-    barber_id?: string;
-    total_amount: number;
-    payment_method?: string;
-    status: 'completed' | 'cancelled';
-    created_at?: string;
+  id: string;
+  organization_id: string;
+  appointment_id?: string;
+  customer_id?: string;
+  barber_id?: string;
+  total_amount: number;
+  payment_method?: string;
+  status: 'completed' | 'cancelled';
+  created_at?: string;
 }
 
 export interface SaleItem {
-    id: string;
-    sale_id: string;
-    product_id: string;
-    quantity: number;
-    unit_price: number;
-    created_at?: string;
+  id: string;
+  sale_id: string;
+  product_id: string;
+  quantity: number;
+  unit_price: number;
+  created_at?: string;
 }

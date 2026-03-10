@@ -1,8 +1,11 @@
 import React, { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { Scissors, Loader2 } from 'lucide-react';
+import { Scissors, Loader2, User as UserIcon, Calendar, LogOut, LayoutDashboard } from 'lucide-react';
 import { useOrganization } from '../../hooks/useOrganization';
 import { useSettingsQuery } from '../../hooks/useSettingsQuery';
+import { useAuth } from '../../contexts/AuthContext';
+import { Link, useNavigate } from 'react-router-dom';
+import { Button } from '../ui/Button';
 
 interface PublicBookingLayoutProps {
     children: React.ReactNode;
@@ -14,7 +17,10 @@ interface PublicBookingLayoutProps {
  */
 export const PublicBookingLayout: React.FC<PublicBookingLayoutProps> = ({ children }) => {
     const { slug } = useParams<{ slug: string }>();
+    const navigate = useNavigate();
+    const { user, profile, signOut, isAdmin } = useAuth();
     const [logoError, setLogoError] = React.useState(false);
+    const [showUserMenu, setShowUserMenu] = React.useState(false);
 
     // 1. Fetch Org
     const { data: org, isLoading: orgLoading } = useOrganization(slug);
@@ -67,6 +73,72 @@ export const PublicBookingLayout: React.FC<PublicBookingLayoutProps> = ({ childr
                             </h1>
                             <p className="text-xs text-textMuted">Agendamento Online</p>
                         </div>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                        {user ? (
+                            <div className="relative">
+                                <button
+                                    onClick={() => setShowUserMenu(!showUserMenu)}
+                                    className="flex items-center gap-2 p-1 rounded-full hover:bg-white/5 transition-colors"
+                                >
+                                    <div className="w-8 h-8 rounded-full border border-primary/20 overflow-hidden">
+                                        {profile?.avatarUrl ? (
+                                            <img src={profile.avatarUrl} alt={profile.name} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full bg-surfaceHighlight flex items-center justify-center text-textMuted">
+                                                <UserIcon size={16} />
+                                            </div>
+                                        )}
+                                    </div>
+                                </button>
+
+                                {showUserMenu && (
+                                    <div className="absolute right-0 mt-2 w-56 bg-surface border border-border rounded-xl shadow-2xl z-[100] animate-in fade-in zoom-in duration-200">
+                                        <div className="p-4 border-b border-border">
+                                            <p className="text-sm font-bold text-white truncate">{profile?.name || 'Usuário'}</p>
+                                            <p className="text-xs text-textMuted truncate">{user.email}</p>
+                                        </div>
+                                        <div className="p-2">
+                                            {isAdmin ? (
+                                                <button
+                                                    onClick={() => navigate('/admin/dashboard')}
+                                                    className="w-full flex items-center gap-3 px-3 py-2 text-sm text-textMuted hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                                                >
+                                                    <LayoutDashboard size={16} /> Dashboard Principal
+                                                </button>
+                                            ) : (
+                                                <>
+                                                    <button
+                                                        onClick={() => navigate('/customer/appointments')}
+                                                        className="w-full flex items-center gap-3 px-3 py-2 text-sm text-textMuted hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                                                    >
+                                                        <Calendar size={16} /> Meus Agendamentos
+                                                    </button>
+                                                    <button
+                                                        onClick={() => navigate('/customer/profile')}
+                                                        className="w-full flex items-center gap-3 px-3 py-2 text-sm text-textMuted hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                                                    >
+                                                        <UserIcon size={16} /> Meu Perfil
+                                                    </button>
+                                                </>
+                                            )}
+                                            <div className="my-1 border-t border-border" />
+                                            <button
+                                                onClick={() => signOut()}
+                                                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                                            >
+                                                <LogOut size={16} /> Sair
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <Link to="/login">
+                                <Button variant="ghost" size="sm">Entrar</Button>
+                            </Link>
+                        )}
                     </div>
                 </div>
             </header>

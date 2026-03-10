@@ -8,6 +8,7 @@ interface OrganizationContextType {
     loading: boolean;
     refreshOrganization: () => Promise<void>;
     switchOrganization: (orgId: string) => Promise<void>;
+    switchBySlug: (slug: string) => Promise<void>;
 }
 
 const OrganizationContext = createContext<OrganizationContextType>({
@@ -15,6 +16,7 @@ const OrganizationContext = createContext<OrganizationContextType>({
     loading: true,
     refreshOrganization: async () => { },
     switchOrganization: async () => { },
+    switchBySlug: async () => { },
 });
 
 export const useOrganization = () => useContext(OrganizationContext);
@@ -31,7 +33,7 @@ export const OrganizationProvider: React.FC<{ children: React.ReactNode }> = ({ 
                 .select('id')
                 .eq('organization_id', orgId)
                 .in('role', ['BARBER', 'ADMIN']);
-            
+
             if (error) {
                 console.warn("Error fetching staff count:", error);
                 return 0;
@@ -88,6 +90,30 @@ export const OrganizationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         }
     };
 
+    const switchBySlug = async (slug: string) => {
+        if (!slug || organization?.slug === slug) return;
+
+        setLoading(true);
+        try {
+            const { data: org, error } = await supabase
+                .from('organizations')
+                .select('*')
+                .eq('slug', slug)
+                .single();
+
+            if (org) {
+                const mapped = await mapOrg(org);
+                setOrganization(mapped);
+                localStorage.setItem('barberhost_selected_org_id', org.id);
+                localStorage.setItem('barberhost_last_slug', org.slug);
+            }
+        } catch (error) {
+            console.error("Error switching organization by slug:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const refreshOrganization = useCallback(async () => {
         if (!user) {
             console.log("OrgContext: No user, clearing org.");
@@ -98,11 +124,11 @@ export const OrganizationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
         try {
             setLoading(true);
-            
+
             // 0. Manual Override / Persisted Selection
             const persistedOrgId = localStorage.getItem('barberhost_selected_org_id');
             const suOverrideId = localStorage.getItem('su_org_override');
-            
+
             const targetId = (role === Role.SUPER_ADMIN && suOverrideId) ? suOverrideId : persistedOrgId;
 
             if (targetId) {
@@ -181,7 +207,7 @@ export const OrganizationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }, [refreshOrganization]);
 
     return (
-        <OrganizationContext.Provider value={{ organization, loading, refreshOrganization, switchOrganization }}>
+        <OrganizationContext.Provider value={{ organization, loading, refreshOrganization, switchOrganization, switchBySlug }}>
             {children}
         </OrganizationContext.Provider>
     );

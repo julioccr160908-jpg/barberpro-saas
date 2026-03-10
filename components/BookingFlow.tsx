@@ -3,7 +3,7 @@ import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { Button } from './ui/Button';
 import { WhatsAppButton } from './ui/WhatsAppButton';
 import { Card } from './ui/Card';
-import { ChevronRight, ChevronLeft, MapPin, Search, Star, Clock, User as UserIcon, Store, Loader2, Wifi, Coffee, Gamepad2, Tv, Snowflake, Beer, Car, Cigarette, GlassWater, Music, PawPrint, Flame, Accessibility, CreditCard, QrCode, Dices, Check, Calendar as CalendarIcon, Scissors, AlertCircle, Gift } from 'lucide-react';
+import { ChevronRight, ChevronLeft, MapPin, Search, Star, Clock, User as UserIcon, Store, Loader2, Wifi, Coffee, Gamepad2, Tv, Snowflake, Beer, Car, Cigarette, GlassWater, Music, PawPrint, Flame, Accessibility, CreditCard, QrCode, Dices, Check, Calendar as CalendarIcon, Scissors, AlertCircle, Gift, Package } from 'lucide-react';
 
 const AMENITY_ICONS: Record<string, { label: string, icon: any }> = {
   wifi: { label: 'Wi-Fi Grátis', icon: Wifi },
@@ -59,13 +59,15 @@ import { Portfolio } from './Portfolio';
 
 import { useAuth } from '../contexts/AuthContext';
 import { useProfile } from '../hooks/useProfile';
+import { useProducts } from '../hooks/useProducts';
 
 enum BookingStep {
   SHOWCASE = 0,
   SERVICE = 1,
   DATETIME = 2,
   BARBER = 3,
-  CONFIRM = 4
+  UPSELL = 4,
+  CONFIRM = 5
 }
 
 export const BookingFlow: React.FC = () => {
@@ -75,6 +77,7 @@ export const BookingFlow: React.FC = () => {
   const [selectedBarber, setSelectedBarber] = useState<User | null>(null);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [selectedProducts, setSelectedProducts] = useState<Record<string, number>>({});
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const { slug } = useParams<{ slug: string }>();
@@ -88,9 +91,10 @@ export const BookingFlow: React.FC = () => {
   const { data: staffData, isLoading: isStaffLoading, isError: isStaffError } = useStaff(orgId);
   const { data: appointmentsData, isLoading: isAppointmentsLoading, isError: isAppointmentsError } = useAppointments({ orgId }, !!orgId, false);
   const { data: settingsData, isLoading: isSettingsLoading, isError: isSettingsError } = useSettingsQuery(orgId);
+  const { data: productsData, isLoading: isProductsLoading } = useProducts(orgId);
 
   // Auth Hook placement
-  const { user } = useAuth();
+  const { user, isAdmin, loading: authLoading } = useAuth();
   const { data: profile } = useProfile(user?.id);
 
   // Derived State
@@ -98,7 +102,7 @@ export const BookingFlow: React.FC = () => {
   const staff = staffData || [];
   const existingAppointments = appointmentsData || [];
 
-  const isLoading = isOrgLoading || isServicesLoading || isStaffLoading || isAppointmentsLoading || isSettingsLoading;
+  const isLoading = authLoading || isOrgLoading || isServicesLoading || isStaffLoading || isAppointmentsLoading || isSettingsLoading || isProductsLoading;
   const isError = isOrgError || isServicesError || isStaffError || isAppointmentsError || isSettingsError;
   const error = isError ? "Erro ao carregar dados. Verifique a conexão." : null;
 
@@ -205,7 +209,12 @@ export const BookingFlow: React.FC = () => {
   const handleTimeSelect = (time: string) => {
     setSelectedTime(time);
     if (isBarberPreselected) {
-      setStep(BookingStep.CONFIRM);
+      // If we have products, go to upsell, otherwise confirm
+      if (productsData && productsData.length > 0) {
+        setStep(BookingStep.UPSELL);
+      } else {
+        setStep(BookingStep.CONFIRM);
+      }
     } else {
       setStep(BookingStep.BARBER);
     }
@@ -213,7 +222,11 @@ export const BookingFlow: React.FC = () => {
 
   const handleBarberSelect = (barber: User) => {
     setSelectedBarber(barber);
-    setStep(BookingStep.CONFIRM);
+    if (productsData && productsData.length > 0) {
+      setStep(BookingStep.UPSELL);
+    } else {
+      setStep(BookingStep.CONFIRM);
+    }
   };
 
   // Loyalty State
@@ -280,7 +293,8 @@ export const BookingFlow: React.FC = () => {
           customer_id: currentUser.id,
           service_id: selectedService.id,
           date: appointmentDate.toISOString(),
-          status: status
+          status: status,
+          products: selectedProducts
         }]).select().single();
 
         if (newApptError) throw newApptError;
@@ -472,7 +486,8 @@ export const BookingFlow: React.FC = () => {
     );
   }
 
-  const isAdmin = profile?.role === Role.ADMIN || profile?.role === Role.SUPER_ADMIN;
+  // Only show the back button if they are really an admin
+  // isAdmin from useAuth is safer as it's global
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative" style={brandingStyles}>
@@ -509,7 +524,7 @@ export const BookingFlow: React.FC = () => {
 
         {!showSuccessModal && step !== BookingStep.SHOWCASE && (
           <div className="flex items-center justify-center mb-8 gap-2">
-            {[1, 2, 3, 4].map((s) => (
+            {[1, 2, 3, 4, 5].map((s) => (
               <div
                 key={s}
                 style={{ backgroundColor: s <= step ? activeSettings.primary_color : undefined }}
@@ -662,27 +677,57 @@ export const BookingFlow: React.FC = () => {
             </div>
           )}
 
-          {step === BookingStep.BARBER && (
+          {step === BookingStep.UPSELL && (
             <div className="animate-fade-in flex-1">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-display text-white">Profissional</h2>
-                <Button variant="ghost" size="sm" onClick={() => setStep(BookingStep.DATETIME)}>Voltar</Button>
+                <div>
+                  <h2 className="text-xl font-display text-white">Adicionar algo mais?</h2>
+                  <p className="text-sm text-textMuted">Aproveite para garantir seus produtos favoritos.</p>
+                </div>
+                <Button variant="ghost" size="sm" onClick={() => setStep(selectedBarber ? BookingStep.BARBER : BookingStep.DATETIME)}>Voltar</Button>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {staff.map(barber => (
-                  <div
-                    key={barber.id}
-                    onClick={() => handleBarberSelect(barber)}
-                    className="cursor-pointer p-4 rounded-xl border border-white/10 flex items-center gap-4 hover:border-primary transition-all"
-                  >
-                    {barber.avatarUrl ? (
-                      <img src={barber.avatarUrl} className="w-12 h-12 rounded-full object-cover" alt={barber.name} />
-                    ) : (
-                      <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center"><UserIcon size={20} className="text-textMuted" /></div>
-                    )}
-                    <div><h4 className="font-bold text-white">{barber.name}</h4><p className="text-xs text-textMuted">{barber.jobTitle}</p></div>
-                  </div>
-                ))}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {productsData?.map(product => {
+                  const quantity = selectedProducts[product.id] || 0;
+                  return (
+                    <div key={product.id} className="p-4 rounded-xl border border-white/10 bg-background flex gap-4 items-center">
+                      <div className="w-16 h-16 rounded-lg overflow-hidden bg-surfaceHighlight flex-shrink-0">
+                        {product.image_url ? (
+                          <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center"><Package className="text-textMuted" size={20} /></div>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-bold text-white text-sm">{product.name}</h4>
+                        <p className="text-xs text-textMuted mb-2">R$ {product.price}</p>
+
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => setSelectedProducts(prev => ({ ...prev, [product.id]: Math.max(0, (prev[product.id] || 0) - 1) }))}
+                            className="w-6 h-6 rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-white/10"
+                          >
+                            -
+                          </button>
+                          <span className="text-sm text-white font-bold w-4 text-center">{quantity}</span>
+                          <button
+                            onClick={() => setSelectedProducts(prev => ({ ...prev, [product.id]: (prev[product.id] || 0) + 1 }))}
+                            className="w-6 h-6 rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-white/10"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="mt-8 flex justify-center">
+                <Button onClick={() => setStep(BookingStep.CONFIRM)} size="lg" className="px-12">
+                  Próximo <ChevronRight size={18} className="ml-2" />
+                </Button>
               </div>
             </div>
           )}
@@ -694,16 +739,34 @@ export const BookingFlow: React.FC = () => {
                 <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-textMuted text-sm">Serviço</span><span className="text-white font-bold">{selectedService.name}</span></div>
                 <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-textMuted text-sm">Profissional</span><span className="text-white font-bold">{selectedBarber.name}</span></div>
                 <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-textMuted text-sm">Data</span><span className="text-white font-bold">{format(selectedDate, 'dd/MM/yyyy')}</span></div>
-                <div className="flex justify-between"><span className="text-textMuted text-sm">Horário</span><span className="font-bold" style={{ color: activeSettings.primary_color || '#D4AF37' }}>{selectedTime}</span></div>
-                <div className="pt-4 flex justify-between items-center"><span className="text-white font-bold">Total</span><span className="text-2xl font-display font-bold" style={{ color: activeSettings.primary_color || '#D4AF37' }}>R$ {selectedService.price}</span></div>
+                <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-textMuted text-sm">Horário</span><span className="font-bold" style={{ color: activeSettings.primary_color || '#D4AF37' }}>{selectedTime}</span></div>
+
+                {Object.entries(selectedProducts).filter(([_, q]) => q > 0).map(([id, quantity]) => {
+                  const product = productsData?.find(p => p.id === id);
+                  if (!product) return null;
+                  return (
+                    <div key={id} className="flex justify-between border-b border-white/5 pb-2 text-xs">
+                      <span className="text-textMuted">{quantity}x {product.name}</span>
+                      <span className="text-white">R$ {(product.price * quantity).toFixed(2)}</span>
+                    </div>
+                  );
+                })}
+
+                <div className="pt-4 flex justify-between items-center">
+                  <span className="text-white font-bold">Total</span>
+                  <span className="text-2xl font-display font-bold" style={{ color: activeSettings.primary_color || '#D4AF37' }}>
+                    R$ {(selectedService.price + Object.entries(selectedProducts).reduce((acc, [id, q]) => {
+                      const p = productsData?.find(product => product.id === id);
+                      return acc + (p?.price || 0) * q;
+                    }, 0)).toFixed(2)}
+                  </span>
+                </div>
               </div>
               <div className="space-y-3">
                 <Button fullWidth onClick={handleConfirmBooking} size="lg" style={{ backgroundColor: activeSettings.primary_color || '#D4AF37' }}>Confirmar Agendamento</Button>
-                {isBarberPreselected ? (
-                  <Button fullWidth variant="ghost" onClick={() => setStep(BookingStep.DATETIME)}>Alterar Horário</Button>
-                ) : (
-                  <Button fullWidth variant="ghost" onClick={() => setStep(BookingStep.BARBER)}>Alterar Profissional</Button>
-                )}
+                <Button fullWidth variant="ghost" onClick={() => setStep(productsData && productsData.length > 0 ? BookingStep.UPSELL : (isBarberPreselected ? BookingStep.DATETIME : BookingStep.BARBER))}>
+                  Voltar e Alterar
+                </Button>
               </div>
             </div>
           )}
