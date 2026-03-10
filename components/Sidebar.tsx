@@ -76,27 +76,42 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentRole, setCurrentView, c
     enabled: !!user && currentRole !== Role.CUSTOMER
   });
 
-  const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, role: [Role.ADMIN] },
-    { id: 'schedule', label: 'Agenda', icon: Calendar, role: [Role.ADMIN, Role.BARBER] },
-    { id: 'customers', label: 'Clientes', icon: Users, role: [Role.ADMIN, Role.BARBER] },
-    { id: 'services', label: 'Serviços', icon: Scissors, role: [Role.ADMIN] },
-    { id: 'staff', label: 'Profissionais', icon: Users, role: [Role.ADMIN] },
-    { id: 'financials', label: 'Financeiro', icon: DollarSign, role: [Role.ADMIN] },
-    { id: 'notifications', label: 'Notificações', icon: Bell, role: [Role.ADMIN] },
-    { id: 'loyalty', label: 'Fidelidade', icon: Gift, role: [Role.ADMIN] },
-    { id: 'gallery', label: 'Portfólio', icon: ImageIcon, role: [Role.ADMIN, Role.BARBER] },
-    { id: 'settings', label: 'Configurações', icon: Settings, role: [Role.ADMIN] },
-    { id: 'marketing', label: 'Marketing', icon: Megaphone, role: [Role.ADMIN, Role.BARBER] },
-    { id: 'inventory', label: 'Estoque', icon: Package, role: [Role.ADMIN] },
-    { id: 'subscriptions', label: 'Assinaturas', icon: CreditCard, role: [Role.ADMIN] },
-    { id: 'performance', label: 'Desempenho', icon: BarChart3, role: [Role.ADMIN] },
+  const menuGroups = [
+    {
+      title: 'Principal',
+      items: [
+        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, role: [Role.ADMIN] },
+        { id: 'schedule', label: 'Agenda', icon: Calendar, role: [Role.ADMIN, Role.BARBER] },
+        { id: 'customers', label: 'Clientes', icon: Users, role: [Role.ADMIN, Role.BARBER] },
+      ]
+    },
+    {
+      title: 'Gestão',
+      items: [
+        { id: 'financials', label: 'Financeiro', icon: DollarSign, role: [Role.ADMIN] },
+        { id: 'inventory', label: 'Estoque', icon: Package, role: [Role.ADMIN] },
+        { id: 'marketing', label: 'Marketing', icon: Megaphone, role: [Role.ADMIN, Role.BARBER] },
+        { id: 'loyalty', label: 'Fidelidade', icon: Gift, role: [Role.ADMIN] },
+        { id: 'performance', label: 'Desempenho', icon: BarChart3, role: [Role.ADMIN] },
+      ]
+    },
+    {
+      title: 'Sistema',
+      items: [
+        { id: 'services', label: 'Serviços', icon: Scissors, role: [Role.ADMIN] },
+        { id: 'staff', label: 'Profissionais', icon: Users, role: [Role.ADMIN] },
+        { id: 'gallery', label: 'Portfólio', icon: ImageIcon, role: [Role.ADMIN, Role.BARBER] },
+        { id: 'notifications', label: 'Notificações', icon: Bell, role: [Role.ADMIN] },
+        { id: 'subscriptions', label: 'Assinaturas', icon: CreditCard, role: [Role.ADMIN] },
+        { id: 'settings', label: 'Configurações', icon: Settings, role: [Role.ADMIN] },
+      ]
+    }
   ];
 
-  const filteredItems = menuItems.filter(item =>
-    item.role.includes(currentRole) ||
-    (currentRole === Role.SUPER_ADMIN && item.role.includes(Role.ADMIN))
-  );
+  const canShowItem = (itemRoles: Role[]) =>
+    itemRoles.includes(currentRole) ||
+    (currentRole === Role.SUPER_ADMIN && itemRoles.includes(Role.ADMIN));
+
 
   return (
     <>
@@ -194,41 +209,52 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentRole, setCurrentView, c
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 py-8 space-y-1 overflow-y-auto custom-scrollbar">
-          <p className="px-4 text-[10px] font-bold text-zinc-600 uppercase tracking-widest mb-4">Menu Principal</p>
-          {filteredItems.map((item) => {
-            const isActive = currentView === item.id;
+        <nav className="flex-1 px-4 py-6 space-y-8 overflow-y-auto custom-scrollbar">
+          {menuGroups.map((group) => {
+            const visibleItems = group.items.filter(item => canShowItem(item.role));
+            if (visibleItems.length === 0) return null;
+
             return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setCurrentView(item.id);
-                  if (window.innerWidth < 1024) setIsOpen(false);
-                }}
-                className={`
-                    w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-all duration-300 group relative overflow-hidden
-                    ${isActive
-                    ? 'text-black font-bold'
-                    : 'text-zinc-400 hover:text-white hover:bg-white/5'
-                  }
-                  `}
-                style={isActive ? { boxShadow: `0 0 20px ${(organization?.primaryColor || '#D4AF37')}33` } : {}}
-              >
-                {/* Active Background with Gradient */}
-                {isActive && (
-                  <div
-                    className="absolute inset-0 opacity-100"
-                    style={{ backgroundColor: organization?.primaryColor || '#D4AF37' }}
-                  />
-                )}
+              <div key={group.title} className="space-y-1">
+                <p className="px-4 text-[10px] font-bold text-zinc-600 uppercase tracking-widest mb-2">
+                  {group.title}
+                </p>
+                {visibleItems.map((item) => {
+                  const isActive = currentView === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        setCurrentView(item.id);
+                        if (window.innerWidth < 1024) setIsOpen(false);
+                      }}
+                      className={`
+                          w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 group relative overflow-hidden
+                          ${isActive
+                          ? 'text-black font-bold'
+                          : 'text-zinc-400 hover:text-white hover:bg-white/5'
+                        }
+                        `}
+                      style={isActive ? { boxShadow: `0 0 20px ${(organization?.primaryColor || '#D4AF37')}33` } : {}}
+                    >
+                      {/* Active Background with Gradient */}
+                      {isActive && (
+                        <div
+                          className="absolute inset-0 opacity-100"
+                          style={{ backgroundColor: organization?.primaryColor || '#D4AF37' }}
+                        />
+                      )}
 
-                <item.icon size={20} className={`relative z-10 transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
-                <span className="relative z-10">{item.label}</span>
+                      <item.icon size={18} className={`relative z-10 transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
+                      <span className="relative z-10">{item.label}</span>
 
-                {isActive && (
-                  <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-black rounded-l-full" />
-                )}
-              </button>
+                      {isActive && (
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-black rounded-l-full" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             );
           })}
         </nav>
