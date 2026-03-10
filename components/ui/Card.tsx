@@ -4,11 +4,17 @@ interface CardProps {
   children: React.ReactNode;
   className?: string;
   noPadding?: boolean;
+  style?: React.CSSProperties;
+  onClick?: () => void;
 }
 
-export const Card: React.FC<CardProps> = ({ children, className = '', noPadding = false }) => {
+export const Card: React.FC<CardProps> = ({ children, className = '', noPadding = false, style, onClick }) => {
   return (
-    <div className={`bg-surface border border-border rounded-xl shadow-xl overflow-hidden flex flex-col ${className}`}>
+    <div 
+      style={style}
+      onClick={onClick}
+      className={`bg-surface border border-border rounded-xl shadow-xl overflow-hidden flex flex-col ${className} ${onClick ? 'cursor-pointer hover:border-primary/50 transition-colors' : ''}`}
+    >
       <div className={`flex-1 flex flex-col min-h-0 ${noPadding ? '' : 'p-6'}`}>
         {children}
       </div>

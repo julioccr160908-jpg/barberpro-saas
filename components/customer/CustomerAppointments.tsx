@@ -11,6 +11,7 @@ import { useSettingsQuery } from '../../hooks/useSettingsQuery';
 import { useOrganization } from '../../hooks/useOrganization';
 import { AppointmentStatus } from '../../types';
 import { Skeleton } from '../ui/Skeleton';
+import { ReviewModal } from '../ReviewModal';
 
 export const CustomerAppointments: React.FC = () => {
     const { user, loading: authLoading } = useAuth();
@@ -26,6 +27,8 @@ export const CustomerAppointments: React.FC = () => {
         isLoading: isAppointmentsLoading,
         updateStatus
     } = useAppointments({ customerId: user?.id, orgId });
+
+    const [reviewAppointment, setReviewAppointment] = React.useState<any | null>(null);
 
     const isLoading = authLoading || isOrgLoading || isSettingsLoading || isAppointmentsLoading;
 
@@ -56,18 +59,17 @@ export const CustomerAppointments: React.FC = () => {
         toast("Deseja realmente cancelar este agendamento?", {
             action: {
                 label: "Confirmar Cancelamento",
-                onClick: async () => {
-                    try {
-                        await updateStatus({ id, status: AppointmentStatus.CANCELLED });
-                        toast.success("Agendamento cancelado com sucesso.");
-                    } catch (error) {
-                        console.error("Error cancelling:", error);
-                        toast.error("Erro ao cancelar.");
-                    }
+                onClick: () => {
+                   (async () => {
+                        try {
+                            await updateStatus({ id, status: AppointmentStatus.CANCELLED });
+                            toast.success("Agendamento cancelado com sucesso.");
+                        } catch (error) {
+                            console.error("Error cancelling:", error);
+                            toast.error("Erro ao cancelar.");
+                        }
+                   })();
                 }
-            },
-            cancel: {
-                label: "Voltar",
             },
             duration: 5000,
         });
@@ -207,12 +209,37 @@ export const CustomerAppointments: React.FC = () => {
                                             Cancelamento indisponível (&lt; 24h)
                                         </p>
                                     )}
+                                    {appt.status === 'COMPLETED' && (
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setReviewAppointment(appt)}
+                                            style={{ color: settings.primary_color, borderColor: `${settings.primary_color}40` }}
+                                            className="hover:bg-white/5"
+                                        >
+                                            Avaliar Corte
+                                        </Button>
+                                    )}
                                 </div>
                             </Card>
                         );
                     })
                 )}
             </div>
+
+            {reviewAppointment && (
+                <ReviewModal
+                    appointmentId={reviewAppointment.id}
+                    organizationId={reviewAppointment.organization_id}
+                    customerId={user!.id}
+                    barberId={reviewAppointment.barberId}
+                    onClose={() => setReviewAppointment(null)}
+                    onSuccess={() => {
+                        setReviewAppointment(null);
+                        // Optional: refresh or mark as reviewed
+                    }}
+                />
+            )}
         </div>
     );
 };

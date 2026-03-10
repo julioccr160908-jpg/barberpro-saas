@@ -12,6 +12,10 @@ const AdminSettings = React.lazy(() => import('./components/AdminSettings').then
 const AdminNotificationSettings = React.lazy(() => import('./components/admin/AdminNotificationSettings').then(module => ({ default: module.AdminNotificationSettings })));
 const AdminFinancials = React.lazy(() => import('./components/admin/AdminFinancials').then(module => ({ default: module.AdminFinancials })));
 const AdminLoyaltySettings = React.lazy(() => import('./components/admin/AdminLoyaltySettings').then(module => ({ default: module.AdminLoyaltySettings })));
+const AdminMarketing = React.lazy(() => import('./components/admin/AdminMarketing').then(module => ({ default: module.AdminMarketing })));
+const AdminInventory = React.lazy(() => import('./components/admin/AdminInventory').then(module => ({ default: module.AdminInventory })));
+const AdminSubscriptions = React.lazy(() => import('./components/admin/AdminSubscriptions').then(module => ({ default: module.AdminSubscriptions })));
+const AdminPerformance = React.lazy(() => import('./components/admin/AdminPerformance').then(module => ({ default: module.AdminPerformance })));
 const Schedule = React.lazy(() => import('./components/Schedule').then(module => ({ default: module.Schedule })));
 
 // Lazy Load Platform Components
@@ -101,6 +105,10 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (location.pathname.includes('notifications')) setCurrentView('notifications');
     if (location.pathname.includes('loyalty')) setCurrentView('loyalty');
     if (location.pathname.includes('settings')) setCurrentView('settings');
+    if (location.pathname.includes('marketing')) setCurrentView('marketing');
+    if (location.pathname.includes('inventory')) setCurrentView('inventory');
+    if (location.pathname.includes('subscriptions')) setCurrentView('subscriptions');
+    if (location.pathname.includes('performance')) setCurrentView('performance');
   }, [location]);
 
   // Navigation handler from Sidebar
@@ -115,6 +123,10 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (view === 'notifications') navigate('/admin/notifications');
     if (view === 'loyalty') navigate('/admin/loyalty');
     if (view === 'settings') navigate('/admin/settings');
+    if (view === 'marketing') navigate('/admin/marketing');
+    if (view === 'inventory') navigate('/admin/inventory');
+    if (view === 'subscriptions') navigate('/admin/subscriptions');
+    if (view === 'performance') navigate('/admin/performance');
   };
 
   const handleExitImpersonation = () => {
@@ -156,7 +168,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <p className="text-zinc-400 max-w-md mb-8">
                   Identificamos uma pendência no pagamento da sua assinatura. Para continuar acessando o sistema e recebendo agendamentos, por favor regularize o pagamento.
               </p>
-              <Button onClick={() => navigate('/admin/settings?tab=subscription')} className="bg-orange-500 text-white hover:bg-orange-600 w-full sm:w-auto">
+              <Button onClick={() => navigate('/admin/settings?tab=subscription')} variant="outline" className="bg-orange-500 text-white hover:bg-orange-600 w-full sm:w-auto">
                   Regularizar Assinatura
               </Button>
           </div>
@@ -200,7 +212,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <span className="font-bold">MODO DE SUPER ADMIN:</span>
               <span>Você está acessando o painel desta barbearia.</span>
             </div>
-            <Button size="sm" variant="destructive" onClick={handleExitImpersonation}>
+            <Button size="sm" variant="outline" className="bg-red-500 text-white hover:bg-red-600" onClick={handleExitImpersonation}>
               Sair do Acesso
             </Button>
           </div>
@@ -343,6 +355,38 @@ const App: React.FC = () => {
                     <ProtectedRoute allowedRoles={[Role.ADMIN]}>
                       <AppLayout>
                         <AdminLoyaltySettings />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  } />
+
+                  <Route path="/admin/marketing" element={
+                    <ProtectedRoute allowedRoles={[Role.ADMIN, Role.BARBER]}>
+                      <AppLayout>
+                        <AdminMarketing />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  } />
+
+                  <Route path="/admin/inventory" element={
+                    <ProtectedRoute allowedRoles={[Role.ADMIN]}>
+                      <AppLayout>
+                        <AdminInventory />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  } />
+
+                  <Route path="/admin/subscriptions" element={
+                    <ProtectedRoute allowedRoles={[Role.ADMIN]}>
+                      <AppLayout>
+                        <AdminSubscriptions />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  } />
+
+                  <Route path="/admin/performance" element={
+                    <ProtectedRoute allowedRoles={[Role.ADMIN]}>
+                      <AppLayout>
+                        <AdminPerformance />
                       </AppLayout>
                     </ProtectedRoute>
                   } />

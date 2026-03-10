@@ -181,6 +181,32 @@ export const NotificationService = {
     },
 
     /**
+     * Send multiple marketing messages in a batch
+     */
+    async sendMarketingBatch(instanceName: string, messages: { phone: string; text: string }[]) {
+        if (!EvolutionApiService.isConfigured()) {
+            return { success: false, error: "Evolution API não configurada" };
+        }
+
+        const results = await Promise.all(messages.map(m => 
+            EvolutionApiService.sendMessage(instanceName, {
+                number: m.phone,
+                text: m.text
+            })
+        ));
+
+        const successCount = results.filter(r => r.success).length;
+        const failureCount = results.length - successCount;
+
+        return {
+            success: successCount > 0,
+            successCount,
+            failureCount,
+            total: messages.length
+        };
+    },
+
+    /**
      * Helper to log errors to DB
      */
     async _logError(payload: any, errorMessage: string) {

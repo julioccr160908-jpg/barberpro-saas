@@ -396,6 +396,7 @@ export type Database = {
       settings: {
         Row: {
           address: string | null
+          amenities: string[] | null
           city: string | null
           establishment_name: string | null
           id: number
@@ -412,6 +413,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          amenities?: string[] | null
           city?: string | null
           establishment_name?: string | null
           id?: number
@@ -428,6 +430,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          amenities?: string[] | null
           city?: string | null
           establishment_name?: string | null
           id?: number

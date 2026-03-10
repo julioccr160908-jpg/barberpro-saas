@@ -37,7 +37,7 @@ export const Login: React.FC = () => {
         .eq('customer_id', userId)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (lastAppt?.organization_id) {
         const { data: org } = await supabase
@@ -90,12 +90,14 @@ export const Login: React.FC = () => {
         console.error("LOGIN: Profile query error:", profileError);
       }
 
-      const userRole = profile?.role || Role.CUSTOMER;
+      const rawRole = profile?.role || Role.CUSTOMER;
+      const userRole = (typeof rawRole === 'string' ? rawRole.toUpperCase() : rawRole) as Role;
 
       console.log("LOGIN DEBUG:", {
         authId: data.user.id,
         profileData: profile,
         profileError: profileError,
+        rawRole: rawRole,
         resolvedRole: userRole,
         isAdminParam: isAdmin
       });

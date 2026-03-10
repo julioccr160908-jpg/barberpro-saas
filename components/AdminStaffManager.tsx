@@ -2,18 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { Card } from './ui/Card';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
-import { Plus, Edit2, Trash2, X, User, Mail, Briefcase, Shield, Upload, Loader2, Lock, DollarSign, AlertTriangle, CreditCard } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, User, Mail, Briefcase, Shield, Upload, Loader2, Lock, DollarSign, AlertTriangle, CreditCard, QrCode } from 'lucide-react';
 import { User as UserType, Role } from '../types';
 import { db } from '../services/database';
 import { supabase } from '../services/supabase';
 import { toast } from 'sonner';
 import { useOrganization } from '../contexts/OrganizationContext';
 import { useNavigate } from 'react-router-dom';
+import { BarberQRCode } from './BarberQRCode';
 
 export const AdminStaffManager: React.FC = () => {
   const [staff, setStaff] = useState<UserType[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserType | null>(null);
+  const [showQRFor, setShowQRFor] = useState<UserType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { organization } = useOrganization();
   const navigate = useNavigate();
@@ -285,6 +287,9 @@ export const AdminStaffManager: React.FC = () => {
             </div>
 
             <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button onClick={() => setShowQRFor(user)} className="text-textMuted hover:text-primary p-1" title="Gerar QR Code">
+                <QrCode size={16} />
+              </button>
               <button onClick={() => handleOpenModal(user)} className="text-textMuted hover:text-white p-1">
                 <Edit2 size={16} />
               </button>
@@ -415,6 +420,24 @@ export const AdminStaffManager: React.FC = () => {
                 <Button type="submit">Salvar</Button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {showQRFor && organization && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fade-in">
+          <div className="relative w-full max-w-md">
+            <button 
+              onClick={() => setShowQRFor(null)} 
+              className="absolute -top-12 right-0 text-white hover:text-primary transition-colors flex items-center gap-2 font-bold uppercase tracking-widest text-xs"
+            >
+              Fechar <X size={20} />
+            </button>
+            <BarberQRCode 
+              slug={organization.slug}
+              barberId={showQRFor.id}
+              barberName={showQRFor.name}
+              primaryColor={organization.primaryColor}
+            />
           </div>
         </div>
       )}

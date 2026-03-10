@@ -29,6 +29,8 @@ import { Appointment, AppointmentStatus } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { useAppointments } from '../hooks/useAppointments';
 import { ptBR } from 'date-fns/locale';
+import { CheckoutModal } from './CheckoutModal';
+import { supabase } from '../services/supabase';
 
 interface TimeSlot {
   time: string;
@@ -48,6 +50,7 @@ export const Schedule: React.FC = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
+  const [checkoutAppointment, setCheckoutAppointment] = useState<(Appointment & { serviceName: string; servicePrice: number }) | null>(null);
 
   // Fetch Appointments using Query Hook
   const { data: appointments = [], isLoading, updateStatus, createAppointment } = useAppointments({
@@ -78,7 +81,8 @@ export const Schedule: React.FC = () => {
 
     // Find config for selected day
     const dayOfWeek = selectedDate.getDay();
-    const dayConfig = settings.schedule?.find(d => d.dayId === dayOfWeek);
+    const schedule = (settings.schedule as any[]) || [];
+    const dayConfig = schedule.find(d => d.dayId === dayOfWeek);
 
     // If no config or closed, return empty
     if (!dayConfig || !dayConfig.isOpen) {
@@ -126,8 +130,8 @@ export const Schedule: React.FC = () => {
 
         // Increment
         const duration = appt
-          ? (appt.service?.durationMinutes || settings.intervalMinutes)
-          : (settings.intervalMinutes || 30);
+          ? (appt.service?.durationMinutes || settings.interval_minutes)
+          : (settings.interval_minutes || 30);
 
         current = addMinutes(current, duration);
       }
@@ -162,7 +166,8 @@ export const Schedule: React.FC = () => {
           </h2>
           <p className="text-sm text-textMuted">
             {(() => {
-              const dayConfig = settings.schedule?.find(d => d.dayId === selectedDate.getDay());
+              const schedule = (settings.schedule as any[]) || [];
+              const dayConfig = schedule.find(d => d.dayId === selectedDate.getDay());
               if (!dayConfig || !dayConfig.isOpen) return 'Fechado';
               return `Horário: ${dayConfig.openTime} - ${dayConfig.closeTime}`;
             })()}
@@ -273,13 +278,13 @@ export const Schedule: React.FC = () => {
                         {slot.appointment.status === 'CONFIRMED' && (
                           <>
                             <button
-                              onClick={async () => {
-                                try {
-                                  await updateStatus({ id: slot.appointment!.id, status: AppointmentStatus.COMPLETED });
-                                  toast.success('Corte marcado como realizado!');
-                                } catch (error) {
-                                  toast.error('Erro ao atualizar');
-                                }
+                              onClick={() => {
+                                setCheckoutAppointment({
+                                  ...slot.appointment!,
+                                  serviceName: slot.appointment!.serviceName,
+                                  servicePrice: (slot.appointment as any).service?.price || 0,
+                                  organization_id: (slot.appointment as any).organization_id
+                                });
                               }}
                               className="flex-1 px-3 py-1.5 bg-primary/20 hover:bg-primary/30 border border-primary text-primary text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-1"
                             >
@@ -434,6 +439,49 @@ export const Schedule: React.FC = () => {
             <AppointmentList />
           </div>
         </>
+      )}
+      {/* CHECKOUT MODAL */}
+      {checkoutAppointment && (
+        <CheckoutModal 
+          appointment={checkoutAppointment}
+          onClose={() => setCheckoutAppointment(null)}
+          onConfirm={async (items) => {
+             // 1. Create Sale Record
+             const { data: sale, error: saleError } = await supabase
+               .from('sales')
+               .insert([{
+                 organization_id: checkoutAppointment.organization_id,
+                 appointment_id: checkoutAppointment.id,
+                 customer_id: checkoutAppointment.customerId,
+                 barber_id: checkoutAppointment.barberId,
+                 total_amount: checkoutAppointment.servicePrice + items.reduce((acc, item) => acc + (item.price * item.quantity), 0),
+                 status: 'completed'
+               }])
+               .select()
+               .single();
+             
+             if (saleError) throw saleError;
+
+             // 2. Create Sale Items
+             if (items.length > 0) {
+               const { error: itemsError } = await supabase
+                 .from('sale_items')
+                 .insert(items.map(item => ({
+                   sale_id: sale.id,
+                   product_id: item.id,
+                   quantity: item.quantity,
+                   unit_price: item.price
+                 })));
+               
+               if (itemsError) throw itemsError;
+             }
+
+             // 3. Complete Appointment
+             await updateStatus({ id: checkoutAppointment.id, status: AppointmentStatus.COMPLETED });
+             
+             setCheckoutAppointment(null);
+          }}
+        />
       )}
     </div>
   );

@@ -22,6 +22,7 @@ const DEFAULT_SETTINGS: ShopSettings = {
     city: null,
     state: null,
     zip_code: null,
+    amenities: [],
     primary_color: null,
     secondary_color: null,
     loyalty_enabled: false,

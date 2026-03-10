@@ -60,8 +60,8 @@ export const CustomerProfile: React.FC = () => {
                     phone: data.phone || '',
                     avatar_url: data.avatar_url || '',
                     loyaltyCount: data.loyalty_count || 0,
-                    loyaltyTarget: settings?.loyaltyTarget || 10,
-                    loyaltyEnabled: settings?.loyaltyEnabled || false
+                    loyaltyTarget: settings?.loyalty_target || 10,
+                    loyaltyEnabled: settings?.loyalty_enabled || false
                 });
             }
         } catch (error) {
@@ -164,63 +164,65 @@ export const CustomerProfile: React.FC = () => {
     };
 
     // Dynamic color helpers
-    const primaryColor = settings.primaryColor || '#EAB308'; // Default fallback (yellow-500)
+    const primaryColor = settings.primary_color || '#EAB308'; // Default fallback (yellow-500)
 
     return (
         <div className="max-w-2xl mx-auto animate-fade-in">
             <h2 className="text-2xl font-bold text-white mb-6">Meu Perfil</h2>
 
             {/* Loyalty Card Section */}
-            <Card className="mb-6 bg-gradient-to-br from-gray-900 to-black overflow-hidden relative" style={{ borderColor: `${primaryColor}4D` }}>
-                <div className="absolute top-0 right-0 p-4 opacity-10">
-                    <Gift size={120} style={{ color: primaryColor }} />
-                </div>
-
-                <div className="relative z-10">
-                    <div className="flex justify-between items-start mb-4">
-                        <div>
-                            <h3 className="text-xl font-display font-bold flex items-center gap-2" style={{ color: primaryColor }}>
-                                <Gift size={20} />
-                                Programa Fidelidade
-                            </h3>
-                            <p className="text-textMuted text-sm">Complete a cartela e ganhe um corte grátis!</p>
-                        </div>
-                        <div className="text-right">
-                            <span className="text-2xl font-bold text-white">{formData.loyaltyCount || 0}</span>
-                            <span className="text-textMuted text-sm">/{formData.loyaltyTarget || 10}</span>
-                        </div>
+            {formData.loyaltyEnabled && (
+                <Card className="mb-6 bg-gradient-to-br from-gray-900 to-black overflow-hidden relative" style={{ borderColor: `${primaryColor}4D` }}>
+                    <div className="absolute top-0 right-0 p-4 opacity-10">
+                        <Gift size={120} style={{ color: primaryColor }} />
                     </div>
 
-                    {/* Slots */}
-                    <div className="flex flex-wrap gap-2 mt-4 justify-center sm:justify-start">
-                        {Array.from({ length: formData.loyaltyTarget || 10 }).map((_, i) => (
-                            <div
-                                key={i}
-                                className={`
-                                    w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all
-                                `}
-                                style={
-                                    i < (formData.loyaltyCount || 0)
-                                        ? {
-                                            backgroundColor: primaryColor,
-                                            borderColor: primaryColor,
-                                            color: '#000', // Assuming dark text on primary
-                                            boxShadow: `0 0 10px ${primaryColor}80`,
-                                            transform: 'scale(1.1)'
-                                        }
-                                        : {
-                                            backgroundColor: 'transparent',
-                                            borderColor: 'rgba(255,255,255,0.2)',
-                                            color: 'rgba(255,255,255,0.2)'
-                                        }
-                                }
-                            >
-                                {i < (formData.loyaltyCount || 0) ? <Check size={20} strokeWidth={3} /> : <span className="text-xs">{i + 1}</span>}
+                    <div className="relative z-10">
+                        <div className="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 className="text-xl font-display font-bold flex items-center gap-2" style={{ color: primaryColor }}>
+                                    <Gift size={20} />
+                                    Programa Fidelidade
+                                </h3>
+                                <p className="text-textMuted text-sm">Complete a cartela e ganhe um corte grátis!</p>
                             </div>
-                        ))}
+                            <div className="text-right">
+                                <span className="text-2xl font-bold text-white">{formData.loyaltyCount || 0}</span>
+                                <span className="text-textMuted text-sm">/{formData.loyaltyTarget || 10}</span>
+                            </div>
+                        </div>
+
+                        {/* Slots */}
+                        <div className="flex flex-wrap gap-2 mt-4 justify-center sm:justify-start">
+                            {Array.from({ length: formData.loyaltyTarget || 10 }).map((_, i) => (
+                                <div
+                                    key={i}
+                                    className={`
+                                        w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all
+                                    `}
+                                    style={
+                                        i < (formData.loyaltyCount || 0)
+                                            ? {
+                                                backgroundColor: primaryColor,
+                                                borderColor: primaryColor,
+                                                color: '#000', // Assuming dark text on primary
+                                                boxShadow: `0 0 10px ${primaryColor}80`,
+                                                transform: 'scale(1.1)'
+                                            }
+                                            : {
+                                                backgroundColor: 'transparent',
+                                                borderColor: 'rgba(255,255,255,0.2)',
+                                                color: 'rgba(255,255,255,0.2)'
+                                            }
+                                    }
+                                >
+                                    {i < (formData.loyaltyCount || 0) ? <Check size={20} strokeWidth={3} /> : <span className="text-xs">{i + 1}</span>}
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                </div>
-            </Card>
+                </Card>
+            )}
 
             <Card>
                 <form onSubmit={handleSave} className="space-y-6">

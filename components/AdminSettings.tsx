@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Clock, Palette, Store, Bell, User, MessageSquare, CreditCard } from 'lucide-react';
+import { Clock, Palette, Store, Bell, User, MessageSquare, CreditCard, Coffee } from 'lucide-react';
 import { AdminTimeSettings } from './AdminTimeSettings';
 import { AdminAppearanceSettings } from './AdminAppearanceSettings';
 import { AdminGeneralSettings } from './AdminGeneralSettings';
@@ -8,9 +8,10 @@ import { AdminNotificationSettings } from './admin/AdminNotificationSettings';
 import { AdminProfileSettings } from './AdminProfileSettings';
 import { AdminWhatsAppStatus } from './admin/AdminWhatsAppStatus';
 import { SubscriptionPlans } from './admin/SubscriptionPlans';
+import { AdminAmenitiesSettings } from './AdminAmenitiesSettings';
 import { useSearchParams } from 'react-router-dom';
 
-type Tab = 'general' | 'schedule' | 'appearance' | 'notifications' | 'whatsapp' | 'profile' | 'subscription';
+type Tab = 'general' | 'schedule' | 'appearance' | 'amenities' | 'notifications' | 'whatsapp' | 'profile' | 'subscription';
 
 export const AdminSettings: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -18,7 +19,7 @@ export const AdminSettings: React.FC = () => {
 
     React.useEffect(() => {
         const tab = searchParams.get('tab');
-        if (tab && ['general', 'schedule', 'appearance', 'notifications', 'whatsapp', 'profile', 'subscription'].includes(tab)) {
+        if (tab && ['general', 'schedule', 'appearance', 'amenities', 'notifications', 'whatsapp', 'profile', 'subscription'].includes(tab)) {
             setActiveTab(tab as Tab);
         }
     }, [searchParams]);
@@ -67,6 +68,18 @@ export const AdminSettings: React.FC = () => {
                 >
                     <Palette size={18} />
                     Aparência
+                </button>
+                <button
+                    onClick={() => setActiveTab('amenities')}
+                    className={`
+            flex items-center gap-2 px-6 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap
+            ${activeTab === 'amenities'
+                            ? 'border-primary text-primary'
+                            : 'border-transparent text-textMuted hover:text-white hover:bg-white/5'}
+          `}
+                >
+                    <Coffee size={18} />
+                    Comodidades
                 </button>
                 <button
                     onClick={() => setActiveTab('notifications')}
@@ -123,6 +136,7 @@ export const AdminSettings: React.FC = () => {
                 {activeTab === 'general' && <AdminGeneralSettings />}
                 {activeTab === 'schedule' && <AdminTimeSettings />}
                 {activeTab === 'appearance' && <AdminAppearanceSettings />}
+                {activeTab === 'amenities' && <AdminAmenitiesSettings />}
                 {activeTab === 'notifications' && <AdminNotificationSettings />}
                 {activeTab === 'whatsapp' && <AdminWhatsAppStatus />}
                 {activeTab === 'profile' && <AdminProfileSettings />}

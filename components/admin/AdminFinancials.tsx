@@ -140,6 +140,7 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({ isOpen, onClose, onSave, ex
 export const AdminFinancials: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [appointments, setAppointments] = useState<any[]>([]);
+    const [sales, setSales] = useState<any[]>([]);
     const [expenses, setExpenses] = useState<Expense[]>([]);
     const [modalOpen, setModalOpen] = useState(false);
     const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
@@ -171,6 +172,13 @@ export const AdminFinancials: React.FC = () => {
             .eq('organization_id', org.id)
             .eq('status', AppointmentStatus.COMPLETED);
 
+        // Fetch Sales (Product sales + service totals)
+        const { data: sls } = await supabase
+            .from('sales')
+            .select('*')
+            .eq('organization_id', org.id)
+            .eq('status', 'completed');
+
         // Fetch Expenses
         const { data: exp } = await supabase
             .from('expenses')
@@ -179,6 +187,7 @@ export const AdminFinancials: React.FC = () => {
             .order('date', { ascending: false });
 
         if (appts) setAppointments(appts);
+        if (sls) setSales(sls);
         if (exp) setExpenses(exp);
         setLoading(false);
     };
@@ -244,8 +253,22 @@ export const AdminFinancials: React.FC = () => {
         const filteredExpenses = expenses.filter(e =>
             isWithinInterval(parseISO(e.date), dateRange)
         );
+        const filteredSales = sales.filter(s =>
+            isWithinInterval(parseISO(s.created_at), dateRange)
+        );
 
-        const revenue = filteredAppts.reduce((sum, a) => sum + (a.service?.price || 0), 0);
+        // Revenue = Appointment service price (if no linked sale) + Sales total_amount
+        // To avoid double counting, we'll only use 'sales' for revenue if it exists,
+        // or fallback to appointments if there were appointments during the period without sales records.
+        // Actually, since all completed appointments now create a sale record via CheckoutModal,
+        // we should favor the sales table.
+        const appointmentRevenue = filteredAppts
+            .filter(a => !sales.some(s => s.appointment_id === a.id))
+            .reduce((sum, a) => sum + (a.service?.price || 0), 0);
+            
+        const salesRevenue = filteredSales.reduce((sum, s) => sum + Number(s.total_amount), 0);
+        
+        const revenue = appointmentRevenue + salesRevenue;
         const totalExpenses = filteredExpenses.reduce((sum, e) => sum + Number(e.amount), 0);
 
         // Commissions (Real Data)

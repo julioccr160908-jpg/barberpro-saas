@@ -14,6 +14,7 @@ interface PublicBookingLayoutProps {
  */
 export const PublicBookingLayout: React.FC<PublicBookingLayoutProps> = ({ children }) => {
     const { slug } = useParams<{ slug: string }>();
+    const [logoError, setLogoError] = React.useState(false);
 
     // 1. Fetch Org
     const { data: org, isLoading: orgLoading } = useOrganization(slug);
@@ -26,16 +27,18 @@ export const PublicBookingLayout: React.FC<PublicBookingLayoutProps> = ({ childr
         if (!org && !settingsData) return {}; // Fallback empty
 
         return {
-            primary_color: org?.primary_color || settingsData?.primary_color || '#D4AF37',
-            secondary_color: org?.secondary_color || settingsData?.secondary_color || '#1A1A1A',
+            primary_color: settingsData?.primary_color || org?.primary_color || '#D4AF37',
+            secondary_color: settingsData?.secondary_color || org?.secondary_color || '#1A1A1A',
             establishment_name: settingsData?.establishment_name || org?.name || 'BarberHost',
-            logo_url: org?.logo_url || settingsData?.logo_url,
+            logo_url: settingsData?.logo_url || org?.logo_url,
         };
     }, [org, settingsData]);
 
     const brandingStyles = useMemo(() => ({
         '--primary': activeSettings.primary_color || '#D4AF37',
         '--secondary': activeSettings.secondary_color || '#1A1A1A',
+        '--color-primary': activeSettings.primary_color || '#D4AF37',
+        '--color-secondary': activeSettings.secondary_color || '#1A1A1A',
     } as React.CSSProperties), [activeSettings]);
 
     if (orgLoading || settingsLoading) {
@@ -52,8 +55,8 @@ export const PublicBookingLayout: React.FC<PublicBookingLayoutProps> = ({ childr
                             className="w-10 h-10 rounded-lg flex items-center justify-center shadow-lg overflow-hidden border border-white/10"
                             style={{ backgroundColor: activeSettings.primary_color || '#D4AF37' }}
                         >
-                            {activeSettings.logo_url ? (
-                                <img src={activeSettings.logo_url} className="w-full h-full object-cover" alt="Logo" />
+                            {activeSettings.logo_url && !logoError ? (
+                                <img src={activeSettings.logo_url} className="w-full h-full object-cover" alt="Logo" onError={() => setLogoError(true)} />
                             ) : (
                                 <Scissors size={20} className="text-black" />
                             )}

@@ -2,13 +2,15 @@ import React from 'react';
 import { Card, CardHeader } from './ui/Card';
 import { Skeleton } from './ui/Skeleton';
 import { useOrganization } from '../hooks/useOrganization';
-import { DollarSign, Users, CalendarCheck, TrendingUp, ExternalLink } from 'lucide-react';
+import { DollarSign, Users, CalendarCheck, TrendingUp, ExternalLink, Megaphone, BarChart3, CreditCard } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useAuth } from '../contexts/AuthContext';
 import { parseISO, format } from 'date-fns';
 import { useAdminStats } from '../hooks/useAdminStats';
 import { OnboardingChecklist } from './platform/OnboardingChecklist';
-import { AppointmentStatus } from '../types';
+import { AppointmentStatus, Role } from '../types';
+import { BarberInsights } from './BarberInsights';
+import { useNavigate } from 'react-router-dom';
 
 const StatCard: React.FC<{
   title: string;
@@ -35,6 +37,7 @@ const StatCard: React.FC<{
 );
 
 export const AdminDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const { profile, loading: authLoading } = useAuth();
   const { data: organization } = useOrganization();
 
@@ -73,6 +76,10 @@ export const AdminDashboard: React.FC = () => {
         </div>
       </div>
     );
+  }
+
+  if (profile?.role === Role.BARBER) {
+    return <BarberInsights />;
   }
 
   return (
@@ -128,6 +135,48 @@ export const AdminDashboard: React.FC = () => {
           icon={TrendingUp}
           isPositive={false}
         />
+      </div>
+
+      {/* Growth Highlights */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="bg-gradient-to-br from-yellow-500/10 to-transparent border-yellow-500/20 p-4 hover:border-yellow-500/40 transition-all cursor-pointer group"
+              onClick={() => navigate('/admin/marketing')}>
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-yellow-500/20 rounded-lg text-yellow-500 group-hover:scale-110 transition-transform">
+              <Megaphone size={20} />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-white">Marketing Saudade</h4>
+              <p className="text-[10px] text-zinc-400">Reative clientes inativos agora</p>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-blue-500/10 to-transparent border-blue-500/20 p-4 hover:border-blue-500/40 transition-all cursor-pointer group"
+              onClick={() => navigate('/admin/performance')}>
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-500/20 rounded-lg text-blue-500 group-hover:scale-110 transition-transform">
+              <BarChart3 size={20} />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-white">Rank de Performance</h4>
+              <p className="text-[10px] text-zinc-400">Veja quem é o destaque da equipe</p>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-green-500/10 to-transparent border-green-500/20 p-4 hover:border-green-500/40 transition-all cursor-pointer group"
+              onClick={() => navigate('/admin/subscriptions')}>
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-green-500/20 rounded-lg text-green-500 group-hover:scale-110 transition-transform">
+              <CreditCard size={20} />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-white">Clube de Assinatura</h4>
+              <p className="text-[10px] text-zinc-400">Gerencie sua receita recorrente</p>
+            </div>
+          </div>
+        </Card>
       </div>
 
       {/* Main Chart Area */}

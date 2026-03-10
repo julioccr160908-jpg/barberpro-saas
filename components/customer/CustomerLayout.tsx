@@ -41,6 +41,8 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
     const brandingStyles = React.useMemo(() => ({
         '--primary': settings.primary_color || '#D4AF37',
         '--secondary': settings.secondary_color || '#1A1A1A',
+        '--color-primary': settings.primary_color || '#D4AF37',
+        '--color-secondary': settings.secondary_color || '#1A1A1A',
     } as React.CSSProperties), [settings]);
 
     return (
@@ -51,7 +53,7 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                     <div className="w-8 h-8 rounded-sm flex items-center justify-center" style={{ backgroundColor: settings.primary_color || '#D4AF37' }}>
                         <Scissors size={18} className="text-black" />
                     </div>
-                    <span className="font-display font-bold text-lg text-white">BARBER<span style={{ color: settings.primary_color || '#D4AF37' }}>HOST</span></span>
+                    <span className="font-display font-bold text-lg text-white">{settings.establishment_name || 'Barbearia'}</span>
                 </div>
                 <button onClick={() => setIsOpen(!isOpen)} className="text-white p-2">
                     <Menu />
@@ -74,7 +76,7 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                                 <div className="w-8 h-8 rounded-sm flex items-center justify-center" style={{ backgroundColor: settings.primary_color || '#D4AF37' }}>
                                     <Scissors size={18} className="text-black" />
                                 </div>
-                                <span className="font-display font-bold text-xl tracking-wider text-white">BARBER<span style={{ color: settings.primary_color || '#D4AF37' }}>HOST</span></span>
+                                <span className="font-display font-bold text-xl tracking-wider text-white">{settings.establishment_name || 'Barbearia'}</span>
                             </div>
                         </div>
 
@@ -89,11 +91,16 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                                             setIsOpen(false);
                                         }}
                                         className={`
-                      w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200
-                      ${isActive
-                                                ? 'bg-primary/10 text-primary border border-primary/20'
+                                            w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200
+                                            ${isActive
+                                                ? 'border'
                                                 : 'text-textMuted hover:text-white hover:bg-surfaceHighlight'}
-                    `}
+                                        `}
+                                        style={isActive ? { 
+                                            backgroundColor: (settings.primary_color || '#D4AF37') + '1a', 
+                                            color: settings.primary_color || '#D4AF37',
+                                            borderColor: (settings.primary_color || '#D4AF37') + '33'
+                                        } : {}}
                                     >
                                         <item.icon size={18} />
                                         {item.label}
