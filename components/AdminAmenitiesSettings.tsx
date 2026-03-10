@@ -3,7 +3,7 @@ import { Card } from './ui/Card';
 import { Button } from './ui/Button';
 import { useSettings } from '../contexts/SettingsContext';
 import { toast } from 'sonner';
-import { Loader2, Wifi, Coffee, Gamepad2, Tv, Snowflake, Beer, Car, Cigarette, GlassWater, CheckCircle2 } from 'lucide-react';
+import { Loader2, Wifi, Coffee, Gamepad2, Tv, Snowflake, Beer, Car, Cigarette, GlassWater, CheckCircle2, Music, PawPrint, Flame, Accessibility, CreditCard, QrCode, Dices } from 'lucide-react';
 
 export const AVAILABLE_AMENITIES = [
     { id: 'wifi', label: 'Wi-Fi Grátis', icon: Wifi },
@@ -13,7 +13,14 @@ export const AVAILABLE_AMENITIES = [
     { id: 'ac', label: 'Ar Condicionado', icon: Snowflake },
     { id: 'parking', label: 'Estacionamento', icon: Car },
     { id: 'tv', label: 'TV / Esportes', icon: Tv },
-    { id: 'gamepad', label: 'Videogame / Sinuca', icon: Gamepad2 },
+    { id: 'gamepad', label: 'Videogame', icon: Gamepad2 },
+    { id: 'pool_table', label: 'Sinuca / Jogos', icon: Dices },
+    { id: 'music', label: 'Som Ambiente', icon: Music },
+    { id: 'pet_friendly', label: 'Pet Friendly', icon: PawPrint },
+    { id: 'hot_towel', label: 'Toalha Quente', icon: Flame },
+    { id: 'accessibility', label: 'Acessibilidade', icon: Accessibility },
+    { id: 'credit_card', label: 'Aceita Cartão', icon: CreditCard },
+    { id: 'pix', label: 'Aceita Pix', icon: QrCode },
     { id: 'smoking_area', label: 'Área de Fumantes', icon: Cigarette },
 ];
 
@@ -29,7 +36,7 @@ export const AdminAmenitiesSettings: React.FC = () => {
     }, [settings]);
 
     const toggleAmenity = (id: string) => {
-        setSelectedAmenities(prev => 
+        setSelectedAmenities(prev =>
             prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
         );
     };
@@ -68,8 +75,8 @@ export const AdminAmenitiesSettings: React.FC = () => {
                             className={`
                                 relative p-4 rounded-xl border-2 cursor-pointer transition-all duration-200
                                 flex flex-col items-center justify-center gap-3 text-center
-                                ${isSelected 
-                                    ? 'border-primary bg-primary/10 select-none' 
+                                ${isSelected
+                                    ? 'border-primary bg-primary/10 select-none'
                                     : 'border-white/5 bg-background hover:border-white/20 select-none'}
                             `}
                         >

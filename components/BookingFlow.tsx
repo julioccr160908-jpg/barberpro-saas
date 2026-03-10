@@ -3,18 +3,25 @@ import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { Button } from './ui/Button';
 import { WhatsAppButton } from './ui/WhatsAppButton';
 import { Card } from './ui/Card';
-import { ChevronRight, ChevronLeft, MapPin, Search, Star, Clock, User as UserIcon, Store, Loader2, Wifi, Coffee, Gamepad2, Tv, Snowflake, Beer, Car, Cigarette, GlassWater } from 'lucide-react';
+import { ChevronRight, ChevronLeft, MapPin, Search, Star, Clock, User as UserIcon, Store, Loader2, Wifi, Coffee, Gamepad2, Tv, Snowflake, Beer, Car, Cigarette, GlassWater, Music, PawPrint, Flame, Accessibility, CreditCard, QrCode, Dices, Check, Calendar as CalendarIcon, Scissors, AlertCircle, Gift } from 'lucide-react';
 
 const AMENITY_ICONS: Record<string, { label: string, icon: any }> = {
-    wifi: { label: 'Wi-Fi Grátis', icon: Wifi },
-    coffee: { label: 'Café', icon: Coffee },
-    beer: { label: 'Cerveja Gelada', icon: Beer },
-    water: { label: 'Água / Bebidas', icon: GlassWater },
-    ac: { label: 'Ar Condicionado', icon: Snowflake },
-    parking: { label: 'Estacionamento', icon: Car },
-    tv: { label: 'TV / Esportes', icon: Tv },
-    gamepad: { label: 'Videogame / Sinuca', icon: Gamepad2 },
-    smoking_area: { label: 'Área de Fumantes', icon: Cigarette },
+  wifi: { label: 'Wi-Fi Grátis', icon: Wifi },
+  coffee: { label: 'Café', icon: Coffee },
+  beer: { label: 'Cerveja Gelada', icon: Beer },
+  water: { label: 'Água / Bebidas', icon: GlassWater },
+  ac: { label: 'Ar Condicionado', icon: Snowflake },
+  parking: { label: 'Estacionamento', icon: Car },
+  tv: { label: 'TV / Esportes', icon: Tv },
+  gamepad: { label: 'Videogame', icon: Gamepad2 },
+  pool_table: { label: 'Sinuca / Jogos', icon: Dices },
+  music: { label: 'Som Ambiente', icon: Music },
+  pet_friendly: { label: 'Pet Friendly', icon: PawPrint },
+  hot_towel: { label: 'Toalha Quente', icon: Flame },
+  accessibility: { label: 'Acessibilidade', icon: Accessibility },
+  credit_card: { label: 'Aceita Cartão', icon: CreditCard },
+  pix: { label: 'Aceita Pix', icon: QrCode },
+  smoking_area: { label: 'Área de Fumantes', icon: Cigarette },
 };
 import { User, Service, AppointmentStatus, Role } from '../types';
 import { db } from '../services/database';
@@ -128,14 +135,14 @@ export const BookingFlow: React.FC = () => {
       const searchParams = new URLSearchParams(window.location.search);
       const barberId = searchParams.get('barber');
       const profName = searchParams.get('prof');
-      
+
       if (barberId) {
         const barber = staff.find(s => s.id === barberId);
         if (barber) {
           setSelectedBarber(barber);
         }
       } else if (profName) {
-        const barber = staff.find(s => 
+        const barber = staff.find(s =>
           s.name && s.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, '-') === profName
         );
         if (barber) {
@@ -157,12 +164,12 @@ export const BookingFlow: React.FC = () => {
           const service = services.find(s => s.id === serviceId);
           if (service) {
             setSelectedService(service);
-            
+
             if (barberId && staff.length > 0) {
               const barber = staff.find(s => s.id === barberId);
               if (barber) setSelectedBarber(barber);
             }
-            
+
             setStep(BookingStep.DATETIME);
             localStorage.removeItem('pendingAppointment');
           }
@@ -178,9 +185,9 @@ export const BookingFlow: React.FC = () => {
     const { data: { user: currentUser } } = await supabase.auth.getUser();
 
     if (!currentUser) {
-      localStorage.setItem('pendingAppointment', JSON.stringify({ 
+      localStorage.setItem('pendingAppointment', JSON.stringify({
         serviceId: service.id,
-        barberId: selectedBarber?.id 
+        barberId: selectedBarber?.id
       }));
       // Preserve search parameters like ?prof=dono-1
       const returnPath = encodeURIComponent(`${location.pathname}${location.search}`);
@@ -535,10 +542,10 @@ export const BookingFlow: React.FC = () => {
                   <p className="text-textMuted max-w-md">Agende agora seu horário com nossos profissionais qualificados.</p>
                 </>
               )}
-              
-              <Button 
-                onClick={() => setStep(BookingStep.SERVICE)} 
-                size="lg" 
+
+              <Button
+                onClick={() => setStep(BookingStep.SERVICE)}
+                size="lg"
                 className="px-12 py-6 text-xl mt-4"
                 style={{ backgroundColor: activeSettings.primary_color || '#D4AF37' }}
               >
@@ -568,7 +575,7 @@ export const BookingFlow: React.FC = () => {
               {/* Portfolio Section */}
               {currentOrgId && !selectedBarber && (
                 <div className="w-full mt-12 border-t border-white/5 pt-12">
-                   <Portfolio organizationId={currentOrgId} />
+                  <Portfolio organizationId={currentOrgId} />
                 </div>
               )}
             </div>
@@ -620,18 +627,18 @@ export const BookingFlow: React.FC = () => {
                   </div>
                   <div className="grid grid-cols-7 gap-1">
                     {calendarDays.map(day => {
-                       const isPast = isBefore(day, startOfDay(new Date()));
-                       const isSelected = isSameDay(day, selectedDate);
-                       return (
-                         <button
-                           key={day.toString()}
-                           onClick={() => handleDateSelect(day)}
-                           disabled={isPast}
-                           className={`aspect-square rounded-lg text-xs font-medium transition-all ${isSelected ? 'bg-primary text-black font-bold' : isPast ? 'text-white/10 cursor-not-allowed' : 'text-white hover:bg-white/10'}`}
-                         >
-                           {format(day, 'd')}
-                         </button>
-                       );
+                      const isPast = isBefore(day, startOfDay(new Date()));
+                      const isSelected = isSameDay(day, selectedDate);
+                      return (
+                        <button
+                          key={day.toString()}
+                          onClick={() => handleDateSelect(day)}
+                          disabled={isPast}
+                          className={`aspect-square rounded-lg text-xs font-medium transition-all ${isSelected ? 'bg-primary text-black font-bold' : isPast ? 'text-white/10 cursor-not-allowed' : 'text-white hover:bg-white/10'}`}
+                        >
+                          {format(day, 'd')}
+                        </button>
+                      );
                     })}
                   </div>
                 </div>
@@ -641,7 +648,7 @@ export const BookingFlow: React.FC = () => {
                       key={time}
                       onClick={() => handleTimeSelect(time)}
                       className={`w-full py-3 rounded-lg border transition-all ${selectedTime === time ? 'text-black font-bold' : 'bg-white/5 border-transparent text-white hover:bg-white/10'}`}
-                      style={selectedTime === time ? { 
+                      style={selectedTime === time ? {
                         backgroundColor: activeSettings.primary_color || '#D4AF37',
                         borderColor: activeSettings.primary_color || '#D4AF37'
                       } : {}}
@@ -662,20 +669,20 @@ export const BookingFlow: React.FC = () => {
                 <Button variant="ghost" size="sm" onClick={() => setStep(BookingStep.DATETIME)}>Voltar</Button>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                 {staff.map(barber => (
-                   <div
+                {staff.map(barber => (
+                  <div
                     key={barber.id}
                     onClick={() => handleBarberSelect(barber)}
                     className="cursor-pointer p-4 rounded-xl border border-white/10 flex items-center gap-4 hover:border-primary transition-all"
-                   >
-                     {barber.avatarUrl ? (
-                       <img src={barber.avatarUrl} className="w-12 h-12 rounded-full object-cover" alt={barber.name} />
-                     ) : (
-                       <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center"><UserIcon size={20} className="text-textMuted" /></div>
-                     )}
-                     <div><h4 className="font-bold text-white">{barber.name}</h4><p className="text-xs text-textMuted">{barber.jobTitle}</p></div>
-                   </div>
-                 ))}
+                  >
+                    {barber.avatarUrl ? (
+                      <img src={barber.avatarUrl} className="w-12 h-12 rounded-full object-cover" alt={barber.name} />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center"><UserIcon size={20} className="text-textMuted" /></div>
+                    )}
+                    <div><h4 className="font-bold text-white">{barber.name}</h4><p className="text-xs text-textMuted">{barber.jobTitle}</p></div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -691,12 +698,12 @@ export const BookingFlow: React.FC = () => {
                 <div className="pt-4 flex justify-between items-center"><span className="text-white font-bold">Total</span><span className="text-2xl font-display font-bold" style={{ color: activeSettings.primary_color || '#D4AF37' }}>R$ {selectedService.price}</span></div>
               </div>
               <div className="space-y-3">
-                 <Button fullWidth onClick={handleConfirmBooking} size="lg" style={{ backgroundColor: activeSettings.primary_color || '#D4AF37' }}>Confirmar Agendamento</Button>
-                 {isBarberPreselected ? (
-                   <Button fullWidth variant="ghost" onClick={() => setStep(BookingStep.DATETIME)}>Alterar Horário</Button>
-                 ) : (
-                   <Button fullWidth variant="ghost" onClick={() => setStep(BookingStep.BARBER)}>Alterar Profissional</Button>
-                 )}
+                <Button fullWidth onClick={handleConfirmBooking} size="lg" style={{ backgroundColor: activeSettings.primary_color || '#D4AF37' }}>Confirmar Agendamento</Button>
+                {isBarberPreselected ? (
+                  <Button fullWidth variant="ghost" onClick={() => setStep(BookingStep.DATETIME)}>Alterar Horário</Button>
+                ) : (
+                  <Button fullWidth variant="ghost" onClick={() => setStep(BookingStep.BARBER)}>Alterar Profissional</Button>
+                )}
               </div>
             </div>
           )}
@@ -705,26 +712,26 @@ export const BookingFlow: React.FC = () => {
 
       {showSuccessModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm animate-fade-in">
-            <div className="bg-surface p-10 rounded-3xl max-w-sm w-full text-center border shadow-2xl relative overflow-hidden" style={{ borderColor: (activeSettings.primary_color || '#D4AF37') + '33' }}>
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/50 pointer-events-none" />
-              <div className="relative z-10 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: (activeSettings.primary_color || '#D4AF37') + '1a' }}>
-                <Check style={{ color: activeSettings.primary_color || '#D4AF37' }} className="w-10 h-10" />
-              </div>
-              <h2 className="text-2xl font-bold text-white mb-4 relative z-10">Agendado!</h2>
-              <p className="text-textMuted mb-8 relative z-10">Seu horário foi reservado. Nos vemos em breve!</p>
-              <div className="space-y-3 relative z-10">
-                <Button fullWidth onClick={handleFinish} style={{ backgroundColor: activeSettings.primary_color || '#D4AF37' }}>Meus Agendamentos</Button>
-                {selectedBarber && (
-                  <WhatsAppButton
-                    phone={settings.phone || ''}
-                    message={whatsappMessage}
-                    label="Enviar Comprovante"
-                    variant="outline"
-                    className="w-full"
-                  />
-                )}
-              </div>
-           </div>
+          <div className="bg-surface p-10 rounded-3xl max-w-sm w-full text-center border shadow-2xl relative overflow-hidden" style={{ borderColor: (activeSettings.primary_color || '#D4AF37') + '33' }}>
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/50 pointer-events-none" />
+            <div className="relative z-10 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: (activeSettings.primary_color || '#D4AF37') + '1a' }}>
+              <Check style={{ color: activeSettings.primary_color || '#D4AF37' }} className="w-10 h-10" />
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-4 relative z-10">Agendado!</h2>
+            <p className="text-textMuted mb-8 relative z-10">Seu horário foi reservado. Nos vemos em breve!</p>
+            <div className="space-y-3 relative z-10">
+              <Button fullWidth onClick={handleFinish} style={{ backgroundColor: activeSettings.primary_color || '#D4AF37' }}>Meus Agendamentos</Button>
+              {selectedBarber && (
+                <WhatsAppButton
+                  phone={settings.phone || ''}
+                  message={whatsappMessage}
+                  label="Enviar Comprovante"
+                  variant="outline"
+                  className="w-full"
+                />
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>
