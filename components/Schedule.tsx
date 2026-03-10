@@ -282,8 +282,8 @@ export const Schedule: React.FC = () => {
                                 setCheckoutAppointment({
                                   ...slot.appointment!,
                                   serviceName: slot.appointment!.serviceName,
-                                  servicePrice: (slot.appointment as any).service?.price || 0,
-                                  organization_id: (slot.appointment as any).organization_id
+                                  servicePrice: slot.appointment!.service?.price || 0,
+                                  organization_id: slot.appointment!.organization_id
                                 });
                               }}
                               className="flex-1 px-3 py-1.5 bg-primary/20 hover:bg-primary/30 border border-primary text-primary text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-1"
@@ -442,44 +442,44 @@ export const Schedule: React.FC = () => {
       )}
       {/* CHECKOUT MODAL */}
       {checkoutAppointment && (
-        <CheckoutModal 
+        <CheckoutModal
           appointment={checkoutAppointment}
           onClose={() => setCheckoutAppointment(null)}
           onConfirm={async (items) => {
-             // 1. Create Sale Record
-             const { data: sale, error: saleError } = await supabase
-               .from('sales')
-               .insert([{
-                 organization_id: checkoutAppointment.organization_id,
-                 appointment_id: checkoutAppointment.id,
-                 customer_id: checkoutAppointment.customerId,
-                 barber_id: checkoutAppointment.barberId,
-                 total_amount: checkoutAppointment.servicePrice + items.reduce((acc, item) => acc + (item.price * item.quantity), 0),
-                 status: 'completed'
-               }])
-               .select()
-               .single();
-             
-             if (saleError) throw saleError;
+            // 1. Create Sale Record
+            const { data: sale, error: saleError } = await supabase
+              .from('sales')
+              .insert([{
+                organization_id: checkoutAppointment.organization_id,
+                appointment_id: checkoutAppointment.id,
+                customer_id: checkoutAppointment.customerId,
+                barber_id: checkoutAppointment.barberId,
+                total_amount: checkoutAppointment.servicePrice + items.reduce((acc, item) => acc + (item.price * item.quantity), 0),
+                status: 'completed'
+              }])
+              .select()
+              .single();
 
-             // 2. Create Sale Items
-             if (items.length > 0) {
-               const { error: itemsError } = await supabase
-                 .from('sale_items')
-                 .insert(items.map(item => ({
-                   sale_id: sale.id,
-                   product_id: item.id,
-                   quantity: item.quantity,
-                   unit_price: item.price
-                 })));
-               
-               if (itemsError) throw itemsError;
-             }
+            if (saleError) throw saleError;
 
-             // 3. Complete Appointment
-             await updateStatus({ id: checkoutAppointment.id, status: AppointmentStatus.COMPLETED });
-             
-             setCheckoutAppointment(null);
+            // 2. Create Sale Items
+            if (items.length > 0) {
+              const { error: itemsError } = await supabase
+                .from('sale_items')
+                .insert(items.map(item => ({
+                  sale_id: sale.id,
+                  product_id: item.id,
+                  quantity: item.quantity,
+                  unit_price: item.price
+                })));
+
+              if (itemsError) throw itemsError;
+            }
+
+            // 3. Complete Appointment
+            await updateStatus({ id: checkoutAppointment.id, status: AppointmentStatus.COMPLETED });
+
+            setCheckoutAppointment(null);
           }}
         />
       )}

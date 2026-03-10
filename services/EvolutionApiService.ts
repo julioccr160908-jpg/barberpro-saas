@@ -95,7 +95,10 @@ export const EvolutionApiService = {
                 return { success: false, error: "Número de telefone inválido" };
             }
 
-            const response = await fetch(`${EVOLUTION_API_URL}/message/sendText/${instanceName}`, {
+            const isProduction = window.location.hostname !== 'localhost';
+            const apiUrl = isProduction ? '/api/whatsapp-proxy?action=sendText&instanceName=' + instanceName : `${EVOLUTION_API_URL}/message/sendText/${instanceName}`;
+
+            const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

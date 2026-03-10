@@ -29,6 +29,7 @@ export const useAppointments = (filters?: { barberId?: string; customerId?: stri
 
                 all = (data as any[]).map(a => ({
                     id: a.id,
+                    organization_id: a.organization_id,
                     barberId: a.barber_id,
                     customerId: a.customer_id,
                     serviceId: a.service_id,

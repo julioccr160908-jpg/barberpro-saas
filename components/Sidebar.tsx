@@ -53,18 +53,27 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentRole, setCurrentView, c
         .eq('owner_id', user.id);
 
       // 2. Orgs where user is staff with explicit management rights
-      const { data: prof } = await supabase
-        .from('profiles')
-        .select('managed_orgs')
-        .eq('id', user.id)
-        .single();
+      let managedOrgsFromProfile: string[] = [];
+      try {
+        const { data: prof } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        if (prof && (prof as any).managed_orgs) {
+          managedOrgsFromProfile = (prof as any).managed_orgs;
+        }
+      } catch (e) {
+        console.warn("managed_orgs column might be missing");
+      }
 
       let managed: any[] = [];
-      if (prof?.managed_orgs && prof.managed_orgs.length > 0) {
+      if (managedOrgsFromProfile.length > 0) {
         const { data } = await supabase
           .from('organizations')
           .select('id, name, slug, logo_url')
-          .in('id', prof.managed_orgs);
+          .in('id', managedOrgsFromProfile);
         managed = data || [];
       }
 

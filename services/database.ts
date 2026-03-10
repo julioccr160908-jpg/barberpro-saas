@@ -235,6 +235,7 @@ export const db = {
       if (error) throw error;
       return data.map(a => ({
         id: a.id,
+        organization_id: a.organization_id,
         barberId: a.barber_id,
         customerId: a.customer_id,
         serviceId: a.service_id,
@@ -272,6 +273,7 @@ export const db = {
       if (error) throw error;
       return {
         id: data.id,
+        organization_id: data.organization_id,
         barberId: data.barber_id,
         customerId: data.customer_id,
         serviceId: data.service_id,
