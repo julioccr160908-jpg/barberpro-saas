@@ -35,6 +35,7 @@ import { BookingFlow } from './components/BookingFlow';
 import { CustomerLayout } from './components/customer/CustomerLayout';
 import { ConditionalCustomerLayout } from './components/customer/ConditionalCustomerLayout';
 import { CustomerAppointments } from './components/customer/CustomerAppointments';
+import { CustomerSubscriptions } from './components/customer/CustomerSubscriptions';
 import { CustomerProfile } from './components/customer/CustomerProfile';
 import { Login } from './components/Login';
 import { Register } from './components/Register';
@@ -281,6 +282,12 @@ const App: React.FC = () => {
                   <Route path="/customer/profile" element={
                     <CustomerLayout>
                       <CustomerProfile />
+                    </CustomerLayout>
+                  } />
+
+                  <Route path="/customer/subscriptions" element={
+                    <CustomerLayout>
+                      <CustomerSubscriptions />
                     </CustomerLayout>
                   } />
 

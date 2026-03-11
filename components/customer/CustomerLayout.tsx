@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Calendar, User, LogOut, Scissors, Menu, MapPin } from 'lucide-react';
+import { Calendar, User, LogOut, Scissors, Menu, MapPin, CreditCard } from 'lucide-react';
 import { useSettings } from '../../contexts/SettingsContext';
 import { Button } from '../ui/Button';
 
@@ -26,6 +26,7 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
 
     const menuItems = [
         { id: 'book', label: 'Novo Agendamento', icon: Scissors, path: bookPath },
+        { id: 'subscriptions', label: 'Clube de Assinatura', icon: CreditCard, path: '/customer/subscriptions' },
         { id: 'appointments', label: 'Meus Agendamentos', icon: Calendar, path: '/customer/appointments' },
         { id: 'profile', label: 'Meu Perfil', icon: User, path: '/customer/profile' },
     ];
