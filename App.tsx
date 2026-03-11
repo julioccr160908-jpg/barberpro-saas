@@ -402,6 +402,14 @@ const App: React.FC = () => {
                     </ProtectedRoute>
                   } />
 
+                  <Route path="/admin/gallery" element={
+                    <ProtectedRoute allowedRoles={[Role.ADMIN, Role.BARBER]}>
+                      <AppLayout>
+                        <AdminGallery />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  } />
+
                   <Route path="/admin/settings" element={
                     <ProtectedRoute allowedRoles={[Role.ADMIN]}>
                       <AppLayout>

@@ -157,7 +157,7 @@ export const Schedule: React.FC = () => {
     }
   };
 
-  const AppointmentList = () => (
+  const renderAppointmentList = () => (
     <div className="flex-1 flex flex-col min-h-0">
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -279,6 +279,7 @@ export const Schedule: React.FC = () => {
                           <>
                             <button
                               onClick={() => {
+                                console.log('Checking out appt:', slot.appointment);
                                 setCheckoutAppointment({
                                   ...slot.appointment!,
                                   serviceName: slot.appointment!.serviceName,
@@ -423,7 +424,7 @@ export const Schedule: React.FC = () => {
       {/* RIGHT COLUMN: APPOINTMENT LIST (DESKTOP) */}
       <Card noPadding className="hidden lg:flex flex-1 h-full bg-surface border-border flex-col">
         <div className="p-6 flex-1 w-full flex flex-col min-h-0">
-          <AppointmentList />
+          {renderAppointmentList()}
         </div>
       </Card>
 
@@ -436,7 +437,7 @@ export const Schedule: React.FC = () => {
           />
           <div className="fixed inset-x-0 bottom-0 z-50 bg-surface border-t border-border rounded-t-2xl p-6 h-[60vh] lg:hidden animate-slide-up shadow-2xl">
             <div className="w-12 h-1.5 bg-border rounded-full mx-auto mb-6 opacity-50" />
-            <AppointmentList />
+            {renderAppointmentList()}
           </div>
         </>
       )}
@@ -446,40 +447,50 @@ export const Schedule: React.FC = () => {
           appointment={checkoutAppointment}
           onClose={() => setCheckoutAppointment(null)}
           onConfirm={async (items) => {
-            // 1. Create Sale Record
-            const { data: sale, error: saleError } = await supabase
-              .from('sales')
-              .insert([{
-                organization_id: checkoutAppointment.organization_id,
-                appointment_id: checkoutAppointment.id,
-                customer_id: checkoutAppointment.customerId,
-                barber_id: checkoutAppointment.barberId,
-                total_amount: checkoutAppointment.servicePrice + items.reduce((acc, item) => acc + (item.price * item.quantity), 0),
-                status: 'completed'
-              }])
-              .select()
-              .single();
+            try {
+              // 1. Create Sale Record
+              const { data: saleData, error: saleError } = await supabase
+                .from('sales')
+                .insert([{
+                  organization_id: checkoutAppointment.organization_id,
+                  appointment_id: checkoutAppointment.id,
+                  customer_id: checkoutAppointment.customerId,
+                  barber_id: checkoutAppointment.barberId,
+                  total_amount: checkoutAppointment.servicePrice + items.reduce((acc, item) => acc + (item.price * item.quantity), 0),
+                  status: 'completed'
+                }])
+                .select();
 
-            if (saleError) throw saleError;
+              if (saleError) {
+                console.error('Sale insert error:', saleError);
+                if (items.length > 0) {
+                  throw new Error('Falha ao registrar produtos na venda. ' + saleError.message);
+                }
+              } else {
+                const sale = saleData?.[0];
+                // 2. Create Sale Items
+                if (sale && items.length > 0) {
+                  const { error: itemsError } = await supabase
+                    .from('sale_items')
+                    .insert(items.map(item => ({
+                      sale_id: sale.id,
+                      product_id: item.id,
+                      quantity: item.quantity,
+                      unit_price: item.price
+                    })));
 
-            // 2. Create Sale Items
-            if (items.length > 0) {
-              const { error: itemsError } = await supabase
-                .from('sale_items')
-                .insert(items.map(item => ({
-                  sale_id: sale.id,
-                  product_id: item.id,
-                  quantity: item.quantity,
-                  unit_price: item.price
-                })));
+                  if (itemsError) throw new Error('Falha ao adicionar itens à venda. ' + itemsError.message);
+                }
+              }
 
-              if (itemsError) throw itemsError;
+              // 3. Complete Appointment
+              await updateStatus({ id: checkoutAppointment.id, status: AppointmentStatus.COMPLETED });
+
+              setCheckoutAppointment(null);
+            } catch (err: any) {
+              console.error('Checkout error:', err);
+              throw err; // Re-throw to be caught by CheckoutModal toast
             }
-
-            // 3. Complete Appointment
-            await updateStatus({ id: checkoutAppointment.id, status: AppointmentStatus.COMPLETED });
-
-            setCheckoutAppointment(null);
           }}
         />
       )}
