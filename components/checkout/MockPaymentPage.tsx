@@ -12,6 +12,8 @@ export const MockPaymentPage: React.FC = () => {
     const amount = searchParams.get('amount');
     const title = searchParams.get('title');
     const preferenceId = searchParams.get('preference_id');
+    const subscriptionId = searchParams.get('subscription_id');
+    const type = searchParams.get('type');
 
     const [processing, setProcessing] = useState(false);
     const [success, setSuccess] = useState(false);
@@ -25,9 +27,16 @@ export const MockPaymentPage: React.FC = () => {
 
             // Redirect back to app after success
             setTimeout(() => {
-                // In a real flow, MP redirects to the back_urls.
-                // We simulate this by going to /booking/success?status=approved
-                navigate(`/booking/success?collection_status=approved&preference_id=${preferenceId}`);
+                const params = new URLSearchParams({
+                    collection_status: 'approved',
+                    preference_id: preferenceId || 'mock_id'
+                });
+                
+                if (subscriptionId) params.append('subscription_id', subscriptionId);
+                if (type) params.append('type', type);
+                if (searchParams.get('appointment_id')) params.append('appointment_id', searchParams.get('appointment_id')!);
+
+                navigate(`/booking/success?${params.toString()}`);
             }, 2000);
         }, 2000);
     };

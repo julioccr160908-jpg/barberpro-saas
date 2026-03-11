@@ -1,4 +1,6 @@
 import React, { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { useAuth } from '../../contexts/AuthContext';
 import { useOrganization } from '../../hooks/useOrganization';
 import { useQuery } from '@tanstack/react-query';
@@ -40,13 +42,45 @@ export const CustomerSubscriptions: React.FC = () => {
         phone: settingsData?.phone || ''
     }), [org, settingsData]);
 
-    const handleSubscribe = (plan: SubscriptionPlan) => {
-        if (!settings.phone) {
-            window.open(`https://wa.me/`, '_blank');
+    const navigate = useNavigate();
+
+    const handleSubscribe = async (plan: SubscriptionPlan) => {
+        if (!user) {
+            toast.error('Você precisa estar logado para assinar.');
             return;
         }
-        const message = encodeURIComponent(`Olá! Tenho interesse em assinar o plano "${plan.name}" de R$ ${plan.price.toFixed(2)}/${plan.interval === 'month' ? 'mês' : 'semana'}. Como faço para aderir?`);
-        window.open(`https://wa.me/${settings.phone.replace(/\D/g, '')}?text=${message}`, '_blank');
+
+        try {
+            // 1. Create a pending subscription record
+            const { data, error } = await supabase
+                .from('customer_subscriptions')
+                .insert([{
+                    customer_id: user.id,
+                    plan_id: plan.id,
+                    organization_id: orgId,
+                    status: 'pending',
+                    next_billing_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+                }])
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            const subscriptionId = data.id;
+
+            // 2. Redirect to Mock Payment Page with metadata
+            const params = new URLSearchParams({
+                amount: plan.price.toString(),
+                title: `Assinatura: ${plan.name}`,
+                subscription_id: subscriptionId,
+                type: 'subscription'
+            });
+
+            navigate(`/checkout/mock?${params.toString()}`);
+        } catch (error) {
+            console.error('Error initiating subscription:', error);
+            toast.error('Erro ao iniciar assinatura. Tente novamente.');
+        }
     };
 
     if (isLoading) {
@@ -114,7 +148,7 @@ export const CustomerSubscriptions: React.FC = () => {
                                     className="hover:scale-[1.02] active:scale-[0.98] transition-transform"
                                 >
                                     <MessageSquare size={18} className="mr-2" />
-                                    Assinar via WhatsApp
+                                    Assinar Agora
                                 </Button>
                                 <p className="text-[10px] text-center text-zinc-500 mt-4 uppercase font-bold tracking-widest">
                                     Pagamento recorrente seguro

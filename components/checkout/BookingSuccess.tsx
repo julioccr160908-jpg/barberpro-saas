@@ -13,25 +13,38 @@ export const BookingSuccess: React.FC = () => {
     const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
 
     const appointmentId = searchParams.get('appointment_id');
+    const subscriptionId = searchParams.get('subscription_id');
+    const type = searchParams.get('type');
     const paymentStatus = searchParams.get('collection_status'); // 'approved' from MP
 
     useEffect(() => {
         const updatePayment = async () => {
-            if (!appointmentId) {
+            if (!appointmentId && !subscriptionId) {
                 setStatus('error');
                 return;
             }
 
             if (paymentStatus === 'approved') {
                 try {
-                    // Update appointment payment status
-                    await supabase
-                        .from('appointments')
-                        .update({
-                            payment_status: 'approved',
-                            payment_id: searchParams.get('preference_id') || 'mock_id'
-                        })
-                        .eq('id', appointmentId);
+                    if (type === 'subscription' && subscriptionId) {
+                        // Update subscription status
+                        await supabase
+                            .from('customer_subscriptions')
+                            .update({
+                                status: 'active',
+                                updated_at: new Date().toISOString()
+                            })
+                            .eq('id', subscriptionId);
+                    } else if (appointmentId) {
+                        // Update appointment payment status
+                        await supabase
+                            .from('appointments')
+                            .update({
+                                payment_status: 'approved',
+                                payment_id: searchParams.get('preference_id') || 'mock_id'
+                            })
+                            .eq('id', appointmentId);
+                    }
 
                     setStatus('success');
                 } catch (error) {
@@ -44,7 +57,7 @@ export const BookingSuccess: React.FC = () => {
         };
 
         updatePayment();
-    }, [appointmentId, paymentStatus]);
+    }, [appointmentId, subscriptionId, paymentStatus, type]);
 
     return (
         <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -56,12 +69,19 @@ export const BookingSuccess: React.FC = () => {
                         <div className="mx-auto w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center">
                             <CheckCircle size={40} className="text-green-500" />
                         </div>
-                        <h1 className="text-2xl font-bold text-white">Agendamento Confirmado!</h1>
+                        <h1 className="text-2xl font-bold text-white">
+                            {type === 'subscription' ? 'Assinatura Ativada!' : 'Agendamento Confirmado!'}
+                        </h1>
                         <p className="text-textMuted">
-                            Seu pagamento foi confirmado e o horário está reservado.
+                            {type === 'subscription' 
+                                ? 'Sua assinatura foi ativada com sucesso. Aproveite seus benefícios!' 
+                                : 'Seu pagamento foi confirmado e o horário está reservado.'}
                         </p>
-                        <Button onClick={() => navigate('/customer/appointments')} className="w-full">
-                            Ver Meus Agendamentos
+                        <Button 
+                            onClick={() => navigate(type === 'subscription' ? '/customer/subscriptions' : '/customer/appointments')} 
+                            className="w-full"
+                        >
+                            {type === 'subscription' ? 'Voltar para Assinaturas' : 'Ver Meus Agendamentos'}
                         </Button>
                     </div>
                 )}
