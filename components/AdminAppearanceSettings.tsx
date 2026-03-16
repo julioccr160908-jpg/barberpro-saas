@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
-import { Card } from './ui/Card';
+import { Card, CardHeader } from './ui/Card';
 import { Button } from './ui/Button';
 import { useSettings } from '../contexts/SettingsContext';
 import { toast } from 'sonner';
@@ -154,14 +154,15 @@ export const AdminAppearanceSettings: React.FC = () => {
 
     if (isLoading) return <div className="p-8 flex justify-center"><Loader2 className="animate-spin" /></div>;
 
-    const logoUrl = organization?.logoUrl || settings?.logo_url;
-    const bannerUrl = organization?.bannerUrl || settings?.banner_url;
+    const logoUrl = organization?.logoUrl;
+    const bannerUrl = organization?.bannerUrl;
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Editor Form */}
             <div className="space-y-6">
-                <Card title="Identidade Visual">
+                <Card>
+                    <CardHeader title="Identidade Visual" />
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-textMuted mb-1">Nome da Barbearia</label>
@@ -206,7 +207,8 @@ export const AdminAppearanceSettings: React.FC = () => {
                     </form>
                 </Card>
 
-                <Card title="Imagens">
+                <Card>
+                    <CardHeader title="Imagens" />
                     <div className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-textMuted mb-2">Logo</label>
@@ -259,101 +261,167 @@ export const AdminAppearanceSettings: React.FC = () => {
                     </div>
                 </div>
 
-                <div className={`border border-border rounded-3xl overflow-hidden bg-black mx-auto shadow-2xl relative transition-all duration-300 ${previewMode === 'mobile' ? 'max-w-sm h-[600px]' : 'w-full h-[600px]'
+                <div className={`border-4 border-zinc-800 rounded-[3rem] overflow-hidden bg-[#0A0A0A] mx-auto shadow-2xl relative transition-all duration-500 ring-8 ring-zinc-900/50 ${previewMode === 'mobile' ? 'max-w-[320px] h-[650px]' : 'w-full h-[600px] rounded-xl border-t-[32px]'
                     }`}>
 
-                    {/* Device Header (Only for Mobile) */}
+                    {/* Desktop Browser Bar */}
+                    {previewMode === 'desktop' && (
+                        <div className="absolute top-[-32px] left-0 right-0 h-8 bg-zinc-800 flex items-center px-4 gap-1.5">
+                            <div className="w-2.5 h-2.5 rounded-full bg-red-500/50" />
+                            <div className="w-2.5 h-2.5 rounded-full bg-amber-500/50" />
+                            <div className="w-2.5 h-2.5 rounded-full bg-green-500/50" />
+                            <div className="ml-4 flex-1 bg-black/20 rounded-md h-5 flex items-center px-3">
+                                <span className="text-[10px] text-zinc-500 truncate">barberhost.com.br/{organization?.slug || 'sua-barbearia'}</span>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Device Status Bar (Mobile Only) */}
                     {previewMode === 'mobile' && (
-                        <div className="h-6 bg-black flex justify-between px-4 items-center text-[10px] text-white">
+                        <div className="h-10 bg-black flex justify-between px-8 items-end pb-1 text-[11px] font-bold text-white relative z-50">
                             <span>9:41</span>
-                            <div className="flex gap-1">
-                                <div className="w-3 h-3 bg-white rounded-full"></div>
-                                <div className="w-3 h-3 bg-white rounded-full"></div>
+                            <div className="absolute left-1/2 -translate-x-1/2 top-0 w-32 h-6 bg-black rounded-b-2xl flex items-center justify-center">
+                                <div className="w-12 h-1 bg-zinc-800 rounded-full" />
+                            </div>
+                            <div className="flex gap-1.5 items-center">
+                                <div className="w-4 h-2 rounded-sm border border-white/30" />
+                                <div className="w-3 h-3 bg-white/30 rounded-full" />
                             </div>
                         </div>
                     )}
 
                     {/* App Content */}
                     <div
-                        className="bg-zinc-900 h-full flex flex-col font-sans overflow-y-auto transition-colors duration-300"
+                        className="bg-black h-full flex flex-col font-sans overflow-y-auto no-scrollbar transition-all duration-300 pb-20"
                         style={{
                             '--primary': previewPrimary,
                             '--secondary': previewSecondary
                         } as React.CSSProperties}
                     >
-                        {/* Header */}
-                        <div className="p-4 flex justify-between items-center bg-black/50 backdrop-blur-md absolute top-0 left-0 right-0 z-10">
-                            <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 rounded-full flex items-center justify-center text-black font-bold overflow-hidden bg-zinc-800 border border-white/10">
+                        {/* Glassmorphism Header */}
+                        <div className="p-4 flex justify-between items-center bg-black/40 backdrop-blur-xl border-b border-white/5 sticky top-0 left-0 right-0 z-40">
+                            <div className="flex items-center gap-2.5">
+                                <div className="w-9 h-9 rounded-xl flex items-center justify-center text-black font-bold overflow-hidden bg-zinc-900 border border-white/10 shadow-lg">
                                     {logoUrl ? (
                                         <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
                                     ) : (
-                                        <span style={{ color: previewPrimary }}>B</span>
+                                        <span style={{ color: previewPrimary }} className="text-lg">B</span>
                                     )}
                                 </div>
-                                <span className="text-white font-bold text-lg">{previewName || 'BarberHost'}</span>
+                                <span className="text-white font-display font-bold text-base tracking-tight">{previewName || 'BarberHost'}</span>
                             </div>
-                            <MenuIcon />
+                            <div className="w-8 h-8 flex items-center justify-center text-white/70">
+                                <Menu size={20} />
+                            </div>
                         </div>
 
-                        {/* Hero Banner */}
-                        <div className="h-48 bg-gray-800 relative overflow-hidden shrink-0">
-                            {bannerUrl ? (
-                                <img src={bannerUrl} alt="Banner" className="w-full h-full object-cover" />
-                            ) : (
-                                <div className="absolute inset-0 flex items-center justify-center text-gray-600">
-                                    <ImageIcon size={32} />
+                        {/* Hero Section */}
+                        <div className="relative shrink-0">
+                            <div className="h-44 relative overflow-hidden">
+                                {bannerUrl ? (
+                                    <img src={bannerUrl} alt="Banner" className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center text-zinc-700">
+                                        <ImageIcon size={40} className="opacity-20" />
+                                    </div>
+                                )}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+                            </div>
+                            
+                            {/* Stats/Badges */}
+                            <div className="absolute bottom-4 left-4 flex gap-2">
+                                <div className="bg-black/60 backdrop-blur-md px-2 py-1 rounded text-[10px] text-white flex items-center gap-1 border border-white/5">
+                                    <Clock size={10} className="text-primary" /> Aberto agora
                                 </div>
-                            )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 to-transparent"></div>
+                            </div>
                         </div>
 
-                        {/* Actions */}
-                        <div className="p-4 space-y-4 -mt-6 relative z-0">
-                            {/* Booking Card */}
-                            <div className="bg-[#1A1A1A] p-4 rounded-xl border border-white/5 shadow-lg" style={{ borderColor: `${previewPrimary}40` }}>
-                                <h4 className="text-white font-bold mb-2">Agendar Horário</h4>
-                                <p className="text-gray-400 text-xs mb-4">Escolha o serviço e o profissional de sua preferência.</p>
+                        {/* Main Interaction Area */}
+                        <div className="p-4 space-y-5 -mt-6 relative z-10">
+                            {/* Primary Action Card */}
+                            <div 
+                                className="bg-zinc-900/90 backdrop-blur-md p-5 rounded-2xl border border-white/10 shadow-2xl overflow-hidden relative"
+                                style={{ borderColor: `${previewPrimary}30` }}
+                            >
+                                <div className="absolute -right-4 -top-4 w-20 h-20 rounded-full blur-3xl opacity-20" style={{ backgroundColor: previewPrimary }} />
+                                
+                                <h4 className="text-white font-bold text-lg mb-1">Corte & Estilo</h4>
+                                <p className="text-zinc-400 text-xs mb-5 leading-relaxed">
+                                    Experiência única com os melhores <br/>profissionais da região.
+                                </p>
                                 <button
-                                    className="w-full py-3 rounded-lg font-bold text-black text-sm shadow-lg hover:brightness-110 transition-all"
+                                    className="w-full py-3.5 rounded-xl font-bold text-black text-sm shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                                     style={{ backgroundColor: previewPrimary }}
                                 >
-                                    Agendar Agora
+                                    Agendar Agora <Maximize2 size={14} />
                                 </button>
                             </div>
 
-                            {/* My Appointments */}
+                            {/* Secondary Action */}
                             <div
-                                className="p-4 rounded-xl flex items-center gap-3 border border-white/5 transition-colors"
-                                style={{ backgroundColor: previewSecondary }}
+                                className="p-4 rounded-2xl flex items-center gap-3 border border-white/5 transition-all hover:bg-white/[0.02]"
+                                style={{ backgroundColor: `${previewSecondary}80` }}
                             >
-                                <div className="w-10 h-10 rounded-full flex items-center justify-center bg-black/20 text-white">
-                                    <Clock size={18} />
+                                <div className="w-11 h-11 rounded-full flex items-center justify-center bg-white/5 text-white/80 border border-white/10">
+                                    <Clock size={20} />
                                 </div>
                                 <div>
-                                    <h5 className="text-white text-sm font-medium">Meus Agendamentos</h5>
-                                    <p className="text-white/60 text-xs">Visualize seus cortes futuros</p>
+                                    <h5 className="text-white text-sm font-semibold">Minha Agenda</h5>
+                                    <p className="text-zinc-500 text-[11px]">Gerencie seus cortes marcados</p>
+                                </div>
+                                <div className="ml-auto text-zinc-600">
+                                    <Maximize2 size={14} />
                                 </div>
                             </div>
 
-                            {/* Dummy Content to fill space */}
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-[#1A1A1A] aspect-square rounded-xl animate-pulse bg-opacity-50"></div>
-                                <div className="bg-[#1A1A1A] aspect-square rounded-xl animate-pulse bg-opacity-50"></div>
+                            {/* Mock Services Section */}
+                            <div className="space-y-3">
+                                <h4 className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest pl-1">Serviços Populares</h4>
+                                <div className="space-y-2">
+                                    {[
+                                        { name: 'Corte Degradê', price: '50', icon: '✂️' },
+                                        { name: 'Barba Completa', price: '40', icon: '🧔' }
+                                    ].map((s, i) => (
+                                        <div key={i} className="flex justify-between items-center p-3 rounded-xl bg-zinc-900/50 border border-white/5">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center text-sm">{s.icon}</div>
+                                                <span className="text-zinc-300 text-sm font-medium">{s.name}</span>
+                                            </div>
+                                            <span className="text-white font-bold text-sm">R$ {s.price}</span>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
+
+                            {/* Mock Portfolio Grid */}
+                            <div className="space-y-3">
+                                <h4 className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest pl-1">Galeria</h4>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {[1, 2, 3].map(i => (
+                                        <div key={i} className="aspect-square rounded-lg bg-zinc-800 animate-pulse overflow-hidden">
+                                            <div className="w-full h-full bg-gradient-to-br from-zinc-700 to-zinc-800" />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
                         </div>
                     </div>
 
                     {/* Bottom Nav (Mobile Only) */}
                     {previewMode === 'mobile' && (
-                        <div className="absolute bottom-0 left-0 right-0 bg-black p-4 flex justify-around border-t border-white/10 z-20">
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/80 backdrop-blur-xl p-4 flex justify-around border-t border-white/5 z-40 rounded-b-[2.8rem]">
                             <div className="flex flex-col items-center gap-1" style={{ color: previewPrimary }}>
-                                <div className="w-6 h-6 rounded bg-current opacity-20"></div>
-                                <span className="text-[10px]">Início</span>
+                                <div className="w-1.5 h-1.5 rounded-full mb-0.5" style={{ backgroundColor: previewPrimary }} />
+                                <span className="text-[9px] font-bold uppercase tracking-tighter">Início</span>
                             </div>
-                            <div className="flex flex-col items-center gap-1 text-gray-500">
-                                <div className="w-6 h-6 rounded bg-gray-700"></div>
-                                <span className="text-[10px]">Perfil</span>
+                            <div className="flex flex-col items-center gap-1 text-zinc-600">
+                                <div className="w-5 h-5 rounded-md bg-zinc-900" />
+                                <span className="text-[9px] font-bold uppercase tracking-tighter">Clube</span>
+                            </div>
+                            <div className="flex flex-col items-center gap-1 text-zinc-600">
+                                <div className="w-5 h-5 rounded-md bg-zinc-900" />
+                                <span className="text-[9px] font-bold uppercase tracking-tighter">Conta</span>
                             </div>
                         </div>
                     )}
