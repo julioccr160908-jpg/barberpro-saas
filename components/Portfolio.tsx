@@ -76,12 +76,12 @@ export const Portfolio: React.FC<PortfolioProps> = ({ organizationId }) => {
         <span className="text-xs text-textMuted uppercase font-bold tracking-tighter">Fotos Reais de Clientes</span>
       </div>
 
-      <div className="flex gap-4 overflow-x-auto pb-6 pt-2 custom-scrollbar -mx-4 px-4 lg:mx-0 lg:px-0">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-3 gap-4 pb-6 pt-2">
         {items.map((item) => (
-          <div key={item.id} className="min-w-[300px] flex-shrink-0 group">
+          <div key={item.id} className="group">
             <Card noPadding className="overflow-hidden bg-zinc-900 border-zinc-800 shadow-xl group-hover:border-primary/30 transition-all duration-500 h-full flex flex-col">
               {/* Photo Display */}
-              <div className="relative aspect-[4/5] overflow-hidden bg-zinc-800">
+              <div className="relative aspect-square overflow-hidden bg-zinc-800">
                 <img
                   src={item.imageUrl}
                   alt={item.title}
@@ -90,27 +90,27 @@ export const Portfolio: React.FC<PortfolioProps> = ({ organizationId }) => {
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80" />
 
                 {/* Overlay Info */}
-                <div className="absolute bottom-4 left-4 right-4">
+                <div className="absolute bottom-3 left-3 right-3">
                   {item.isReview && (
                     <div className="flex gap-0.5 mb-1">
                       {[1, 2, 3, 4, 5].map((s) => (
                         <Star
                           key={s}
-                          size={12}
+                          size={10}
                           className={s <= (item.rating || 0) ? '' : 'text-zinc-600'}
                           style={s <= (item.rating || 0) ? { color: primaryColor, fill: primaryColor } : {}}
                         />
                       ))}
                     </div>
                   )}
-                  <p className="text-white font-bold text-sm tracking-wide truncate">{item.title}</p>
+                  <p className="text-white font-bold text-[10px] md:text-sm tracking-wide truncate">{item.title}</p>
                 </div>
               </div>
 
               {/* Comment if exists */}
               {item.subtitle && (
-                <div className="p-4 bg-zinc-900/50 backdrop-blur-sm flex-1">
-                  <p className="text-xs text-zinc-400 italic line-clamp-2">
+                <div className="p-3 bg-zinc-900/50 backdrop-blur-sm flex-1">
+                  <p className="text-[10px] md:text-xs text-zinc-400 italic line-clamp-2">
                     "{item.subtitle}"
                   </p>
                 </div>
