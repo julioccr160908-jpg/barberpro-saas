@@ -265,147 +265,163 @@ export const AdminAppearanceSettings: React.FC = () => {
 
             {/* Live Preview */}
             <div className="space-y-6">
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-bold text-white">Pré-visualização</h3>
                     <div className="flex gap-2 bg-surface p-1 rounded-lg border border-border">
                         <button
+                            type="button"
                             onClick={() => setPreviewMode('mobile')}
-                            className={`p-2 rounded ${previewMode === 'mobile' ? 'bg-primary text-black' : 'text-textMuted hover:text-white'}`}
+                            className={`p-2 rounded transition-all ${previewMode === 'mobile' ? 'bg-primary text-black shadow-lg' : 'text-textMuted hover:text-white'}`}
                         >
                             <Smartphone size={18} />
                         </button>
                         <button
+                            type="button"
                             onClick={() => setPreviewMode('desktop')}
-                            className={`p-2 rounded ${previewMode === 'desktop' ? 'bg-primary text-black' : 'text-textMuted hover:text-white'}`}
+                            className={`p-2 rounded transition-all ${previewMode === 'desktop' ? 'bg-primary text-black shadow-lg' : 'text-textMuted hover:text-white'}`}
                         >
                             <Monitor size={18} />
                         </button>
                     </div>
                 </div>
 
-                <div className={`border-2 border-zinc-800 rounded-2xl overflow-hidden bg-black mx-auto shadow-2xl relative transition-all duration-300 ${previewMode === 'mobile' ? 'max-w-[360px] aspect-[9/16]' : 'w-full aspect-video max-h-[600px]'}`}>
-                    {/* Desktop Browser Bar */}
-                    {previewMode === 'desktop' && (
-                        <div className="h-8 bg-zinc-800 flex items-center px-4 gap-1.5 border-b border-black">
-                            <div className="w-2.5 h-2.5 rounded-full bg-red-500/50" />
-                            <div className="w-2.5 h-2.5 rounded-full bg-amber-500/50" />
-                            <div className="w-2.5 h-2.5 rounded-full bg-green-500/50" />
-                            <div className="ml-4 flex-1 bg-black/20 rounded-md h-5 flex items-center px-3">
-                                <span className="text-[10px] text-zinc-500 truncate">barberhost.com.br/{organization?.slug || 'sua-barbearia'}</span>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Device Status Bar (Mobile Only) */}
-                    {previewMode === 'mobile' && (
-                        <div className="h-6 bg-black flex justify-between px-6 items-end pb-1 text-[10px] font-bold text-white relative z-50">
-                            <span>9:41</span>
-                            <div className="flex gap-1 items-center">
-                                <div className="w-3 h-1.5 rounded-sm border border-white/30" />
-                                <div className="w-2 h-2 bg-white/30 rounded-full" />
-                            </div>
-                        </div>
-                    )}
-
-                    {/* App Content Container */}
-                    <div
-                        className="h-full flex flex-col font-sans overflow-hidden relative"
+                {/* The Viewport Simulator */}
+                <div className="relative w-full overflow-hidden rounded-2xl bg-zinc-950/50 border border-white/5 shadow-inner flex items-center justify-center p-4 sm:p-8 min-h-[500px]">
+                    <div 
+                        className="transition-all duration-500 ease-in-out origin-center"
                         style={{
-                            '--primary': previewPrimary,
-                            '--secondary': previewSecondary
-                        } as React.CSSProperties}
+                            width: previewMode === 'mobile' ? '375px' : '1280px',
+                            height: previewMode === 'mobile' ? '700px' : '800px',
+                            transform: `scale(${previewMode === 'mobile' ? '0.7' : '0.4'})`, // Fallback scale, logic below would be better but CSS scale is safest for now
+                        }}
                     >
-                        {/* Realistic Background (Matches BookingFlow) */}
-                        <div className="absolute inset-0 z-0 overflow-hidden">
-                            {bannerUrl ? (
-                                <img 
-                                    src={bannerUrl} 
-                                    className="w-full h-full object-cover transition-opacity duration-500" 
-                                    alt="Banner" 
-                                    style={{ opacity: previewOpacity / 100 }}
-                                />
+                        {/* Realistic Device Frame */}
+                        <div className={`relative h-full w-full bg-black shadow-2xl overflow-hidden ring-1 ring-white/10 ${previewMode === 'mobile' ? 'rounded-[3rem] border-[8px] border-zinc-800' : 'rounded-xl border-t-[32px] border-zinc-800'}`}>
+                            
+                            {/* Browser/Device Top Bars */}
+                            {previewMode === 'desktop' ? (
+                                <div className="absolute top-[-32px] left-0 right-0 h-8 flex items-center px-4 gap-1.5 bg-zinc-800">
+                                    <div className="w-2.5 h-2.5 rounded-full bg-[#FF5F56]" />
+                                    <div className="w-2.5 h-2.5 rounded-full bg-[#FFBD2E]" />
+                                    <div className="w-2.5 h-2.5 rounded-full bg-[#27C93F]" />
+                                    <div className="ml-4 flex-1 bg-black/20 rounded h-5 flex items-center px-3 border border-white/5">
+                                        <span className="text-[10px] text-zinc-500">barberhost.com.br/{organization?.slug}</span>
+                                    </div>
+                                </div>
                             ) : (
-                                <div className="w-full h-full bg-zinc-900" />
+                                <div className="absolute top-0 left-0 right-0 h-10 px-8 flex justify-between items-end pb-2 z-50 pointer-events-none">
+                                    <span className="text-xs font-bold text-white">9:41</span>
+                                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-zinc-800 rounded-b-2xl" />
+                                    <div className="flex gap-1 items-center">
+                                        <div className="w-4 h-2 rounded-sm border border-white/30" />
+                                        <div className="w-3 h-3 bg-white/30 rounded-full" />
+                                    </div>
+                                </div>
                             )}
-                            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
-                        </div>
 
-                        {/* Content Scroll Area */}
-                        <div className="relative z-10 flex-col flex overflow-y-auto no-scrollbar h-full">
-                            {/* Header (Simplified to match reality) */}
-                            <div className="px-6 py-4 flex justify-between items-center sticky top-0 z-50">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-black font-bold overflow-hidden bg-zinc-900 border border-white/10 shadow-lg">
-                                        {logoUrl ? (
-                                            <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
-                                        ) : (
-                                            <span style={{ color: previewPrimary }} className="text-xl">B</span>
-                                        )}
+                            {/* BookingFlow Mirror Content */}
+                            <div 
+                                className="h-full w-full flex flex-col font-sans relative overflow-hidden bg-[#0A0A0A]"
+                                style={{
+                                    '--primary': previewPrimary,
+                                    '--secondary': previewSecondary
+                                } as React.CSSProperties}
+                            >
+                                {/* Background Image/Blur (Matches BookingFlow exactly) */}
+                                <div className="absolute inset-0 z-0">
+                                    {bannerUrl ? (
+                                        <img 
+                                            src={bannerUrl} 
+                                            alt="Banner" 
+                                            className="w-full h-full object-cover"
+                                            style={{ opacity: previewOpacity / 100 }}
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full bg-zinc-900" />
+                                    )}
+                                    <div className="absolute inset-0 bg-black/80 backdrop-blur-md" />
+                                </div>
+
+                                {/* Content Scroll Area */}
+                                <div className="relative z-10 flex flex-col h-full overflow-y-auto no-scrollbar">
+                                    {/* Establishment Header */}
+                                    <div className={`p-8 flex flex-col items-center text-center ${previewMode === 'desktop' ? 'mt-12' : 'mt-6'}`}>
+                                        <div className="w-24 h-24 mb-6 rounded-full overflow-hidden border-4 border-zinc-800 shadow-2xl bg-zinc-900">
+                                            {logoUrl ? (
+                                                <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-3xl font-bold" style={{ color: previewPrimary }}>
+                                                    {previewName?.charAt(0) || 'B'}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <h1 className="text-4xl font-display font-bold text-white tracking-widest mb-3 uppercase">
+                                            {previewName || 'Barbearia Premium'}
+                                        </h1>
+                                        <div className="flex items-center gap-2 text-zinc-400 text-sm">
+                                            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: previewPrimary }} />
+                                            Rua dos Barbeiros, 123 - Centro
+                                        </div>
                                     </div>
-                                    <span className="text-white font-bold text-lg tracking-tight">{previewName || 'BarberHost'}</span>
-                                </div>
-                                <div className="w-10 h-10 flex items-center justify-center text-white/70">
-                                    <Menu size={24} />
-                                </div>
-                            </div>
 
-                            {/* Main Interaction Area (Simplified representation of BookingFlow) */}
-                            <div className="px-6 py-4 space-y-6 max-w-2xl mx-auto w-full">
-                                <div className="bg-zinc-900/60 backdrop-blur-md p-6 rounded-3xl border border-white/10 shadow-2xl">
-                                    <h4 className="text-white font-bold text-xl mb-2">Corte & Estilo</h4>
-                                    <p className="text-zinc-400 text-sm mb-6">
-                                        Experiência única com os melhores profissionais da região. Agende seu horário agora mesmo.
-                                    </p>
-                                    <button
-                                        className="w-full py-4 rounded-2xl font-bold text-black text-base shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
-                                        style={{ backgroundColor: previewPrimary }}
-                                    >
-                                        Agendar Agora
-                                    </button>
-                                </div>
+                                    {/* Main Booking Card (Mirroring BookingFlow) */}
+                                    <div className="px-6 pb-20 max-w-2xl mx-auto w-full space-y-8">
+                                        <div className="bg-zinc-900/60 backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-10 flex flex-col items-center text-center shadow-2xl">
+                                            <h2 className="text-3xl font-display text-white mb-4">Pronto para o seu melhor visual?</h2>
+                                            <p className="text-zinc-400 mb-8 max-w-sm">Agende agora seu horário com nossos profissionais qualificados.</p>
+                                            <button 
+                                                className="w-full py-5 rounded-2xl font-bold text-black text-xl shadow-xl transition-all hover:scale-[1.02]"
+                                                style={{ backgroundColor: previewPrimary }}
+                                            >
+                                                Agendar Agora
+                                            </button>
+                                        </div>
 
-                                <div className="space-y-4">
-                                    <h5 className="text-zinc-500 text-[11px] font-bold uppercase tracking-widest px-1">Serviços Populares</h5>
-                                    <div className="grid gap-3">
-                                        {[
-                                            { name: 'Corte Degradê', price: '50', time: '45 min' },
-                                            { name: 'Barba Completa', price: '40', time: '30 min' }
-                                        ].map((s, i) => (
-                                            <div key={i} className="flex justify-between items-center p-4 rounded-2xl bg-zinc-900/40 border border-white/5">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center">✂️</div>
-                                                    <div>
-                                                        <p className="text-white font-semibold text-sm">{s.name}</p>
-                                                        <p className="text-zinc-500 text-xs">{s.time}</p>
+                                        {/* Services List Preview */}
+                                        <div className="space-y-4">
+                                            <h3 className="text-zinc-500 font-bold uppercase tracking-[0.2em] text-xs px-2">Serviços Populares</h3>
+                                            {[
+                                                { name: 'Corte Degradê', price: '50', time: '45 min' },
+                                                { name: 'Barba Completa', price: '40', time: '30 min' }
+                                            ].map((s, i) => (
+                                                <div key={i} className="bg-zinc-950/50 border border-white/5 p-6 rounded-3xl flex justify-between items-center group transition-all hover:bg-zinc-900/50">
+                                                    <div className="flex items-center gap-5">
+                                                        <div className="w-14 h-14 rounded-2xl bg-zinc-900 flex items-center justify-center text-2xl border border-white/5">
+                                                            {i === 0 ? '✂️' : '🧔'}
+                                                        </div>
+                                                        <div>
+                                                            <h4 className="text-white font-bold text-lg group-hover:text-primary transition-colors">{s.name}</h4>
+                                                            <p className="text-zinc-500 flex items-center gap-1.5 text-sm">
+                                                                <Clock size={14} /> {s.time}
+                                                            </p>
+                                                        </div>
                                                     </div>
+                                                    <span className="text-white font-display font-bold text-2xl">R$ {s.price}</span>
                                                 </div>
-                                                <div className="text-right">
-                                                    <p className="text-white font-bold text-sm">R$ {s.price}</p>
-                                                </div>
-                                            </div>
-                                        ))}
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
+
+                                {/* Bottom Nav (Mobile Only) */}
+                                {previewMode === 'mobile' && (
+                                    <div className="absolute bottom-0 left-0 right-0 bg-black/80 backdrop-blur-2xl px-10 py-6 flex justify-between items-center border-t border-white/5 z-50">
+                                        <div className="flex flex-col items-center gap-1.5" style={{ color: previewPrimary }}>
+                                            <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: previewPrimary }} />
+                                            <span className="text-[10px] font-bold uppercase tracking-widest">Início</span>
+                                        </div>
+                                        <div className="flex flex-col items-center gap-1.5 text-zinc-600">
+                                            <div className="w-5 h-5 rounded-md bg-zinc-900" />
+                                            <span className="text-[10px] font-bold uppercase tracking-widest">Agenda</span>
+                                        </div>
+                                        <div className="flex flex-col items-center gap-1.5 text-zinc-600">
+                                            <div className="w-5 h-5 rounded-md bg-zinc-900" />
+                                            <span className="text-[10px] font-bold uppercase tracking-widest">Conta</span>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
-
-                        {/* Bottom Nav (Mobile Only) */}
-                        {previewMode === 'mobile' && (
-                            <div className="absolute bottom-0 left-0 right-0 bg-black/80 backdrop-blur-xl p-4 flex justify-around border-t border-white/5 z-40">
-                                <div className="flex flex-col items-center gap-1" style={{ color: previewPrimary }}>
-                                    <div className="w-1.5 h-1.5 rounded-full mb-0.5" style={{ backgroundColor: previewPrimary }} />
-                                    <span className="text-[9px] font-bold uppercase tracking-tighter">Início</span>
-                                </div>
-                                <div className="flex flex-col items-center gap-1 text-zinc-600">
-                                    <div className="w-4 h-4 rounded-md bg-zinc-800" />
-                                    <span className="text-[9px] font-bold uppercase tracking-tighter">Agenda</span>
-                                </div>
-                                <div className="flex flex-col items-center gap-1 text-zinc-600">
-                                    <div className="w-4 h-4 rounded-md bg-zinc-800" />
-                                    <span className="text-[9px] font-bold uppercase tracking-tighter">Conta</span>
-                                </div>
-                            </div>
-                        )}
                     </div>
                 </div>
             </div>
