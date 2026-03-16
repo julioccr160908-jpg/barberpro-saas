@@ -283,7 +283,7 @@ export const AdminAppearanceSettings: React.FC = () => {
                     </div>
                 </div>
 
-                <div className={`border-4 border-zinc-800 rounded-[3rem] overflow-hidden bg-[#0A0A0A] mx-auto shadow-2xl relative transition-all duration-500 ring-8 ring-zinc-900/50 ${previewMode === 'mobile' ? 'max-w-[375px] h-[750px] scale-[0.8] origin-top' : 'w-full h-[600px] rounded-xl border-t-[32px]'
+                <div className={`border-4 border-zinc-800 rounded-[3rem] overflow-hidden bg-[#0A0A0A] mx-auto shadow-2xl relative transition-all duration-500 ring-8 ring-zinc-900/50 ${previewMode === 'mobile' ? 'max-w-[375px] h-[750px] scale-[0.6] origin-top' : 'w-full h-[550px] rounded-xl border-t-[32px]'
                     }`}>
 
                     {/* Desktop Browser Bar */}
@@ -314,11 +314,11 @@ export const AdminAppearanceSettings: React.FC = () => {
 
                     {/* App Content */}
                     <div
-                        className={`bg-black h-full flex flex-col font-sans overflow-y-auto no-scrollbar transition-all duration-300 pb-20 ${previewMode === 'desktop' ? 'w-[1440px] origin-top-left scale-[0.7] border-r border-white/5 shadow-2xl overflow-x-hidden' : ''}`}
+                        className={`bg-black h-full flex flex-col font-sans overflow-y-auto no-scrollbar transition-all duration-300 pb-20 ${previewMode === 'desktop' ? 'w-[1440px] origin-top-left scale-[0.48] border-r border-white/5 shadow-2xl overflow-x-hidden' : ''}`}
                         style={{
                             '--primary': previewPrimary,
                             '--secondary': previewSecondary,
-                            ...(previewMode === 'desktop' ? { minWidth: '1440px', height: '142.85%' } : {})
+                            ...(previewMode === 'desktop' ? { minWidth: '1440px', height: '208.33%' } : {})
                         } as React.CSSProperties}
                     >
                         {/* Glassmorphism Header */}
@@ -367,10 +367,10 @@ export const AdminAppearanceSettings: React.FC = () => {
 
                                 {previewMode === 'desktop' && (
                                     <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-                                        <h1 className="text-white text-6xl font-display font-black mb-4 tracking-tighter drop-shadow-2xl">
+                                        <h1 className="text-white text-5xl font-display font-black mb-4 tracking-tighter drop-shadow-2xl">
                                             ESTILO É <span style={{ color: previewPrimary }}>ATITUDE.</span>
                                         </h1>
-                                        <p className="text-white/70 text-xl max-w-2xl">
+                                        <p className="text-white/70 text-lg max-w-2xl">
                                             Onde a tradição encontra o moderno. Agende seu horário com os melhores profissionais.
                                         </p>
                                     </div>
