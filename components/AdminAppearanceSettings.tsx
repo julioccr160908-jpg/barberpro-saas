@@ -4,7 +4,26 @@ import { Card, CardHeader } from './ui/Card';
 import { Button } from './ui/Button';
 import { useSettings } from '../contexts/SettingsContext';
 import { toast } from 'sonner';
-import { Loader2, Upload, ImageIcon, RefreshCw, Clock, Menu, Maximize2, Smartphone, Monitor } from 'lucide-react';
+import { 
+    Loader2, 
+    Upload, 
+    ImageIcon, 
+    RefreshCw, 
+    Clock, 
+    Menu, 
+    Maximize2, 
+    Smartphone, 
+    Monitor, 
+    Wifi, 
+    GlassWater, 
+    Snowflake, 
+    Gamepad2, 
+    Dices, 
+    QrCode, 
+    Camera, 
+    MapPin, 
+    ChevronLeft 
+} from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { useOrganization } from '../contexts/OrganizationContext';
 import Cropper from 'react-easy-crop';
@@ -285,11 +304,11 @@ export const AdminAppearanceSettings: React.FC = () => {
                     </div>
                 </div>
 
-                {/* The Viewport Container */}
-                <div className="relative w-full rounded-2xl bg-[#0A0A0A] border border-white/5 shadow-2xl overflow-hidden flex flex-col h-[600px]">
-                    {/* Top Bars */}
+                {/* The Mirror Container */}
+                <div className="relative w-full rounded-2xl bg-[#0A0A0A] border border-white/5 shadow-2xl overflow-hidden flex flex-col h-[700px] no-scrollbar">
+                    {/* Top Bars (Simulation) */}
                     {previewMode === 'desktop' ? (
-                        <div className="h-10 flex items-center px-4 gap-1.5 bg-zinc-900 border-b border-white/5 shrink-0">
+                        <div className="h-10 flex items-center px-4 gap-1.5 bg-zinc-900 border-b border-white/5 shrink-0 z-50">
                             <div className="flex gap-1.5 mr-4">
                                 <div className="w-3 h-3 rounded-full bg-[#FF5F56]" />
                                 <div className="w-3 h-3 rounded-full bg-[#FFBD2E]" />
@@ -297,6 +316,9 @@ export const AdminAppearanceSettings: React.FC = () => {
                             </div>
                             <div className="flex-1 bg-black/40 rounded-lg h-7 flex items-center px-4 border border-white/5">
                                 <span className="text-[11px] text-zinc-500 font-mono">barberhost.com.br/{organization?.slug}</span>
+                            </div>
+                            <div className="ml-4 px-3 py-1 bg-white/5 border border-white/10 rounded-md text-[10px] text-white/50">
+                                <ChevronLeft size={10} className="inline mr-1" /> Voltar ao Painel
                             </div>
                         </div>
                     ) : (
@@ -310,16 +332,17 @@ export const AdminAppearanceSettings: React.FC = () => {
                         </div>
                     )}
 
-                    {/* App Content Container (Matches BookingFlow structure) */}
+                    {/* App Content Container (Mirroring BookingFlow exactly) */}
                     <div 
-                        className={`flex-1 relative overflow-hidden flex flex-col ${previewMode === 'mobile' ? 'max-w-[400px] mx-auto w-full border-x border-white/5' : 'w-full'}`}
+                        className={`flex-1 relative overflow-y-auto overflow-x-hidden no-scrollbar flex flex-col items-center p-4 sm:p-8 ${previewMode === 'mobile' ? 'max-w-[400px] mx-auto w-full' : 'w-full'}`}
                         style={{
                             '--primary': previewPrimary,
-                            '--secondary': previewSecondary
+                            '--secondary': previewSecondary,
+                            backgroundColor: '#0A0A0A'
                         } as React.CSSProperties}
                     >
-                        {/* Background Layer (Banner) */}
-                        <div className="absolute inset-0 z-0">
+                        {/* Background Layer (Matches BookingFlow) */}
+                        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
                             {bannerUrl ? (
                                 <img 
                                     src={bannerUrl} 
@@ -330,86 +353,87 @@ export const AdminAppearanceSettings: React.FC = () => {
                             ) : (
                                 <div className="w-full h-full bg-zinc-900" />
                             )}
-                            <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" />
+                            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
                         </div>
 
-                        {/* Content Area */}
-                        <div className="relative z-10 flex-col flex overflow-y-auto h-full no-scrollbar pb-10">
-                            {/* Logo & Name Section */}
-                            <div className="pt-10 pb-6 flex flex-col items-center">
-                                <div className="w-20 h-20 mb-4 rounded-full overflow-hidden ring-4 ring-black/40 shadow-2xl bg-zinc-900 border border-white/10">
+                        {/* Content (Z-Index 10) */}
+                        <div className="relative z-10 w-full max-w-2xl flex flex-col items-center">
+                            {/* Establishment Header */}
+                            <div className="text-center mb-12">
+                                <div className="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden border-4 border-zinc-900 shadow-2xl bg-zinc-900">
                                     {logoUrl ? (
                                         <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
                                     ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-3xl font-bold bg-zinc-900" style={{ color: previewPrimary }}>
+                                        <div className="w-full h-full flex items-center justify-center text-4xl font-bold font-display" style={{ color: previewPrimary }}>
                                             {previewName?.charAt(0) || 'B'}
                                         </div>
                                     )}
                                 </div>
-                                <h1 className="text-2xl font-display font-bold text-white tracking-[0.2em] mb-1 uppercase">
+                                <h1 className="text-4xl font-display font-bold text-white tracking-[0.2em] mb-2 uppercase">
                                     {previewName || 'Sua Barbearia'}
                                 </h1>
+                                <div className="flex items-center justify-center gap-2 text-sm text-zinc-400 opacity-80">
+                                    <MapPin size={14} style={{ color: previewPrimary }} />
+                                    <p>Rua Exemplo, 123 - Centro</p>
+                                </div>
                             </div>
 
-                            {/* Main Interaction Card */}
-                            <div className="px-6 space-y-6">
-                                <div className="bg-zinc-900/40 backdrop-blur-xl border border-white/10 rounded-3xl p-8 text-center shadow-xl">
-                                    <h2 className="text-xl font-display text-white mb-2">Pronto para o seu melhor visual?</h2>
-                                    <p className="text-zinc-400 text-sm mb-6">Agende agora seu horário com nossos profissionais qualificados.</p>
-                                    <button 
-                                        className="w-full py-4 rounded-2xl font-bold text-black text-base shadow-lg transition-transform active:scale-95"
-                                        style={{ backgroundColor: previewPrimary }}
-                                    >
-                                        Agendar Agora
-                                    </button>
-                                </div>
+                            {/* Booking Steps Indicator (Small simulation) */}
+                            <div className="flex items-center justify-center mb-8 gap-2 w-full max-w-sm px-4">
+                                {[1, 2, 3, 4, 5].map((s) => (
+                                    <div
+                                        key={s}
+                                        style={{ backgroundColor: s === 1 ? previewPrimary : '#1A1A1A' }}
+                                        className="h-1 flex-1 rounded-full opacity-50"
+                                    />
+                                ))}
+                            </div>
 
-                                {/* Mock Services List */}
-                                <div className="space-y-3">
-                                    <h3 className="text-zinc-500 font-bold uppercase tracking-widest text-[10px] px-2 italic">Serviços Populares</h3>
-                                    {[
-                                        { name: 'Corte Degradê', price: '50', time: '45 min' },
-                                        { name: 'Barba Completa', price: '40', time: '30 min' }
-                                    ].map((s, i) => (
-                                        <div key={i} className="bg-zinc-900/40 border border-white/5 p-4 rounded-2xl flex justify-between items-center">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 rounded-xl bg-zinc-800 flex items-center justify-center text-xl border border-white/5">
-                                                    {i === 0 ? '✂️' : '🧔'}
-                                                </div>
-                                                <div>
-                                                    <h4 className="text-white font-bold text-sm">{s.name}</h4>
-                                                    <p className="text-zinc-500 text-xs">{s.time}</p>
-                                                </div>
+                            {/* Main Interaction Card (Mirroring Showcase Step) */}
+                            <div className="w-full bg-zinc-900/40 backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-8 sm:p-12 text-center shadow-2xl mb-12 ring-1 ring-white/5">
+                                <h2 className="text-3xl font-display text-white mb-4">Pronto para o seu melhor visual?</h2>
+                                <p className="text-zinc-400 mb-10 max-w-sm mx-auto text-lg leading-relaxed">
+                                    Agende agora seu horário com nossos profissionais qualificados.
+                                </p>
+                                <button 
+                                    className="w-full py-6 rounded-2xl font-bold text-black text-xl shadow-2xl transition-all hover:brightness-110 active:scale-[0.98]"
+                                    style={{ backgroundColor: previewPrimary }}
+                                >
+                                    Agendar Agora
+                                </button>
+
+                                {/* Amenities Grid Mirror */}
+                                <div className="w-full mt-12 pt-10 border-t border-white/5">
+                                    <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-[0.2em] mb-8">Comodidades</h3>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                                        {[
+                                            { label: 'Wi-Fi Grátis', icon: Wifi },
+                                            { label: 'Água / Bebidas', icon: GlassWater },
+                                            { label: 'Ar Condicionado', icon: Snowflake },
+                                            { label: 'Videogame', icon: Gamepad2 },
+                                            { label: 'Sinuca / Jogos', icon: Dices },
+                                            { label: 'Aceita Pix', icon: QrCode },
+                                        ].map((item, idx) => (
+                                            <div key={idx} className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/5">
+                                                <item.icon size={20} className="text-white/70" />
+                                                <span className="text-[10px] font-bold text-zinc-400">{item.label}</span>
                                             </div>
-                                            <span className="text-white font-bold text-lg">R$ {s.price}</span>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Portfolio Simulation */}
+                                <div className="w-full mt-12 pt-10 border-t border-white/5 text-left">
+                                     <h3 className="text-sm font-bold text-white uppercase tracking-[0.1em] mb-6 flex items-center gap-2">
+                                        <Camera size={18} style={{ color: previewPrimary }} /> Nosso Portfolio
+                                     </h3>
+                                     <div className="grid grid-cols-2 gap-4">
+                                        <div className="aspect-square rounded-3xl bg-zinc-800/50 border border-white/5 overflow-hidden animate-pulse" />
+                                        <div className="aspect-square rounded-3xl bg-zinc-800/50 border border-white/5 overflow-hidden animate-pulse" />
+                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                        {/* Sticky Header (Like in BookingFlow when scrolling) */}
-                        <div className="absolute top-0 left-0 right-0 h-16 bg-black/10 backdrop-blur-sm flex items-center justify-between px-6 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
-                             <Menu className="text-white/50" size={20} />
-                        </div>
-
-                        {/* Mobile Bottom Bar */}
-                        {previewMode === 'mobile' && (
-                            <div className="absolute bottom-0 left-0 right-0 bg-black/90 backdrop-blur-xl px-8 py-4 flex justify-between items-center border-t border-white/5 z-50">
-                                <div className="flex flex-col items-center gap-1" style={{ color: previewPrimary }}>
-                                    <div className="w-1 h-1 rounded-full" style={{ backgroundColor: previewPrimary }} />
-                                    <span className="text-[9px] font-bold uppercase tracking-tight">Início</span>
-                                </div>
-                                <div className="flex flex-col items-center gap-1 text-zinc-600">
-                                    <div className="w-4 h-4 rounded bg-zinc-900" />
-                                    <span className="text-[9px] font-bold uppercase tracking-tight">Agenda</span>
-                                </div>
-                                <div className="flex flex-col items-center gap-1 text-zinc-600">
-                                    <div className="w-4 h-4 rounded bg-zinc-900" />
-                                    <span className="text-[9px] font-bold uppercase tracking-tight">Conta</span>
-                                </div>
-                            </div>
-                        )}
                     </div>
                 </div>
             </div>
