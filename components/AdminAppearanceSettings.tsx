@@ -14,6 +14,7 @@ interface AppearanceForm {
     primary_color: string;
     secondary_color: string;
     establishment_name: string;
+    banner_opacity: number;
 }
 
 export const AdminAppearanceSettings: React.FC = () => {
@@ -37,20 +38,23 @@ export const AdminAppearanceSettings: React.FC = () => {
         defaultValues: {
             primary_color: settings.primary_color || '#D4AF37',
             secondary_color: settings.secondary_color || '#1A1A1A',
-            establishment_name: settings.establishment_name || 'Minha Barbearia'
+            establishment_name: settings.establishment_name || 'Minha Barbearia',
+            banner_opacity: settings.banner_opacity || 20
         }
     });
 
     const previewPrimary = watch('primary_color');
     const previewSecondary = watch('secondary_color');
     const previewName = watch('establishment_name');
+    const previewOpacity = watch('banner_opacity');
 
     useEffect(() => {
         if (settings) {
             reset({
                 primary_color: settings.primary_color || '#D4AF37',
                 secondary_color: settings.secondary_color || '#1A1A1A',
-                establishment_name: settings.establishment_name || settings.establishment_name || ''
+                establishment_name: settings.establishment_name || '',
+                banner_opacity: settings.banner_opacity || 20
             });
         }
     }, [settings, reset]);
@@ -63,7 +67,8 @@ export const AdminAppearanceSettings: React.FC = () => {
                 ...settings,
                 primary_color: data.primary_color,
                 secondary_color: data.secondary_color,
-                establishment_name: data.establishment_name
+                establishment_name: data.establishment_name,
+                banner_opacity: data.banner_opacity
             });
 
             // Also Update Organization Table (Critical for Public Page Consistency)
@@ -198,11 +203,28 @@ export const AdminAppearanceSettings: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="pt-4 flex justify-end">
-                            <Button type="submit" disabled={isSaving}>
-                                {isSaving ? <Loader2 className="animate-spin mr-2" size={16} /> : <RefreshCw className="mr-2" size={16} />}
-                                Salvar Alterações
-                            </Button>
+                        <div className="pt-4 space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-textMuted mb-2 flex justify-between">
+                                    <span>Opacidade do Banner</span>
+                                    <span className="text-primary font-mono">{previewOpacity}%</span>
+                                </label>
+                                <input
+                                    type="range"
+                                    {...register('banner_opacity', { valueAsNumber: true })}
+                                    min="0"
+                                    max="100"
+                                    className="w-full accent-primary bg-background"
+                                />
+                                <p className="text-[10px] text-textMuted mt-1 italic">* Controla a visibilidade do banner de fundo na página principal.</p>
+                            </div>
+
+                            <div className="flex justify-end pt-2">
+                                <Button type="submit" disabled={isSaving}>
+                                    {isSaving ? <Loader2 className="animate-spin mr-2" size={16} /> : <RefreshCw className="mr-2" size={16} />}
+                                    Salvar Alterações
+                                </Button>
+                            </div>
                         </div>
                     </form>
                 </Card>
@@ -319,7 +341,12 @@ export const AdminAppearanceSettings: React.FC = () => {
                         <div className="relative shrink-0">
                             <div className="h-44 relative overflow-hidden">
                                 {bannerUrl ? (
-                                    <img src={bannerUrl} alt="Banner" className="w-full h-full object-cover" />
+                                    <img 
+                                        src={bannerUrl} 
+                                        alt="Banner" 
+                                        className="w-full h-full object-cover transition-opacity duration-300" 
+                                        style={{ opacity: previewOpacity / 100 }}
+                                    />
                                 ) : (
                                     <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center text-zinc-700">
                                         <ImageIcon size={40} className="opacity-20" />

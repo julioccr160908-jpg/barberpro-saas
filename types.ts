@@ -109,6 +109,7 @@ export interface Organization {
   primaryColor?: string;
   secondaryColor?: string;
   parentOrgId?: string;
+  bannerOpacity?: number;
 }
 
 export interface Expense {

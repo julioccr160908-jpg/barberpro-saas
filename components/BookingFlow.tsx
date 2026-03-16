@@ -500,8 +500,14 @@ export const BookingFlow: React.FC = () => {
       )}
 
       {activeSettings.banner_url && !bannerError && (
-        <div className="absolute inset-0 z-0 opacity-20">
-          <img src={activeSettings.banner_url} className="w-full h-full object-cover" alt="Banner" onError={() => setBannerError(true)} />
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          <img 
+            src={activeSettings.banner_url} 
+            className="w-full h-full object-cover transition-opacity duration-500" 
+            alt="Banner" 
+            style={{ opacity: (activeSettings.banner_opacity ?? 20) / 100 }}
+            onError={() => setBannerError(true)} 
+          />
           <div className="absolute inset-0 bg-background/80 blur-sm"></div>
         </div>
       )}

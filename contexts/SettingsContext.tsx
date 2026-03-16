@@ -26,7 +26,8 @@ const DEFAULT_SETTINGS: ShopSettings = {
     primary_color: null,
     secondary_color: null,
     loyalty_enabled: false,
-    loyalty_target: null
+    loyalty_target: null,
+    banner_opacity: 20
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
