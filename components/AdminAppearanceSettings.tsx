@@ -283,7 +283,7 @@ export const AdminAppearanceSettings: React.FC = () => {
                     </div>
                 </div>
 
-                <div className={`border-4 border-zinc-800 rounded-[3rem] overflow-hidden bg-[#0A0A0A] mx-auto shadow-2xl relative transition-all duration-500 ring-8 ring-zinc-900/50 ${previewMode === 'mobile' ? 'max-w-[320px] h-[650px]' : 'w-full h-[600px] rounded-xl border-t-[32px]'
+                <div className={`border-4 border-zinc-800 rounded-[3rem] overflow-hidden bg-[#0A0A0A] mx-auto shadow-2xl relative transition-all duration-500 ring-8 ring-zinc-900/50 ${previewMode === 'mobile' ? 'max-w-[375px] h-[750px] scale-[0.85] origin-top' : 'w-full h-[600px] rounded-xl border-t-[32px]'
                     }`}>
 
                     {/* Desktop Browser Bar */}
@@ -314,7 +314,7 @@ export const AdminAppearanceSettings: React.FC = () => {
 
                     {/* App Content */}
                     <div
-                        className="bg-black h-full flex flex-col font-sans overflow-y-auto no-scrollbar transition-all duration-300 pb-20"
+                        className={`bg-black h-full flex flex-col font-sans overflow-y-auto no-scrollbar transition-all duration-300 pb-20 ${previewMode === 'desktop' ? 'max-w-[1000px] mx-auto border-x border-white/5' : ''}`}
                         style={{
                             '--primary': previewPrimary,
                             '--secondary': previewSecondary
@@ -372,15 +372,15 @@ export const AdminAppearanceSettings: React.FC = () => {
                             >
                                 <div className="absolute -right-4 -top-4 w-20 h-20 rounded-full blur-3xl opacity-20" style={{ backgroundColor: previewPrimary }} />
                                 
-                                <h4 className="text-white font-bold text-lg mb-1">Corte & Estilo</h4>
-                                <p className="text-zinc-400 text-xs mb-5 leading-relaxed">
+                                <h4 className="text-white font-bold text-base mb-1">Corte & Estilo</h4>
+                                <p className="text-zinc-400 text-[10px] mb-4 leading-relaxed">
                                     Experiência única com os melhores <br/>profissionais da região.
                                 </p>
                                 <button
-                                    className="w-full py-3.5 rounded-xl font-bold text-black text-sm shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                                    className="w-full py-2.5 rounded-xl font-bold text-black text-[13px] shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                                     style={{ backgroundColor: previewPrimary }}
                                 >
-                                    Agendar Agora <Maximize2 size={14} />
+                                    Agendar Agora <Maximize2 size={12} />
                                 </button>
                             </div>
 
@@ -389,15 +389,15 @@ export const AdminAppearanceSettings: React.FC = () => {
                                 className="p-4 rounded-2xl flex items-center gap-3 border border-white/5 transition-all hover:bg-white/[0.02]"
                                 style={{ backgroundColor: `${previewSecondary}80` }}
                             >
-                                <div className="w-11 h-11 rounded-full flex items-center justify-center bg-white/5 text-white/80 border border-white/10">
-                                    <Clock size={20} />
+                                <div className="w-9 h-9 rounded-full flex items-center justify-center bg-white/5 text-white/80 border border-white/10">
+                                    <Clock size={16} />
                                 </div>
                                 <div>
-                                    <h5 className="text-white text-sm font-semibold">Minha Agenda</h5>
-                                    <p className="text-zinc-500 text-[11px]">Gerencie seus cortes marcados</p>
+                                    <h5 className="text-white text-xs font-semibold">Minha Agenda</h5>
+                                    <p className="text-zinc-500 text-[10px]">Gerencie seus cortes marcados</p>
                                 </div>
                                 <div className="ml-auto text-zinc-600">
-                                    <Maximize2 size={14} />
+                                    <Maximize2 size={12} />
                                 </div>
                             </div>
 
