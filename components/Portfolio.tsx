@@ -73,7 +73,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({ organizationId }) => {
         <h3 className="text-xl font-display font-bold text-white uppercase tracking-widest flex items-center gap-2">
           <Camera size={20} className="text-primary" /> Nosso Portfolio
         </h3>
-        <span className="text-xs text-textMuted uppercase font-bold tracking-tighter">Fotos Reais de Clientes</span>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-3 gap-4 pb-6 pt-2">
