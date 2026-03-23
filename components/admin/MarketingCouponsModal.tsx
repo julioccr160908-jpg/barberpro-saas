@@ -131,11 +131,12 @@ export const MarketingCouponsModal = ({ onClose }: { onClose: () => void }) => {
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-xs font-medium text-zinc-400 mb-1">Código Promocional</label>
-                                <input
-                                    {...register('code', { required: true })}
-                                    className="w-full bg-black/40 border border-zinc-800 rounded-lg px-3 py-2 text-white text-sm uppercase"
-                                    placeholder="EX: NATAL20"
-                                />
+                                    <input
+                                        {...register('code', { required: 'Código é obrigatório' })}
+                                        className={`w-full bg-black/40 border ${errors.code ? 'border-red-500' : 'border-zinc-800'} rounded-lg px-3 py-2 text-white text-sm uppercase focus:ring-1 focus:ring-white/20 outline-none`}
+                                        placeholder="EX: NATAL20"
+                                    />
+                                    {errors.code && <p className="text-[10px] text-red-500 mt-1">{errors.code.message}</p>}
                             </div>
                             <div>
                                 <label className="block text-xs font-medium text-zinc-400 mb-1">Tipo de Desconto</label>
@@ -155,9 +156,13 @@ export const MarketingCouponsModal = ({ onClose }: { onClose: () => void }) => {
                                 <input
                                     type="number"
                                     step="0.01"
-                                    {...register('discount_value', { required: true, min: 0.1 })}
-                                    className="w-full bg-black/40 border border-zinc-800 rounded-lg px-3 py-2 text-white text-sm"
+                                    {...register('discount_value', { 
+                                        required: 'Insira um valor', 
+                                        min: { value: 0.1, message: 'Valor deve ser > 0' } 
+                                    })}
+                                    className={`w-full bg-black/40 border ${errors.discount_value ? 'border-red-500' : 'border-zinc-800'} rounded-lg px-3 py-2 text-white text-sm focus:ring-1 focus:ring-white/20 outline-none`}
                                 />
+                                {errors.discount_value && <p className="text-[10px] text-red-500 mt-1">{errors.discount_value.message}</p>}
                             </div>
                             <div>
                                 <label className="block text-xs font-medium text-zinc-400 mb-1">Válido Até (Opcional)</label>
