@@ -68,22 +68,27 @@ export const BarberQRCode: React.FC<BarberQRCodeProps> = ({ slug, barberId, barb
                 </p>
             </div>
 
-            <div className="p-4 bg-white rounded-2xl shadow-xl">
+            <div className="relative p-3 bg-white rounded-xl shadow-xl w-fit mx-auto flex-shrink-0 flex items-center justify-center">
                 <QRCodeSVG 
                     ref={qrRef}
                     value={bookingUrl}
-                    size={180}
+                    size={200}
                     level="H"
                     includeMargin={true}
                     imageSettings={{
-                        src: "/favicon.ico",
+                        src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E",
                         x: undefined,
                         y: undefined,
-                        height: 40,
-                        width: 40,
+                        height: 52,
+                        width: 52,
                         excavate: true,
                     }}
                 />
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-xl flex items-center justify-center shadow-md">
+                        <Scissors size={24} className="text-black transform -rotate-45" />
+                    </div>
+                </div>
             </div>
 
             <div className="flex flex-row gap-2 w-full max-w-sm">
