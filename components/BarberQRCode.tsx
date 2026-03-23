@@ -88,18 +88,22 @@ export const BarberQRCode: React.FC<BarberQRCodeProps> = ({ slug, barberId, barb
                     ctx.drawImage(scissorsImg, -30, -30, 60, 60);
                     ctx.restore();
                     
-                    // Typography Institutional (Dynamic & Professional)
+                    // Typography Editorial (Luxury Branding)
                     const upperName = barberName.toUpperCase();
-                    const legendText = upperName.length > 15 
-                        ? `AGENDE AGORA COM ${upperName}` 
-                        : `ESCANEIE E AGENDE COM ${upperName}`;
+                    const legendText = `SUA PRÓXIMA SESSÃO COM ${upperName}`;
 
-                    ctx.fillStyle = "black";
-                    // Using a slightly smaller, more elegant font size and letter spacing
-                    ctx.font = "bold 42px 'Inter', 'Roboto', 'Montserrat', sans-serif";
+                    ctx.save();
+                    ctx.fillStyle = "#1a1a1a"; // Charcoal gray for printed look
+                    ctx.textBaseline = "top";
+                    // Subtle, smaller font with high tracking (kerning)
+                    ctx.font = "bold 26px 'Inter', 'Roboto', 'Montserrat', sans-serif";
                     ctx.textAlign = "center";
-                    ctx.letterSpacing = "3px"; // Sophisticated tracking
-                    ctx.fillText(legendText, size / 2, size - 80);
+                    ctx.letterSpacing = "6px"; // Extra loose tracking for sophistication
+                    
+                    // Center the text with generous padding
+                    const textY = size - 110; 
+                    ctx.fillText(legendText, size / 2, textY);
+                    ctx.restore();
                     
                     const pngFile = canvas.toDataURL("image/png");
                     const downloadLink = document.createElement("a");
