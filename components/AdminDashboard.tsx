@@ -185,9 +185,15 @@ export const AdminDashboard: React.FC = () => {
         <div className="lg:col-span-2">
           <Card className="h-96">
             <CardHeader title="Receita (Últimos 7 dias)" subtitle={hasAnyData ? 'Realizada + Agendada' : 'Baseado em cortes realizados'} />
-            <div className="h-72 w-full relative min-h-[288px] focus:outline-none select-none" tabIndex={-1}>
+            <div className="h-72 w-full relative min-h-[288px] outline-none focus:outline-none focus:ring-0 select-none" tabIndex={-1}>
+              {/* Force outline removal for Recharts internal SVG */}
+              <style dangerouslySetInnerHTML={{ __html: `
+                .recharts-wrapper:focus, .recharts-surface:focus, .recharts-sector:focus {
+                  outline: none !important;
+                }
+              ` }} />
               <ResponsiveContainer width="100%" height="100%" minHeight={288}>
-                <AreaChart data={chartData} accessibilityLayer>
+                <AreaChart data={chartData} accessibilityLayer={false}>
                   <defs>
                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#D4AF37" stopOpacity={0.3} />
