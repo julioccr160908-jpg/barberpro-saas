@@ -167,9 +167,9 @@ export const MarketingCouponsModal = ({ onClose }: { onClose: () => void }) => {
                             <div>
                                 <label className="block text-xs font-medium text-zinc-400 mb-1">Válido Até (Opcional)</label>
                                 <input
-                                    type="datetime-local"
+                                    type="date"
                                     {...register('valid_until')}
-                                    className="w-full bg-black/40 border border-zinc-800 rounded-lg px-3 py-2 text-white text-sm"
+                                    className="w-full bg-black/40 border border-zinc-800 rounded-lg px-3 py-2 text-white text-sm focus:ring-1 focus:ring-white/20 outline-none"
                                 />
                             </div>
                             <div>
