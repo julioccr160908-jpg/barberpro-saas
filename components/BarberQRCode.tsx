@@ -77,41 +77,31 @@ export const BarberQRCode: React.FC<BarberQRCodeProps> = ({ slug, barberId, barb
                 ctx.fill();
                 ctx.restore();
                 
-                // Scissors Icon (Simplified Symbol)
-                ctx.save();
-                ctx.translate(size / 2, size / 2 - 40);
-                ctx.rotate(-Math.PI / 4); // -45 deg
-                ctx.strokeStyle = "black";
-                ctx.lineWidth = 6;
-                ctx.lineCap = "round";
+                // Scissors Icon (Real SVG Icon)
+                const scissorsImg = new Image();
+                const sSvg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='6' cy='6' r='3'/><circle cx='6' cy='18' r='3'/><line x1='20' y1='4' x2='8.12' y2='15.88'/><line x1='14.47' y1='14.48' x2='20' y2='20'/><line x1='8.12' y1='8.12' x2='12' y2='12'/></svg>`;
                 
-                // Basic Scissors Shape (Simplified for Canvas Drawing)
-                const s = 15;
-                // Blades
-                ctx.beginPath();
-                ctx.moveTo(0, -s); ctx.lineTo(0, s);
-                ctx.stroke();
-                // Handles
-                ctx.beginPath();
-                ctx.arc(-s/2, s + s/2, s/2, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.arc(s/2, s + s/2, s/2, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.restore();
-                
-                // Typography Institutional
-                ctx.fillStyle = "black";
-                ctx.font = "bold 52px sans-serif";
-                ctx.textAlign = "center";
-                ctx.letterSpacing = "2px";
-                ctx.fillText("ESCANEIE PARA AGENDAR", size / 2, size - 80);
-                
-                const pngFile = canvas.toDataURL("image/png");
-                const downloadLink = document.createElement("a");
-                downloadLink.download = `QR_Code_${slug}.png`;
-                downloadLink.href = pngFile;
-                downloadLink.click();
+                scissorsImg.onload = () => {
+                    ctx.save();
+                    ctx.translate(size / 2, size / 2 - 40);
+                    ctx.rotate(-Math.PI / 4); // -45 deg
+                    ctx.drawImage(scissorsImg, -30, -30, 60, 60);
+                    ctx.restore();
+                    
+                    // Typography Institutional
+                    ctx.fillStyle = "black";
+                    ctx.font = "bold 52px sans-serif";
+                    ctx.textAlign = "center";
+                    ctx.letterSpacing = "2px";
+                    ctx.fillText("ESCANEIE PARA AGENDAR", size / 2, size - 80);
+                    
+                    const pngFile = canvas.toDataURL("image/png");
+                    const downloadLink = document.createElement("a");
+                    downloadLink.download = `QR_Code_${slug}.png`;
+                    downloadLink.href = pngFile;
+                    downloadLink.click();
+                };
+                scissorsImg.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(sSvg);
             }
         };
         
