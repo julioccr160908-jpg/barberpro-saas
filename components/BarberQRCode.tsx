@@ -88,21 +88,43 @@ export const BarberQRCode: React.FC<BarberQRCodeProps> = ({ slug, barberId, barb
                     ctx.drawImage(scissorsImg, -30, -30, 60, 60);
                     ctx.restore();
                     
-                    // Typography Editorial (Luxury Branding)
-                    const upperName = barberName.toUpperCase();
-                    const legendText = `SUA PRÓXIMA SESSÃO COM ${upperName}`;
+                    // Typography Humanized (Luxury Studio Design)
+                    const name = barberName.toUpperCase();
+                    const prefix = "Sua próxima experiência, ";
+                    const suffix = `com ${name}`;
 
                     ctx.save();
-                    ctx.fillStyle = "#1a1a1a"; // Charcoal gray for printed look
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = "high";
+                    ctx.fillStyle = "#333230"; // Warm gray
                     ctx.textBaseline = "top";
-                    // Subtle, smaller font with high tracking (kerning)
-                    ctx.font = "bold 26px 'Inter', 'Roboto', 'Montserrat', sans-serif";
                     ctx.textAlign = "center";
-                    ctx.letterSpacing = "6px"; // Extra loose tracking for sophistication
                     
-                    // Center the text with generous padding
-                    const textY = size - 110; 
-                    ctx.fillText(legendText, size / 2, textY);
+                    // 1. Dynamic Graphic Divider (Fine horizontal line or Diamond)
+                    ctx.strokeStyle = "rgba(51, 50, 48, 0.2)";
+                    ctx.lineWidth = 0.5;
+                    ctx.beginPath();
+                    ctx.moveTo(size/2 - 300, size - 160);
+                    ctx.lineTo(size/2 + 300, size - 160);
+                    ctx.stroke();
+
+                    // 2. Diamond Separator (◊)
+                    ctx.font = "20px serif";
+                    ctx.fillText("◊", size / 2, size - 173);
+
+                    // 3. Rhythmic Copywriting (Calculated Drawing)
+                    ctx.letterSpacing = "8px"; // Extreme spacing for exclusivity
+                    
+                    // Draw Prefix (Light & Italic)
+                    ctx.font = "italic 300 24px 'Montserrat', 'Inter', sans-serif";
+                    ctx.globalAlpha = 0.7;
+                    ctx.fillText(prefix, size / 2, size - 120);
+                    
+                    // Draw Suffix (Bold & Strong)
+                    ctx.font = "bold 28px 'Montserrat', 'Inter', sans-serif";
+                    ctx.globalAlpha = 1.0;
+                    ctx.fillText(suffix, size / 2, size - 85);
+                    
                     ctx.restore();
                     
                     const pngFile = canvas.toDataURL("image/png");
