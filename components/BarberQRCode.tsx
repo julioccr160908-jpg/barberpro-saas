@@ -61,22 +61,18 @@ export const BarberQRCode: React.FC<BarberQRCodeProps> = ({ slug, barberId, barb
 
     return (
         <Card className="bg-zinc-900 border-zinc-800 p-8 flex flex-col items-center text-center space-y-6">
-            <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-2xl flex items-center justify-center shadow-lg mb-2">
-                <Scissors size={32} className="text-black transform -rotate-45" />
-            </div>
-            
             <div>
-                <h3 className="text-2xl font-display font-bold text-white mb-2">Seu QR Code de Agendamento</h3>
-                <p className="text-zinc-400 max-w-sm mx-auto text-sm">
+                <h3 className="text-xl font-display font-bold text-white mb-2">Seu QR Code de Agendamento</h3>
+                <p className="text-zinc-400 max-w-xs mx-auto text-sm leading-relaxed">
                     Imprima este código e coloque no seu espelho. Seus clientes poderão agendar o próximo corte em segundos!
                 </p>
             </div>
 
-            <div className="p-4 bg-white rounded-2xl shadow-2xl transform hover:scale-105 transition-transform duration-300">
+            <div className="p-4 bg-white rounded-2xl shadow-xl">
                 <QRCodeSVG 
                     ref={qrRef}
                     value={bookingUrl}
-                    size={256}
+                    size={220}
                     level="H"
                     includeMargin={true}
                     imageSettings={{

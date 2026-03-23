@@ -144,15 +144,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentRole, setCurrentView, c
 
       {/* Sidebar Container */}
       <aside className={`
-        fixed inset-y-0 left-0 z-40 w-72 bg-[#09090b] 
+        fixed inset-y-0 left-0 z-40 w-60 bg-[#09090b] 
         transform transition-transform duration-300 ease-out shadow-2xl
         flex flex-col border-r border-white/5
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         {/* Logo Area & Org Switcher */}
         <div className="border-b border-white/5 bg-black/20">
-          <div className="h-24 flex items-center px-8 justify-between">
-            <div className="flex items-center gap-4 group cursor-pointer" onClick={() => navigate('/admin/dashboard')}>
+          <div className="h-24 flex items-center px-6 justify-between">
+            <div className="flex items-center gap-3 group cursor-pointer" onClick={() => navigate('/admin/dashboard')}>
               <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center transition-all"
                 style={{
@@ -238,7 +238,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentRole, setCurrentView, c
                         if (window.innerWidth < 1024) setIsOpen(false);
                       }}
                       className={`
-                          w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 group relative overflow-hidden
+                          w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 group relative overflow-hidden
                           ${isActive
                           ? 'text-black font-bold'
                           : 'text-zinc-400 hover:text-white hover:bg-white/5'
@@ -258,7 +258,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentRole, setCurrentView, c
                       <span className="relative z-10">{item.label}</span>
 
                       {isActive && (
-                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-black rounded-l-full" />
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-black rounded-l-full" />
                       )}
                     </button>
                   );
@@ -270,7 +270,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentRole, setCurrentView, c
 
         {/* Footer / User Profile */}
         <div className="p-4 border-t border-white/5 bg-black/40">
-          <div className="bg-white/5 rounded-2xl p-4 flex items-center justify-between group">
+          <div className="bg-white/5 rounded-2xl p-3 flex items-center justify-between group">
             <div className="flex items-center gap-3">
               <div
                 className="w-10 h-10 rounded-full border-2 overflow-hidden"
@@ -283,7 +283,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentRole, setCurrentView, c
                 />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-white truncate max-w-[120px]">{profile?.name || 'Usuário'}</span>
+                <span className="text-xs font-bold text-white truncate max-w-[100px]">{profile?.name || 'Usuário'}</span>
                 <span className="text-[10px] text-zinc-500 uppercase tracking-wider">{profile?.role || 'Admin'}</span>
               </div>
             </div>

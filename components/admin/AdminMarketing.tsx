@@ -78,10 +78,10 @@ export const AdminMarketing: React.FC = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 {/* Left Column: QR Code & Tips */}
-                <div className="lg:col-span-4 space-y-6">
-                    <div className="flex items-center gap-2 mb-2">
-                        <QrCode size={24} className="text-yellow-500" />
-                        <h2 className="text-xl font-bold text-white uppercase tracking-wider">QR Code</h2>
+                <div className="lg:col-span-5 space-y-6">
+                    <div className="flex items-center gap-2 mb-2 opacity-80">
+                        <QrCode size={20} className="text-yellow-500" />
+                        <h2 className="text-base font-bold text-white uppercase tracking-wider">Acesso Rápido</h2>
                     </div>
                     {user && profile && (
                         <BarberQRCode 
@@ -104,7 +104,7 @@ export const AdminMarketing: React.FC = () => {
                 </div>
 
                 {/* Right Column: Saudade Campaign */}
-                <div className="lg:col-span-8 space-y-6">
+                <div className="lg:col-span-7 space-y-6">
                     <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                             <Megaphone size={24} className="text-yellow-500" />
