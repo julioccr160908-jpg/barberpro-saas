@@ -129,16 +129,16 @@ export const AdminMarketing: React.FC = () => {
                         )}
                     </div>
                     
-                    <Card className="bg-zinc-900 border-zinc-800 flex-1 flex flex-col">
-                        <div className="p-4 border-b border-white/5 bg-white/5">
+                    <Card className="bg-zinc-900 border-zinc-800 flex-1 flex flex-col max-h-[400px]">
+                        <div className="p-3 border-b border-white/5 bg-white/5">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <h3 className="text-base font-bold text-white">Clientes "Sumidos" (+30 dias)</h3>
+                                    <h3 className="text-sm font-bold text-white">Clientes "Sumidos" (+30 dias)</h3>
                                     <p className="text-[10px] text-zinc-400">Clientes que demoram a voltar.</p>
                                 </div>
-                                <div className="text-right">
-                                    <span className="text-xl font-display font-bold text-primary">{inactiveCustomers.length}</span>
-                                    <p className="text-[8px] text-zinc-500 uppercase font-bold">Clientes Alvo</p>
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-xl font-display font-bold text-primary leading-none">{inactiveCustomers.length}</span>
+                                    <p className="text-[8px] text-zinc-500 uppercase font-bold leading-none">Clientes Alvo</p>
                                 </div>
                             </div>
                         </div>
@@ -150,12 +150,14 @@ export const AdminMarketing: React.FC = () => {
                                     <p>Analisando histórico de frequência...</p>
                                 </div>
                             ) : inactiveCustomers.length === 0 ? (
-                                <div className="p-6 flex flex-col items-center justify-center text-center">
-                                    <div className="w-12 h-12 bg-zinc-800 rounded-full flex items-center justify-center mb-3 text-zinc-600">
-                                        <CheckCircle2 size={24} />
+                                <div className="py-4 flex flex-col items-center justify-center text-center">
+                                    <div className="w-8 h-8 bg-zinc-800 rounded-full flex items-center justify-center mb-2 text-zinc-600">
+                                        <CheckCircle2 size={16} />
                                     </div>
-                                    <h4 className="text-sm text-white font-bold mb-0.5">Tudo em dia!</h4>
-                                    <p className="text-[10px] text-zinc-500">Nenhum cliente inativo encontrado.</p>
+                                    <div className="flex items-center gap-2">
+                                        <h4 className="text-sm text-white font-bold">Tudo em dia!</h4>
+                                        <p className="text-[10px] text-zinc-500">Nenhum cliente inativo encontrado.</p>
+                                    </div>
                                 </div>
                             ) : (
                                 <div className="divide-y divide-white/5">

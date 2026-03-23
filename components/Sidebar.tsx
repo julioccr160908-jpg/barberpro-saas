@@ -150,21 +150,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentRole, setCurrentView, c
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         {/* Logo Area & Org Switcher */}
-        <div className="border-b border-white/5 bg-black/20">
-          <div className="h-16 flex items-center px-4 justify-between">
-            <div className="flex items-center gap-3 group cursor-pointer" onClick={() => navigate('/admin/dashboard')}>
+          <div className="h-14 flex items-center px-4 justify-between border-b border-white/5 bg-black/20">
+            <div className="flex items-center gap-2 group cursor-pointer" onClick={() => navigate('/admin/dashboard')}>
               <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
+                className="w-7 h-7 rounded-lg flex items-center justify-center transition-all"
                 style={{
                   backgroundColor: organization?.primaryColor || '#D4AF37',
-                  boxShadow: `0 0 15px ${(organization?.primaryColor || '#D4AF37')}4D`
+                  boxShadow: `0 0 10px ${(organization?.primaryColor || '#D4AF37')}33`
                 }}
               >
-                <Scissors size={16} className="text-black transform -rotate-45" />
+                <Scissors size={14} className="text-black transform -rotate-45" />
               </div>
               <div className="flex flex-col">
-                <span className="font-display font-bold text-base tracking-wider text-white leading-none">{organization?.name || 'BARBERHOST'}</span>
-                <span className="text-[8px] text-zinc-500 tracking-[0.2em] uppercase mt-0.5">Management</span>
+                <span className="font-display font-bold text-sm tracking-wider text-white leading-none">{organization?.name || 'BARBERHOST'}</span>
+                <span className="text-[7px] text-zinc-500 tracking-[0.2em] uppercase mt-0.5">Management</span>
               </div>
             </div>
           </div>
@@ -215,7 +214,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentRole, setCurrentView, c
               )}
             </div>
           )}
-        </div>
 
         {/* Navigation */}
         <nav className="flex-1 px-4 py-6 space-y-8 overflow-y-auto custom-scrollbar">
