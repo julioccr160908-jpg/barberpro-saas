@@ -85,10 +85,10 @@ export const AdminDashboard: React.FC = () => {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
         <div>
-          <h1 className="text-3xl font-display font-bold text-white uppercase">Dashboard</h1>
-          <p className="text-textMuted">Visão geral do desempenho</p>
+          <h1 className="text-2xl font-display font-bold text-white uppercase mb-1">Dashboard</h1>
+          <p className="text-sm text-textMuted">Visão geral do desempenho</p>
         </div>
 
         {/* Public Link Button */}

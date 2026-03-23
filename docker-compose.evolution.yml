@@ -21,7 +21,7 @@ services:
     depends_on:
       - redis
     networks:
-      - supabase_network_barberpro-saas
+      - barberpro_network
 
   redis:
     image: redis:alpine
@@ -30,10 +30,10 @@ services:
     volumes:
       - redis_data:/data
     networks:
-      - supabase_network_barberpro-saas
+      - barberpro_network
 
 networks:
-  supabase_network_barberpro-saas:
+  barberpro_network:
     external: true
 
 volumes:

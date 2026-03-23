@@ -151,21 +151,42 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentRole, setCurrentView, c
       `}>
         {/* Logo Area & Org Switcher */}
         <div className="border-b border-white/5 bg-black/20">
-          <div className="h-24 flex items-center px-6 justify-between">
+          <div className="h-16 flex items-center px-4 justify-between">
             <div className="flex items-center gap-3 group cursor-pointer" onClick={() => navigate('/admin/dashboard')}>
               <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center transition-all"
+                className="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
                 style={{
                   backgroundColor: organization?.primaryColor || '#D4AF37',
-                  boxShadow: `0 0 20px ${(organization?.primaryColor || '#D4AF37')}4D`
+                  boxShadow: `0 0 15px ${(organization?.primaryColor || '#D4AF37')}4D`
                 }}
               >
-                <Scissors size={20} className="text-black transform -rotate-45" />
+                <Scissors size={16} className="text-black transform -rotate-45" />
               </div>
               <div className="flex flex-col">
-                <span className="font-display font-bold text-xl tracking-wider text-white leading-none">{organization?.name || 'BARBERHOST'}</span>
-                <span className="text-[10px] text-zinc-500 tracking-[0.2em] uppercase mt-1">Management</span>
+                <span className="font-display font-bold text-base tracking-wider text-white leading-none">{organization?.name || 'BARBERHOST'}</span>
+                <span className="text-[8px] text-zinc-500 tracking-[0.2em] uppercase mt-0.5">Management</span>
               </div>
+            </div>
+
+            {/* User Profile Inline */}
+            <div className="flex items-center gap-3 pl-2 border-l border-white/10 ml-2">
+              <div
+                className="w-8 h-8 rounded-full border overflow-hidden shrink-0"
+                style={{ borderColor: `${(organization?.primaryColor || '#D4AF37')}33` }}
+              >
+                <img
+                  src={profile?.avatarUrl || `https://ui-avatars.com/api/?name=${profile?.name || 'User'}&background=EAB308&color=000`}
+                  alt="Avatar"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <button
+                onClick={() => signOut()}
+                className="p-1.5 text-zinc-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                title="Sair"
+              >
+                <LogOut size={16} />
+              </button>
             </div>
           </div>
 
@@ -268,35 +289,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentRole, setCurrentView, c
           })}
         </nav>
 
-        {/* Footer / User Profile */}
-        <div className="p-4 border-t border-white/5 bg-black/40">
-          <div className="bg-white/5 rounded-2xl p-3 flex items-center justify-between group">
-            <div className="flex items-center gap-3">
-              <div
-                className="w-10 h-10 rounded-full border-2 overflow-hidden"
-                style={{ borderColor: `${(organization?.primaryColor || '#D4AF37')}33` }}
-              >
-                <img
-                  src={profile?.avatarUrl || `https://ui-avatars.com/api/?name=${profile?.name || 'User'}&background=EAB308&color=000`}
-                  alt="Avatar"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-xs font-bold text-white truncate max-w-[100px]">{profile?.name || 'Usuário'}</span>
-                <span className="text-[10px] text-zinc-500 uppercase tracking-wider">{profile?.role || 'Admin'}</span>
-              </div>
-            </div>
-            <button
-              onClick={() => signOut()}
-              className="p-2 text-zinc-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
-            >
-              <LogOut size={18} />
-            </button>
-          </div>
-          <div className="mt-4 text-center">
+        <div className="p-4 border-t border-white/5 bg-black/40 text-center">
             <span className="text-[10px] text-zinc-600 font-mono tracking-widest">v1.2.0 • BarberHost</span>
-          </div>
         </div>
       </aside>
     </>

@@ -68,19 +68,19 @@ export const AdminMarketing: React.FC = () => {
     };
 
     return (
-        <div className="space-y-8 animate-fade-in">
+        <div className="space-y-6 animate-fade-in">
             <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-display font-bold text-white mb-2 tracking-tight">Marketing e Crescimento</h1>
-                    <p className="text-zinc-400">Ferramentas para atrair e fidelizar seus clientes.</p>
+                    <h1 className="text-2xl font-display font-bold text-white mb-1 tracking-tight">Marketing e Crescimento</h1>
+                    <p className="text-sm text-zinc-400">Ferramentas para atrair e fidelizar seus clientes.</p>
                 </div>
-                <div className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 px-4 py-2 rounded-full">
-                    <Rocket size={18} className="text-yellow-500" />
-                    <span className="text-sm font-bold text-yellow-500 uppercase tracking-wider">Modo Pro Ativo</span>
+                <div className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 px-3 py-1.5 rounded-full">
+                    <Rocket size={16} className="text-yellow-500" />
+                    <span className="text-[10px] font-bold text-yellow-500 uppercase tracking-wider">Modo Pro Ativo</span>
                 </div>
             </header>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 {/* Left Column: QR Code & Tips */}
                 <div className="lg:col-span-5 flex flex-col gap-6">
                     <div className="flex items-center gap-2 opacity-80">
@@ -130,15 +130,15 @@ export const AdminMarketing: React.FC = () => {
                     </div>
                     
                     <Card className="bg-zinc-900 border-zinc-800 flex-1 flex flex-col">
-                        <div className="p-6 border-b border-white/5 bg-white/5">
+                        <div className="p-4 border-b border-white/5 bg-white/5">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <h3 className="text-lg font-bold text-white">Clientes "Sumidos" (+30 dias)</h3>
-                                    <p className="text-xs text-zinc-400">Identificamos clientes que gostam do seu serviço mas estão demorando a voltar.</p>
+                                    <h3 className="text-base font-bold text-white">Clientes "Sumidos" (+30 dias)</h3>
+                                    <p className="text-[10px] text-zinc-400">Clientes que demoram a voltar.</p>
                                 </div>
                                 <div className="text-right">
-                                    <span className="text-2xl font-display font-bold text-primary">{inactiveCustomers.length}</span>
-                                    <p className="text-[10px] text-zinc-500 uppercase font-bold">Clientes Alvo</p>
+                                    <span className="text-xl font-display font-bold text-primary">{inactiveCustomers.length}</span>
+                                    <p className="text-[8px] text-zinc-500 uppercase font-bold">Clientes Alvo</p>
                                 </div>
                             </div>
                         </div>
@@ -150,12 +150,12 @@ export const AdminMarketing: React.FC = () => {
                                     <p>Analisando histórico de frequência...</p>
                                 </div>
                             ) : inactiveCustomers.length === 0 ? (
-                                <div className="p-12 flex flex-col items-center justify-center text-center">
-                                    <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center mb-4 text-zinc-600">
-                                        <CheckCircle2 size={32} />
+                                <div className="p-6 flex flex-col items-center justify-center text-center">
+                                    <div className="w-12 h-12 bg-zinc-800 rounded-full flex items-center justify-center mb-3 text-zinc-600">
+                                        <CheckCircle2 size={24} />
                                     </div>
-                                    <h4 className="text-white font-bold mb-1">Tudo em dia!</h4>
-                                    <p className="text-sm text-zinc-500">Não encontramos clientes inativos no momento.</p>
+                                    <h4 className="text-sm text-white font-bold mb-0.5">Tudo em dia!</h4>
+                                    <p className="text-[10px] text-zinc-500">Nenhum cliente inativo encontrado.</p>
                                 </div>
                             ) : (
                                 <div className="divide-y divide-white/5">
