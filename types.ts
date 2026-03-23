@@ -54,6 +54,7 @@ export interface Appointment {
   };
   barber?: {
     name: string;
+    avatarUrl?: string;
   };
   customer?: {
     name: string;
@@ -77,9 +78,29 @@ export interface DayConfig {
   breakEnd?: string;
 }
 
-import { Database } from './database.types';
+import { Database, Json } from './database.types';
 
-export type ShopSettings = Database['public']['Tables']['settings']['Row'];
+export interface ShopSettings {
+  id: number;
+  organization_id: string | null;
+  establishment_name: string | null;
+  address: string | null;
+  phone: string | null;
+  city: string | null;
+  state: string | null;
+  zip_code: string | null;
+  interval_minutes: number;
+  schedule: Json;
+  primary_color: string | null;
+  secondary_color: string | null;
+  amenities: string[] | null;
+  loyalty_enabled: boolean | null;
+  loyalty_target: number | null;
+  banner_opacity: number | null;
+  // Aliases for legacy compatibility
+  loyaltyEnabled?: boolean | null;
+  loyaltyTarget?: number | null;
+}
 
 // Stats for dashboard
 export interface DailyStats {
@@ -110,6 +131,7 @@ export interface Organization {
   secondaryColor?: string;
   parentOrgId?: string;
   bannerOpacity?: number;
+  subscription_status?: 'trial' | 'active' | 'past_due' | 'canceled' | 'pending';
 }
 
 export interface Expense {

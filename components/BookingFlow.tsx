@@ -3,7 +3,7 @@ import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { Button } from './ui/Button';
 import { WhatsAppButton } from './ui/WhatsAppButton';
 import { Card } from './ui/Card';
-import { ChevronRight, ChevronLeft, MapPin, Search, Star, Clock, User as UserIcon, Store, Loader2, Wifi, Coffee, Gamepad2, Tv, Snowflake, Beer, Car, Cigarette, GlassWater, Music, PawPrint, Flame, Accessibility, CreditCard, QrCode, Dices, Check, Calendar as CalendarIcon, Scissors, AlertCircle, Gift, Package } from 'lucide-react';
+import { ChevronRight, ChevronLeft, MapPin, Search, Star, Clock, User as UserIcon, Store, Loader2, Wifi, Coffee, Gamepad2, Tv, Snowflake, Beer, Car, Cigarette, GlassWater, Music, PawPrint, Flame, Accessibility, CreditCard, QrCode, Dices, Check, Calendar as CalendarIcon, Scissors, AlertCircle, Gift, Package, X } from 'lucide-react';
 
 const AMENITY_ICONS: Record<string, { label: string, icon: any }> = {
   wifi: { label: 'Wi-Fi Grátis', icon: Wifi },
@@ -80,6 +80,12 @@ export const BookingFlow: React.FC = () => {
   const [selectedProducts, setSelectedProducts] = useState<Record<string, number>>({});
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
+  // Marketing Hooks
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<{ id: string, type: 'PERCENTAGE' | 'FIXED', value: number } | null>(null);
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
+  const [affiliateLink, setAffiliateLink] = useState<{ id: string, type?: 'PERCENTAGE' | 'FIXED', value?: number } | null>(null);
+
   const { slug } = useParams<{ slug: string }>();
 
   // React Query Hooks
@@ -139,6 +145,21 @@ export const BookingFlow: React.FC = () => {
       const searchParams = new URLSearchParams(window.location.search);
       const barberId = searchParams.get('barber');
       const profName = searchParams.get('prof');
+      const ref = searchParams.get('ref');
+
+      // Process Affiliate Ref
+      if (ref && orgId && !affiliateLink) {
+          const validateAffiliate = async () => {
+              const { data, error } = await supabase.rpc('get_affiliate_and_increment_click', {
+                  p_organization_id: orgId,
+                  p_slug_suffix: ref
+              });
+              if (!error && data && data.valid) {
+                  setAffiliateLink({ id: data.id, type: data.discount_type, value: data.discount_value });
+              }
+          };
+          validateAffiliate();
+      }
 
       if (barberId) {
         const barber = staff.find(s => s.id === barberId);
@@ -254,6 +275,43 @@ export const BookingFlow: React.FC = () => {
     checkLoyalty();
   }, []);
 
+  const calculateTotal = () => {
+      let totals = selectedService?.price || 0;
+      Object.entries(selectedProducts).forEach(([id, q]) => {
+          const p = productsData?.find(product => product.id === id);
+          totals += (p?.price || 0) * q;
+      });
+
+      let discount = 0;
+      if (affiliateLink?.type && affiliateLink.value) {
+          discount += affiliateLink.type === 'PERCENTAGE' ? (totals * affiliateLink.value) / 100 : affiliateLink.value;
+      }
+      if (appliedCoupon) {
+          discount += appliedCoupon.type === 'PERCENTAGE' ? (totals * appliedCoupon.value) / 100 : appliedCoupon.value;
+      }
+
+      return Math.max(0, totals - discount);
+  };
+
+  const handleApplyCoupon = async () => {
+      if (!couponCode.trim() || !orgId) return;
+      setIsValidatingCoupon(true);
+      try {
+          const { data, error } = await supabase.rpc('validate_coupon', { p_organization_id: orgId, p_code: couponCode.trim() });
+          if (error || !data || !data.valid) {
+              toast.error(data?.message || 'Cupom inválido ou expirado.');
+              setAppliedCoupon(null);
+          } else {
+              setAppliedCoupon({ id: data.id, type: data.discount_type, value: data.discount_value });
+              toast.success('Cupom aplicado!');
+          }
+      } catch (e) {
+          toast.error('Erro ao validar.');
+      } finally {
+          setIsValidatingCoupon(false);
+      }
+  };
+
   const handleConfirmBooking = async () => {
     if (selectedBarber && selectedService && selectedTime) {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
@@ -294,7 +352,9 @@ export const BookingFlow: React.FC = () => {
           service_id: selectedService.id,
           date: appointmentDate.toISOString(),
           status: status,
-          products: selectedProducts
+          products: selectedProducts,
+          coupon_id: appliedCoupon?.id || null,
+          affiliate_id: affiliateLink?.id || null
         }]).select().single();
 
         if (newApptError) throw newApptError;
@@ -758,13 +818,42 @@ export const BookingFlow: React.FC = () => {
                   );
                 })}
 
+                {affiliateLink?.type && affiliateLink.value && (
+                  <div className="flex justify-between border-b border-white/5 pb-2 text-emerald-400 text-xs font-bold">
+                    <span>Desconto de Indicação</span>
+                    <span>- {affiliateLink.type === 'PERCENTAGE' ? `${affiliateLink.value}%` : `R$ ${affiliateLink.value}`}</span>
+                  </div>
+                )}
+
+                {!appliedCoupon ? (
+                  <div className="py-2 border-b border-white/5 mb-2">
+                    <div className="flex gap-2">
+                        <input 
+                            type="text" 
+                            placeholder="Cupom de desconto" 
+                            value={couponCode} 
+                            onChange={e => setCouponCode(e.target.value.toUpperCase())}
+                            className="flex-1 bg-black/40 border border-zinc-800 rounded-lg px-3 text-white text-sm uppercase"
+                        />
+                        <Button variant="outline" size="sm" onClick={handleApplyCoupon} disabled={!couponCode || isValidatingCoupon}>
+                            {isValidatingCoupon ? <Loader2 size={16} className="animate-spin" /> : 'Aplicar'}
+                        </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex justify-between border-b border-white/5 pb-2 text-yellow-500 text-xs font-bold items-center">
+                    <span className="flex items-center gap-2">
+                        Cupom Aplicado ({couponCode})
+                        <button onClick={() => { setAppliedCoupon(null); setCouponCode(''); }} className="text-zinc-500 hover:text-red-500"><X size={12} /></button>
+                    </span>
+                    <span>- {appliedCoupon.type === 'PERCENTAGE' ? `${appliedCoupon.value}%` : `R$ ${appliedCoupon.value}`}</span>
+                  </div>
+                )}
+
                 <div className="pt-4 flex justify-between items-center">
                   <span className="text-white font-bold">Total</span>
                   <span className="text-2xl font-display font-bold" style={{ color: activeSettings.primary_color || '#D4AF37' }}>
-                    R$ {(selectedService.price + Object.entries(selectedProducts).reduce((acc, [id, q]) => {
-                      const p = productsData?.find(product => product.id === id);
-                      return acc + (p?.price || 0) * q;
-                    }, 0)).toFixed(2)}
+                    R$ {calculateTotal().toFixed(2)}
                   </span>
                 </div>
               </div>

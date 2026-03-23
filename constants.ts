@@ -34,7 +34,7 @@ export const SEED_STAFF: User[] = [
 ];
 
 export const SEED_APPOINTMENTS: Appointment[] = [
-  { id: 'a1', barberId: '101', customerId: 'c1', serviceId: '3', date: new Date().toISOString(), status: AppointmentStatus.CONFIRMED },
+  { id: 'a1', barber_id: '101', customer_id: 'c1', service_id: '3', date: new Date().toISOString(), status: AppointmentStatus.CONFIRMED, organization_id: '1' },
 ];
 
 export const MOCK_STATS: DailyStats = {

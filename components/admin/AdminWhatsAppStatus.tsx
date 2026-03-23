@@ -413,7 +413,7 @@ export const AdminWhatsAppStatus: React.FC = () => {
                             </p>
                             <div className="flex gap-2">
                                 <Button
-                                    onClick={handleConnect}
+                                    onClick={() => handleConnect()}
                                     disabled={loadingQr}
                                     className="whitespace-nowrap bg-green-600 hover:bg-green-700 text-white border-none"
                                 >

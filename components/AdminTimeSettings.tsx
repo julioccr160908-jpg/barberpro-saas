@@ -21,7 +21,7 @@ export const AdminTimeSettings: React.FC = () => {
             try {
                 const settingsData = await db.settings.get();
                 if (settingsData) {
-                    setSchedule(settingsData.schedule || []);
+                    setSchedule((settingsData.schedule as any) || []);
                     setIntervalMinutes(settingsData.interval_minutes || 30);
                 }
             } catch (error) {
@@ -68,7 +68,7 @@ export const AdminTimeSettings: React.FC = () => {
         try {
             await db.settings.update({
                 interval_minutes: intervalMinutes,
-                schedule
+                schedule: schedule as any
             });
             setSuccess(true);
             toast.success("Horários salvos com sucesso!");

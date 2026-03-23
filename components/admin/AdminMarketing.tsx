@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Megaphone, QrCode, Target, Share2, Rocket, Users, Calendar, MessageSquare, Send, Loader2, CheckCircle2 } from 'lucide-react';
+import { Megaphone, QrCode, Target, Share2, Rocket, Users, Calendar, MessageSquare, Send, Loader2, CheckCircle2, Tag } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { BarberQRCode } from '../BarberQRCode';
+import { MarketingCouponsModal } from './MarketingCouponsModal';
+import { MarketingAffiliatesModal } from './MarketingAffiliatesModal';
 import { useAuth } from '../../contexts/AuthContext';
 import { useOrganization } from '../../contexts/OrganizationContext';
 import { Role } from '../../types';
@@ -16,6 +18,8 @@ export const AdminMarketing: React.FC = () => {
     const { organization } = useOrganization();
     const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
     const [isSending, setIsSending] = useState(false);
+    const [showCoupons, setShowCoupons] = useState(false);
+    const [showAffiliates, setShowAffiliates] = useState(false);
     
     const { inactiveCustomers, isLoading } = useInactiveCustomers(organization?.id);
     
@@ -188,31 +192,41 @@ export const AdminMarketing: React.FC = () => {
                         </div>
                     </Card>
 
-                    {/* Pro Features Placeholders */}
+                    {/* Pro Features Modals/Buttons */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Card className="bg-zinc-800/30 border-zinc-800 p-6 flex items-start gap-4">
-                            <div className="p-3 bg-zinc-800 rounded-xl text-zinc-500">
-                                <MessageSquare size={20} />
+                        <Card 
+                            onClick={() => setShowCoupons(true)}
+                            className="bg-zinc-800/30 border-zinc-500/30 p-6 flex items-start gap-4 cursor-pointer hover:bg-zinc-800/60 transition-colors group relative overflow-hidden"
+                        >
+                            <div className="absolute inset-0 bg-yellow-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <div className="relative z-10 p-3 bg-zinc-800/80 rounded-xl text-yellow-500 group-hover:scale-110 transition-transform shadow-lg">
+                                <Tag size={20} />
                             </div>
-                            <div>
-                                <h4 className="text-sm font-bold text-white mb-1">Promoções Relâmpago</h4>
-                                <p className="text-xs text-zinc-500">Dispare cupons para horários de baixa demanda.</p>
-                                <div className="mt-2 text-[10px] text-zinc-600 bg-zinc-800/50 px-2 py-0.5 rounded inline-block uppercase font-bold">Em Breve</div>
+                            <div className="relative z-10">
+                                <h4 className="text-sm font-bold text-white mb-1 group-hover:text-yellow-500 transition-colors">Promoções Relâmpago</h4>
+                                <p className="text-xs text-zinc-400">Gere cupons e atraia clientes nativamente.</p>
                             </div>
                         </Card>
-                        <Card className="bg-zinc-800/30 border-zinc-800 p-6 flex items-start gap-4">
-                            <div className="p-3 bg-zinc-800 rounded-xl text-zinc-500">
+                        
+                        <Card 
+                            onClick={() => setShowAffiliates(true)}
+                            className="bg-zinc-800/30 border-zinc-500/30 p-6 flex items-start gap-4 cursor-pointer hover:bg-zinc-800/60 transition-colors group relative overflow-hidden"
+                        >
+                            <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <div className="relative z-10 p-3 bg-zinc-800/80 rounded-xl text-emerald-500 group-hover:scale-110 transition-transform shadow-lg">
                                 <Share2 size={20} />
                             </div>
-                            <div>
-                                <h4 className="text-sm font-bold text-white mb-1">Link de Programas</h4>
-                                <p className="text-xs text-zinc-500">Crie links personalizados para influencers.</p>
-                                <div className="mt-2 text-[10px] text-zinc-600 bg-zinc-800/50 px-2 py-0.5 rounded inline-block uppercase font-bold">Em Breve</div>
+                            <div className="relative z-10">
+                                <h4 className="text-sm font-bold text-white mb-1 group-hover:text-emerald-500 transition-colors">Programa de Afiliados</h4>
+                                <p className="text-xs text-zinc-400">Emita links personalizados para influencers.</p>
                             </div>
                         </Card>
                     </div>
                 </div>
             </div>
+
+            {showCoupons && <MarketingCouponsModal onClose={() => setShowCoupons(false)} />}
+            {showAffiliates && <MarketingAffiliatesModal onClose={() => setShowAffiliates(false)} />}
         </div>
     );
 };

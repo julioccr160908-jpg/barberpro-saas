@@ -34,10 +34,109 @@ export type Database = {
   }
   public: {
     Tables: {
+      affiliate_links: {
+        Row: {
+          id: string
+          organization_id: string | null
+          influencer_name: string
+          slug_suffix: string
+          discount_type: Database["public"]["Enums"]["discount_type"] | null
+          discount_value: number | null
+          clicks: number
+          conversions: number
+          is_active: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          organization_id?: string | null
+          influencer_name: string
+          slug_suffix: string
+          discount_type?: Database["public"]["Enums"]["discount_type"] | null
+          discount_value?: number | null
+          clicks?: number
+          conversions?: number
+          is_active?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          organization_id?: string | null
+          influencer_name?: string
+          slug_suffix?: string
+          discount_type?: Database["public"]["Enums"]["discount_type"] | null
+          discount_value?: number | null
+          clicks?: number
+          conversions?: number
+          is_active?: boolean
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_links_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      coupons: {
+        Row: {
+          id: string
+          organization_id: string | null
+          code: string
+          discount_type: Database["public"]["Enums"]["discount_type"]
+          discount_value: number
+          valid_from: string | null
+          valid_until: string | null
+          max_uses: number | null
+          current_uses: number
+          is_active: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          organization_id?: string | null
+          code: string
+          discount_type?: Database["public"]["Enums"]["discount_type"]
+          discount_value: number
+          valid_from?: string | null
+          valid_until?: string | null
+          max_uses?: number | null
+          current_uses?: number
+          is_active?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          organization_id?: string | null
+          code?: string
+          discount_type?: Database["public"]["Enums"]["discount_type"]
+          discount_value?: number
+          valid_from?: string | null
+          valid_until?: string | null
+          max_uses?: number | null
+          current_uses?: number
+          is_active?: boolean
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coupons_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       appointments: {
         Row: {
           barber_id: string | null
           commission_amount: number | null
+          coupon_id: string | null
+          affiliate_id: string | null
           created_at: string
           customer_id: string | null
           date: string
@@ -53,6 +152,8 @@ export type Database = {
         Insert: {
           barber_id?: string | null
           commission_amount?: number | null
+          coupon_id?: string | null
+          affiliate_id?: string | null
           created_at?: string
           customer_id?: string | null
           date: string
@@ -68,6 +169,8 @@ export type Database = {
         Update: {
           barber_id?: string | null
           commission_amount?: number | null
+          coupon_id?: string | null
+          affiliate_id?: string | null
           created_at?: string
           customer_id?: string | null
           date?: string
@@ -515,6 +618,7 @@ export type Database = {
     Enums: {
       appointment_status: "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED"
       user_role: "ADMIN" | "BARBER" | "CUSTOMER" | "SUPER_ADMIN"
+      discount_type: "PERCENTAGE" | "FIXED"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -647,6 +751,7 @@ export const Constants = {
     Enums: {
       appointment_status: ["PENDING", "CONFIRMED", "COMPLETED", "CANCELLED"],
       user_role: ["ADMIN", "BARBER", "CUSTOMER", "SUPER_ADMIN"],
+      discount_type: ["PERCENTAGE", "FIXED"],
     },
   },
 } as const
