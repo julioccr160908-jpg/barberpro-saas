@@ -115,7 +115,7 @@ export const BarberQRCode: React.FC<BarberQRCodeProps> = ({ slug, barberId, barb
             }
         };
         
-        img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
+        img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgData);
     };
 
     return (
