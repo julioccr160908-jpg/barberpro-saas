@@ -288,50 +288,62 @@ export const AdminAppearanceSettings: React.FC = () => {
 
                 {/* Live Preview */}
                 <div className="space-y-6">
-                    <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-lg font-bold text-white">Pré-visualização</h3>
-                        <div className="flex gap-2 bg-zinc-900 border border-white/10 p-1 rounded-xl backdrop-blur-md">
+                    <div className="flex justify-between items-center mb-6">
+                        <div className="space-y-1">
+                            <h3 className="text-xl font-display font-bold text-zinc-100 tracking-tight">Cenário Digital</h3>
+                            <p className="text-[10px] text-zinc-500 font-medium uppercase tracking-widest">Visualização em Tempo Real</p>
+                        </div>
+                        <div className="flex p-1 bg-zinc-900/50 backdrop-blur-xl border border-white/5 rounded-2xl shadow-xl">
                             <button
                                 type="button"
                                 onClick={() => setPreviewMode('mobile')}
-                                className={`p-2.5 rounded-lg transition-all flex items-center gap-2 text-xs font-bold ${previewMode === 'mobile' ? 'bg-primary text-black shadow-lg scale-105' : 'text-zinc-500 hover:text-white'}`}
+                                className={`group relative p-3 rounded-xl transition-all duration-300 ${previewMode === 'mobile' ? 'text-primary' : 'text-zinc-500 hover:text-zinc-300'}`}
+                                title="Visualização Mobile"
                             >
-                                <Smartphone size={16} />
-                                <span className={previewMode === 'mobile' ? 'block' : 'hidden'}>Mobile</span>
+                                {previewMode === 'mobile' && (
+                                    <div className="absolute inset-0 bg-primary/10 rounded-xl animate-in fade-in duration-300" />
+                                )}
+                                <Smartphone size={20} strokeWidth={1.5} className="relative z-10" />
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setPreviewMode('desktop')}
-                                className={`p-2.5 rounded-lg transition-all flex items-center gap-2 text-xs font-bold ${previewMode === 'desktop' ? 'bg-primary text-black shadow-lg scale-105' : 'text-zinc-500 hover:text-white'}`}
+                                className={`group relative p-3 rounded-xl transition-all duration-300 ${previewMode === 'desktop' ? 'text-primary' : 'text-zinc-500 hover:text-zinc-300'}`}
+                                title="Visualização Desktop"
                             >
-                                <Monitor size={16} />
-                                <span className={previewMode === 'desktop' ? 'block' : 'hidden'}>Desktop</span>
+                                {previewMode === 'desktop' && (
+                                    <div className="absolute inset-0 bg-primary/10 rounded-xl animate-in fade-in duration-300" />
+                                )}
+                                <Monitor size={20} strokeWidth={1.5} className="relative z-10" />
                             </button>
                         </div>
                     </div>
 
                     {/* The Mirror Container with Device Mockups */}
-                    <div className="relative w-full aspect-[4/3] lg:aspect-auto lg:h-[750px] rounded-3xl bg-zinc-950 flex flex-col items-center justify-center p-4 overflow-hidden shadow-2xl border border-white/5">
-                        {/* Glassmorphism Background Effect */}
-                        <div className="absolute inset-0 z-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-50" />
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
-
+                    <div className="relative w-full aspect-[4/3] lg:aspect-auto lg:h-[750px] rounded-[2.5rem] bg-zinc-950/50 flex flex-col items-center justify-center p-8 overflow-hidden shadow-2xl border border-white/5 backdrop-blur-xl">
+                        {/* Glassmorphism Atmosphere */}
+                        <div 
+                            className="absolute inset-0 z-0 opacity-60" 
+                            style={{ background: `radial-gradient(circle at 50% 50%, ${previewPrimary}1F, transparent 70%)` }}
+                        />
+                        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-primary/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
+                        
                         <div className="relative z-10 w-full h-full flex items-center justify-center">
                             {previewMode === 'mobile' ? (
-                                /* iPhone Mockup */
-                                <div className="relative w-[300px] h-[600px] bg-zinc-900 rounded-[3rem] border-[8px] border-zinc-800 shadow-[0_0_0_2px_rgba(255,255,255,0.05),0_20px_50px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-500 ring-1 ring-white/10">
-                                    {/* iPhone Notch */}
-                                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-zinc-800 rounded-b-2xl z-50 flex items-center justify-center gap-2">
-                                        <div className="w-10 h-1 bg-black/20 rounded-full" />
-                                        <div className="w-2 h-2 bg-black/20 rounded-full" />
-                                    </div>
-                                    {/* Side Buttons Simulation */}
-                                    <div className="absolute left-[-10px] top-24 w-1 h-12 bg-zinc-700 rounded-r-lg" />
-                                    <div className="absolute right-[-10px] top-32 w-1 h-16 bg-zinc-700 rounded-l-lg" />
+                                /* iPhone Modern Mockup (Ultra-Precision) */
+                                <div className="relative w-[300px] h-[610px] bg-zinc-900 rounded-[3.5rem] p-[7px] shadow-[0_0_0_1.5px_rgba(255,255,255,0.1),0_30px_60px_-12px_rgba(0,0,0,0.8),inset_0_0_2px_1px_rgba(255,255,255,0.05)] ring-1 ring-zinc-800 animate-in fade-in zoom-in duration-700">
+                                    {/* Glossy Bezel Effect */}
+                                    <div className="absolute inset-0 rounded-[3.5rem] bg-gradient-to-tr from-transparent via-white/5 to-transparent pointer-events-none" />
                                     
-                                    <div className="flex-1 bg-black relative overflow-hidden flex flex-col">
-                                        {/* App Content with Scale */}
-                                        <div className="flex-1 overflow-y-auto no-scrollbar pt-6 origin-top transform scale-[0.85]">
+                                    <div className="w-full h-full bg-black rounded-[3rem] relative overflow-hidden flex flex-col shadow-inner">
+                                        {/* Dynamic Island */}
+                                        <div className="absolute top-3 left-1/2 -translate-x-1/2 w-20 h-6 bg-[#0a0a0a] rounded-full z-50 flex items-center justify-center gap-1.5 border border-white/5 shadow-2xl">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-zinc-800/50" />
+                                            <div className="w-8 h-1 bg-zinc-800/30 rounded-full" />
+                                        </div>
+
+                                        {/* App Content with Masking */}
+                                        <div className="flex-1 overflow-y-auto no-scrollbar pt-12 pb-6 origin-top transform scale-[0.9] transition-all duration-500">
                                             <MirrorContent 
                                                 primary={previewPrimary} 
                                                 name={previewName} 
@@ -340,34 +352,64 @@ export const AdminAppearanceSettings: React.FC = () => {
                                                 opacity={previewOpacity} 
                                             />
                                         </div>
+
+                                        {/* Home Indicator */}
+                                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-24 h-1 bg-white/20 rounded-full z-50" />
                                     </div>
+                                    
+                                    {/* Physical Buttons (Subtle) */}
+                                    <div className="absolute -left-[2px] top-28 w-[3px] h-8 bg-zinc-700 rounded-l-sm" />
+                                    <div className="absolute -left-[2px] top-40 w-[3px] h-12 bg-zinc-700 rounded-l-sm" />
+                                    <div className="absolute -right-[2px] top-32 w-[3px] h-16 bg-zinc-700 rounded-r-sm" />
                                 </div>
                             ) : (
-                                /* MacBook Mockup */
-                                <div className="relative w-full max-w-[650px] aspect-[16/10] bg-zinc-900 rounded-2xl border-[4px] border-zinc-800 shadow-[0_0_0_2px_rgba(255,255,255,0.05),0_30px_60px_rgba(0,0,0,0.6)] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500 ring-1 ring-white/10">
-                                    {/* MacBook Screen Header */}
-                                    <div className="h-6 bg-zinc-800 border-b border-white/5 flex items-center px-4 gap-1.5 shrink-0 z-50">
-                                        <div className="flex gap-1.5 mr-4">
-                                            <div className="w-2 h-2 rounded-full bg-[#FF5F56] opacity-70" />
-                                            <div className="w-2 h-2 rounded-full bg-[#FFBD2E] opacity-70" />
-                                            <div className="w-2 h-2 rounded-full bg-[#27C93F] opacity-70" />
+                                /* MacBook Sleek Mockup (High Fidelity) */
+                                <div className="relative w-full max-w-[680px] aspect-[16/10] bg-zinc-900 rounded-2xl p-[6px] shadow-[0_0_0_1.5px_rgba(255,255,255,0.1),0_40px_80px_-15px_rgba(0,0,0,0.9)] animate-in fade-in slide-in-from-bottom-8 duration-700">
+                                    {/* Metal Frame Gradient */}
+                                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-zinc-700/20 via-zinc-800/10 to-zinc-900/40 pointer-events-none" />
+                                    
+                                    <div className="w-full h-full bg-black rounded-lg relative overflow-hidden flex flex-col border border-white/5">
+                                        {/* MacBook Screen Header / Camera */}
+                                        <div className="h-7 bg-zinc-900/80 backdrop-blur-md border-b border-white/5 flex items-center px-4 shrink-0 z-50">
+                                            <div className="flex gap-1.5 w-16">
+                                                <div className="w-2 h-2 rounded-full bg-[#FF5F56]/80 shadow-sm" />
+                                                <div className="w-2 h-2 rounded-full bg-[#FFBD2E]/80 shadow-sm" />
+                                                <div className="w-2 h-2 rounded-full bg-[#27C93F]/80 shadow-sm" />
+                                            </div>
+                                            <div className="flex-1 flex justify-center">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-zinc-800 shadow-[inset_0_0_2px_rgba(255,255,255,0.1)] border border-white/5" />
+                                            </div>
+                                            <div className="w-16 flex justify-end">
+                                                <div className="bg-white/5 px-2 py-0.5 rounded text-[8px] text-zinc-500 font-mono">100%</div>
+                                            </div>
                                         </div>
-                                        <div className="flex-1 bg-black/40 rounded h-4 flex items-center px-3 border border-white/5 mx-8">
-                                            <span className="text-[8px] text-zinc-500 font-mono italic">barberhost.com.br/{organization?.slug}</span>
+                                        
+                                        <div className="flex-1 bg-black relative overflow-hidden flex flex-col">
+                                            {/* Browser Address Bar */}
+                                            <div className="px-10 py-2">
+                                                <div className="bg-white/5 rounded-lg h-6 flex items-center border border-white/5 px-3 gap-2">
+                                                    <div className="w-2 h-2 rounded-full bg-zinc-700" />
+                                                    <span className="text-[9px] text-zinc-500 font-medium tracking-tight truncate">
+                                                        barberhost.com.br/{organization?.slug}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex-1 overflow-y-auto no-scrollbar origin-top transform scale-[0.98] transition-all duration-700">
+                                                <MirrorContent 
+                                                    primary={previewPrimary} 
+                                                    name={previewName} 
+                                                    logo={logoUrl} 
+                                                    banner={bannerUrl} 
+                                                    opacity={previewOpacity} 
+                                                    isDesktop 
+                                                />
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className="flex-1 bg-black relative overflow-hidden flex flex-col">
-                                        <div className="flex-1 overflow-y-auto no-scrollbar origin-top transform scale-100">
-                                            <MirrorContent 
-                                                primary={previewPrimary} 
-                                                name={previewName} 
-                                                logo={logoUrl} 
-                                                banner={bannerUrl} 
-                                                opacity={previewOpacity} 
-                                                isDesktop 
-                                            />
-                                        </div>
-                                    </div>
+                                    
+                                    {/* Glossy Screen Overlay */}
+                                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-transparent via-white/[0.02] to-transparent pointer-events-none" />
                                 </div>
                             )}
                         </div>
@@ -437,60 +479,60 @@ interface MirrorContentProps {
 }
 
 const MirrorContent: React.FC<MirrorContentProps> = ({ primary, name, logo, banner, opacity, isDesktop }) => (
-    <div className={`w-full flex flex-col items-center ${isDesktop ? 'p-8' : 'p-4'}`}>
+    <div className={`w-full flex flex-col items-center transition-all duration-700 ${isDesktop ? 'p-12' : 'p-6'}`}>
         {/* Background Layer */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
             {banner ? (
                 <img 
                     src={banner} 
                     alt="Banner" 
-                    className="w-full h-full object-cover transition-opacity duration-700"
+                    className="w-full h-full object-cover transition-all duration-700 ease-in-out"
                     style={{ opacity: opacity / 100 }}
                 />
             ) : (
-                <div className="w-full h-full bg-zinc-900" />
+                <div className="w-full h-full bg-zinc-900 transition-colors duration-700" />
             )}
-            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+            <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] transition-all duration-700" />
         </div>
 
         {/* Content */}
-        <div className="relative z-10 w-full flex flex-col items-center">
+        <div className="relative z-10 w-full flex flex-col items-center animate-in fade-in slide-in-from-top-4 duration-1000">
             {/* Establishment Header */}
-            <div className="text-center mb-12">
-                <div className="w-20 h-20 mx-auto mb-4 rounded-full overflow-hidden border-4 border-zinc-900 shadow-2xl bg-zinc-900">
+            <div className="text-center mb-16">
+                <div className="w-24 h-24 mx-auto mb-6 rounded-full overflow-hidden border-[6px] border-zinc-900/50 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] bg-zinc-900 transition-all duration-500 hover:scale-105">
                     {logo ? (
                         <img src={logo} alt="Logo" className="w-full h-full object-cover" />
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center text-3xl font-bold font-display" style={{ color: primary }}>
+                        <div className="w-full h-full flex items-center justify-center text-4xl font-display font-bold" style={{ color: primary, transition: 'color 0.5s ease' }}>
                             {name?.charAt(0) || 'B'}
                         </div>
                     )}
                 </div>
-                <h1 className="text-2xl font-display font-bold text-white tracking-[0.2em] mb-1 uppercase">
+                <h1 className="text-3xl font-display font-bold text-white tracking-[0.25em] mb-2 uppercase transition-all duration-500">
                     {name || 'Sua Barbearia'}
                 </h1>
-                <div className="flex items-center justify-center gap-2 text-[10px] text-zinc-400 opacity-80">
-                    <MapPin size={10} style={{ color: primary }} />
-                    <p>Rua Exemplo, 123 - Centro</p>
+                <div className="flex items-center justify-center gap-2 text-[11px] text-zinc-400 font-medium opacity-60 transition-opacity hover:opacity-100">
+                    <MapPin size={12} style={{ color: primary, transition: 'color 0.5s ease' }} />
+                    <p className="tracking-wide">Rua Exemplo, 123 - Centro</p>
                 </div>
             </div>
 
             {/* Main Interaction Card */}
-            <div className="w-full bg-zinc-900/60 backdrop-blur-xl border border-white/5 rounded-3xl p-6 text-center shadow-2xl mb-8 ring-1 ring-white/5">
-                <h2 className="text-xl font-display text-white mb-4">Pronto para o seu melhor visual?</h2>
+            <div className="w-full bg-zinc-950/40 backdrop-blur-3xl border border-white/5 rounded-[2.5rem] p-8 text-center shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7)] mb-10 ring-1 ring-white/5 transition-all duration-500 hover:bg-zinc-950/50">
+                <h2 className="text-2xl font-display text-white mb-6 font-medium tracking-tight">Pronto para o seu melhor visual?</h2>
                 <button 
-                    className="w-full py-4 rounded-xl font-bold text-black text-sm shadow-2xl transition-all hover:brightness-110 active:scale-[0.98] animate-[pulse_3s_infinite_ease-in-out]"
-                    style={{ backgroundColor: primary }}
+                    className="w-full py-5 rounded-2xl font-bold text-black text-sm shadow-2xl transition-all duration-300 hover:brightness-110 active:scale-[0.98] animate-[pulse_4s_infinite_ease-in-out] tracking-widest uppercase"
+                    style={{ backgroundColor: primary, transition: 'background-color 0.5s ease' }}
                 >
                     Agendar Agora
                 </button>
 
                 {/* Amenities Grid Mirror */}
-                <div className="w-full mt-8 pt-6 border-t border-white/5">
-                    <div className="grid grid-cols-3 gap-2">
+                <div className="w-full mt-10 pt-8 border-t border-white/5">
+                    <div className="grid grid-cols-3 gap-3">
                         {[Wifi, GlassWater, Snowflake].map((Icon, idx) => (
-                            <div key={idx} className="flex flex-col items-center gap-2 p-2 rounded-xl bg-white/5 border border-white/5">
-                                <Icon size={14} className="text-white/70" />
+                            <div key={idx} className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-white/[0.03] border border-white/5 transition-all duration-300 hover:bg-white/[0.08] group">
+                                <Icon size={16} className="text-white/40 group-hover:text-white/70 transition-colors" />
                             </div>
                         ))}
                     </div>
