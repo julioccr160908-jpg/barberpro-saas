@@ -167,27 +167,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentRole, setCurrentView, c
                 <span className="text-[8px] text-zinc-500 tracking-[0.2em] uppercase mt-0.5">Management</span>
               </div>
             </div>
-
-            {/* User Profile Inline */}
-            <div className="flex items-center gap-3 pl-2 border-l border-white/10 ml-2">
-              <div
-                className="w-8 h-8 rounded-full border overflow-hidden shrink-0"
-                style={{ borderColor: `${(organization?.primaryColor || '#D4AF37')}33` }}
-              >
-                <img
-                  src={profile?.avatarUrl || `https://ui-avatars.com/api/?name=${profile?.name || 'User'}&background=EAB308&color=000`}
-                  alt="Avatar"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <button
-                onClick={() => signOut()}
-                className="p-1.5 text-zinc-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
-                title="Sair"
-              >
-                <LogOut size={16} />
-              </button>
-            </div>
           </div>
 
           {/* Org Switcher Trigger */}
@@ -289,8 +268,32 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentRole, setCurrentView, c
           })}
         </nav>
 
-        <div className="p-4 border-t border-white/5 bg-black/40 text-center">
-            <span className="text-[10px] text-zinc-600 font-mono tracking-widest">v1.2.0 • BarberHost</span>
+        <div className="p-3 border-t border-white/5 bg-black/40">
+          <div className="flex items-center justify-between group px-1">
+            <div className="flex items-center gap-2">
+              <div
+                className="w-8 h-8 rounded-full border overflow-hidden shrink-0"
+                style={{ borderColor: `${(organization?.primaryColor || '#D4AF37')}22` }}
+              >
+                <img
+                  src={profile?.avatarUrl || `https://ui-avatars.com/api/?name=${profile?.name || 'User'}&background=EAB308&color=000`}
+                  alt="Avatar"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-[11px] font-bold text-white truncate max-w-[100px] leading-tight">{profile?.name || 'Usuário'}</span>
+                <span className="text-[9px] text-zinc-500 uppercase tracking-wider leading-tight">{profile?.role || 'Admin'}</span>
+              </div>
+            </div>
+            <button
+              onClick={() => signOut()}
+              className="p-1.5 text-zinc-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+              title="Sair"
+            >
+              <LogOut size={16} />
+            </button>
+          </div>
         </div>
       </aside>
     </>
