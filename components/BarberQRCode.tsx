@@ -35,28 +35,87 @@ export const BarberQRCode: React.FC<BarberQRCodeProps> = ({ slug, barberId, barb
         const img = new Image();
         
         img.onload = () => {
-            canvas.width = 1024;
-            canvas.height = 1024;
+            const size = 1024;
+            canvas.width = size;
+            canvas.height = size;
+            
             if (ctx) {
+                // Background & Quality
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = "high";
                 ctx.fillStyle = "white";
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(img, 50, 50, 924, 924);
+                ctx.fillRect(0, 0, size, size);
                 
-                // Add text at bottom
+                // Draw QR Code (Centered with Quiet Zone)
+                const qrSize = 800;
+                const qrPadding = (size - qrSize) / 2;
+                ctx.drawImage(img, qrPadding, qrPadding - 40, qrSize, qrSize);
+                
+                // Draw Central Logo (Manual Drawing)
+                const logoSize = 120;
+                const logoPadding = (size - logoSize) / 2;
+                const radius = 24;
+                
+                // Yellow Box
+                ctx.save();
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = "rgba(0,0,0,0.2)";
+                ctx.fillStyle = "#EAB308";
+                
+                // Rounded Rect Path
+                ctx.beginPath();
+                ctx.moveTo(logoPadding + radius, logoPadding - 40);
+                ctx.lineTo(logoPadding + logoSize - radius, logoPadding - 40);
+                ctx.quadraticCurveTo(logoPadding + logoSize, logoPadding - 40, logoPadding + logoSize, logoPadding - 40 + radius);
+                ctx.lineTo(logoPadding + logoSize, logoPadding - 40 + logoSize - radius);
+                ctx.quadraticCurveTo(logoPadding + logoSize, logoPadding - 40 + logoSize, logoPadding + logoSize - radius, logoPadding - 40 + logoSize);
+                ctx.lineTo(logoPadding + radius, logoPadding - 40 + logoSize);
+                ctx.quadraticCurveTo(logoPadding, logoPadding - 40 + logoSize, logoPadding, logoPadding - 40 + logoSize - radius);
+                ctx.lineTo(logoPadding, logoPadding - 40 + radius);
+                ctx.quadraticCurveTo(logoPadding, logoPadding - 40, logoPadding + radius, logoPadding - 40);
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+                
+                // Scissors Icon (Simplified Symbol)
+                ctx.save();
+                ctx.translate(size / 2, size / 2 - 40);
+                ctx.rotate(-Math.PI / 4); // -45 deg
+                ctx.strokeStyle = "black";
+                ctx.lineWidth = 6;
+                ctx.lineCap = "round";
+                
+                // Basic Scissors Shape (Simplified for Canvas Drawing)
+                const s = 15;
+                // Blades
+                ctx.beginPath();
+                ctx.moveTo(0, -s); ctx.lineTo(0, s);
+                ctx.stroke();
+                // Handles
+                ctx.beginPath();
+                ctx.arc(-s/2, s + s/2, s/2, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(s/2, s + s/2, s/2, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+                
+                // Typography Institutional
                 ctx.fillStyle = "black";
-                ctx.font = "bold 40px sans-serif";
+                ctx.font = "bold 52px sans-serif";
                 ctx.textAlign = "center";
-                ctx.fillText(`Agende com ${barberName}`, 512, 980);
+                ctx.letterSpacing = "2px";
+                ctx.fillText("ESCANEIE PARA AGENDAR", size / 2, size - 80);
                 
                 const pngFile = canvas.toDataURL("image/png");
                 const downloadLink = document.createElement("a");
-                downloadLink.download = `QR_Code_${barberName.replace(/\s+/g, '_')}.png`;
+                downloadLink.download = `QR_Code_${slug}.png`;
                 downloadLink.href = pngFile;
                 downloadLink.click();
             }
         };
         
-        img.src = "data:image/svg+xml;base64," + btoa(svgData);
+        img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
     };
 
     return (
@@ -64,7 +123,7 @@ export const BarberQRCode: React.FC<BarberQRCodeProps> = ({ slug, barberId, barb
             <div>
                 <h3 className="text-xl font-display font-bold text-white mb-2">Seu QR Code de Agendamento</h3>
                 <p className="text-zinc-400 max-w-xs mx-auto text-sm leading-relaxed">
-                    Imprima este código e coloque no seu espelho. Seus clientes poderão agendar o próximo corte em segundos!
+                    Escaneie para Agendar seu próximo corte em segundos!
                 </p>
             </div>
 
@@ -74,19 +133,17 @@ export const BarberQRCode: React.FC<BarberQRCodeProps> = ({ slug, barberId, barb
                     value={bookingUrl}
                     size={200}
                     level="H"
-                    includeMargin={true}
+                    includeMargin={false}
                     imageSettings={{
-                        src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E",
-                        x: undefined,
-                        y: undefined,
-                        height: 52,
-                        width: 52,
+                        src: "", // No src needed since we overlay manually or use excavate
+                        height: 48,
+                        width: 48,
                         excavate: true,
                     }}
                 />
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-xl flex items-center justify-center shadow-md">
-                        <Scissors size={24} className="text-black transform -rotate-45" />
+                    <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg flex items-center justify-center shadow-md">
+                        <Scissors size={20} className="text-black transform -rotate-45" />
                     </div>
                 </div>
             </div>
