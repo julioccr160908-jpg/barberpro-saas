@@ -78,21 +78,23 @@ export const AdminMarketing: React.FC = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 {/* Left Column: QR Code & Tips */}
-                <div className="lg:col-span-5 space-y-6">
-                    <div className="flex items-center gap-2 mb-2 opacity-80">
+                <div className="lg:col-span-5 flex flex-col gap-6">
+                    <div className="flex items-center gap-2 opacity-80">
                         <QrCode size={20} className="text-yellow-500" />
                         <h2 className="text-base font-bold text-white uppercase tracking-wider">Acesso Rápido</h2>
                     </div>
                     {user && profile && (
-                        <BarberQRCode 
-                            slug={organization.slug}
-                            barberId={user.id}
-                            barberName={profile.name || 'Seu Nome'}
-                            primaryColor={organization.primaryColor}
-                        />
+                        <div className="flex-1 flex flex-col">
+                            <BarberQRCode 
+                                slug={organization.slug}
+                                barberId={user.id}
+                                barberName={profile.name || 'Seu Nome'}
+                                primaryColor={organization.primaryColor}
+                            />
+                        </div>
                     )}
                     
-                    <Card className="bg-zinc-900 border-zinc-800 p-6">
+                    <Card className="bg-zinc-900 border-zinc-800 p-6 flex-shrink-0">
                         <h4 className="font-bold text-white mb-4 flex items-center gap-2">
                             <Target size={18} className="text-blue-500" />
                             Dica de Marketing
@@ -104,8 +106,8 @@ export const AdminMarketing: React.FC = () => {
                 </div>
 
                 {/* Right Column: Saudade Campaign */}
-                <div className="lg:col-span-7 space-y-6">
-                    <div className="flex items-center justify-between mb-2">
+                <div className="lg:col-span-7 flex flex-col gap-6">
+                    <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <Megaphone size={24} className="text-yellow-500" />
                             <h2 className="text-xl font-bold text-white uppercase tracking-wider">Campanha Saudade</h2>
@@ -123,7 +125,7 @@ export const AdminMarketing: React.FC = () => {
                         )}
                     </div>
                     
-                    <Card className="bg-zinc-900 border-zinc-800">
+                    <Card className="bg-zinc-900 border-zinc-800 flex-1 flex flex-col">
                         <div className="p-6 border-b border-white/5 bg-white/5">
                             <div className="flex items-center justify-between">
                                 <div>
@@ -137,7 +139,7 @@ export const AdminMarketing: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
+                        <div className="flex-1 min-h-[350px] overflow-y-auto custom-scrollbar">
                             {isLoading ? (
                                 <div className="p-12 flex flex-col items-center justify-center text-zinc-600">
                                     <Loader2 size={32} className="animate-spin mb-4" />

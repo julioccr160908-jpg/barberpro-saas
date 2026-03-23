@@ -258,7 +258,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentRole, setCurrentView, c
                       <span className="relative z-10">{item.label}</span>
 
                       {isActive && (
-                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-black rounded-l-full" />
+                        <div className="absolute right-1 top-1/2 -translate-y-1/2 w-1 h-5 bg-black rounded-full shadow-sm" />
                       )}
                     </button>
                   );

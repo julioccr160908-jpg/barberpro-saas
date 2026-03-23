@@ -60,7 +60,7 @@ export const BarberQRCode: React.FC<BarberQRCodeProps> = ({ slug, barberId, barb
     };
 
     return (
-        <Card className="bg-zinc-900 border-zinc-800 p-8 flex flex-col items-center text-center space-y-6">
+        <Card className="bg-zinc-900 border-zinc-800 p-6 flex flex-col items-center text-center space-y-5 h-full relative">
             <div>
                 <h3 className="text-xl font-display font-bold text-white mb-2">Seu QR Code de Agendamento</h3>
                 <p className="text-zinc-400 max-w-xs mx-auto text-sm leading-relaxed">
@@ -72,7 +72,7 @@ export const BarberQRCode: React.FC<BarberQRCodeProps> = ({ slug, barberId, barb
                 <QRCodeSVG 
                     ref={qrRef}
                     value={bookingUrl}
-                    size={220}
+                    size={180}
                     level="H"
                     includeMargin={true}
                     imageSettings={{
@@ -86,28 +86,36 @@ export const BarberQRCode: React.FC<BarberQRCodeProps> = ({ slug, barberId, barb
                 />
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 w-full max-w-md">
+            <div className="flex flex-row gap-2 w-full max-w-sm">
                 <Button 
                     onClick={handleCopy}
                     variant="outline" 
-                    className="flex-1 border-zinc-700 text-zinc-300 hover:bg-zinc-800 gap-2 h-12"
+                    className="flex-1 border-zinc-700 text-zinc-300 hover:bg-zinc-800 gap-2 h-10 text-xs px-2"
                 >
-                    {copied ? <Check size={18} className="text-green-500" /> : <Copy size={18} />}
-                    {copied ? 'Copiado!' : 'Copiar Link'}
+                    {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
+                    {copied ? 'Copiado' : 'Cópia'}
                 </Button>
                 
                 <Button 
                     onClick={downloadQR}
-                    className="flex-1 bg-yellow-500 text-black hover:bg-yellow-600 font-bold gap-2 h-12"
+                    className="flex-1 bg-yellow-500 text-black hover:bg-yellow-600 font-bold gap-2 h-10 text-xs px-2"
                 >
-                    <Download size={18} />
-                    Baixar QR Code
+                    <Download size={14} />
+                    Baixar
                 </Button>
             </div>
 
-            <div className="pt-4 border-t border-zinc-800 w-full">
-                <p className="text-[10px] text-zinc-500 uppercase tracking-widest mb-1">Link Direto:</p>
-                <code className="text-xs text-yellow-500/80 break-all">{bookingUrl}</code>
+            <div className="pt-4 border-t border-zinc-800 w-full mt-auto">
+                <p className="text-[10px] text-zinc-500 uppercase tracking-widest mb-2 text-left">Link Direto</p>
+                <div className="flex items-center gap-2 bg-black/40 border border-zinc-800 rounded-lg p-2.5 overflow-hidden">
+                    <Share2 size={14} className="text-zinc-500 flex-shrink-0" />
+                    <input 
+                        type="text" 
+                        readOnly 
+                        value={bookingUrl} 
+                        className="bg-transparent text-xs text-zinc-400 w-full outline-none select-all truncate"
+                    />
+                </div>
             </div>
         </Card>
     );
