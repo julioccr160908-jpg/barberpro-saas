@@ -185,9 +185,9 @@ export const AdminDashboard: React.FC = () => {
         <div className="lg:col-span-2">
           <Card className="h-96">
             <CardHeader title="Receita (Últimos 7 dias)" subtitle={hasAnyData ? 'Realizada + Agendada' : 'Baseado em cortes realizados'} />
-            <div className="h-72 w-full relative min-h-[288px]">
+            <div className="h-72 w-full relative min-h-[288px] focus:outline-none select-none" tabIndex={-1}>
               <ResponsiveContainer width="100%" height="100%" minHeight={288}>
-                <AreaChart data={chartData}>
+                <AreaChart data={chartData} accessibilityLayer>
                   <defs>
                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#D4AF37" stopOpacity={0.3} />
@@ -198,23 +198,32 @@ export const AdminDashboard: React.FC = () => {
                       <stop offset="95%" stopColor="#60A5FA" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} opacity={0.3} />
                   <XAxis
                     dataKey="name"
                     stroke="#666"
-                    tick={{ fill: '#666', fontSize: 12 }}
+                    tick={{ fill: '#666', fontSize: 10, opacity: 0.5 }}
                     tickLine={false}
                     axisLine={false}
+                    interval="preserveStartEnd"
                   />
                   <YAxis
                     stroke="#666"
-                    tick={{ fill: '#666', fontSize: 12 }}
+                    tick={{ fill: '#666', fontSize: 10, opacity: 0.5 }}
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={(value) => `R$${value}`}
                   />
                   <Tooltip
-                    contentStyle={{ backgroundColor: '#1E1E1E', borderColor: '#333', color: '#fff' }}
+                    contentStyle={{ 
+                      backgroundColor: 'rgba(30, 30, 30, 0.9)', 
+                      borderColor: 'rgba(255, 255, 255, 0.1)', 
+                      borderRadius: '8px',
+                      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.3)',
+                      color: '#fff',
+                      fontSize: '12px'
+                    }}
+                    cursor={{ stroke: '#D4AF37', strokeWidth: 1, strokeDasharray: '4 4' }}
                     formatter={(value: number, name: string) => [
                       `R$ ${value.toFixed(2)}`,
                       name === 'value' ? 'Realizada' : 'Agendada'
@@ -230,6 +239,8 @@ export const AdminDashboard: React.FC = () => {
                     fillOpacity={1}
                     fill="url(#colorScheduled)"
                     name="scheduled"
+                    isAnimationActive={true}
+                    animationDuration={1000}
                   />
                   <Area
                     type="monotone"
@@ -239,6 +250,8 @@ export const AdminDashboard: React.FC = () => {
                     fillOpacity={1}
                     fill="url(#colorRevenue)"
                     name="value"
+                    isAnimationActive={true}
+                    animationDuration={1000}
                   />
                 </AreaChart>
               </ResponsiveContainer>
