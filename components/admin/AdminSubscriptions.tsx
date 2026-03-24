@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../services/supabase';
 import { useOrganization } from '../../contexts/OrganizationContext';
@@ -16,15 +16,25 @@ import {
     Calendar, 
     CheckCircle2, 
     AlertCircle,
-    Loader2
+    Loader2,
+    TrendingUp,
+    TrendingDown,
+    Info,
+    ChevronDown,
+    Pause,
+    RefreshCw,
+    History,
+    List,
+    DollarSign
 } from 'lucide-react';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, startOfMonth, isWithinInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 export const AdminSubscriptions: React.FC = () => {
     const { organization } = useOrganization();
     const queryClient = useQueryClient();
     const [isAdding, setIsAdding] = useState(false);
+    const [activeMenu, setActiveMenu] = useState<string | null>(null);
     const [newPlan, setNewPlan] = useState<Partial<SubscriptionPlan>>({
         name: '',
         price: 0,
@@ -65,6 +75,28 @@ export const AdminSubscriptions: React.FC = () => {
         },
         enabled: !!organization?.id
     });
+
+    // Stats / BI Intelligence
+    const stats = useMemo(() => {
+        const activeMembers = memberships.filter(m => m.status === 'active');
+        const mrr = activeMembers.reduce((sum, m) => sum + (m.plan?.price || 0), 0);
+        
+        const now = new Date();
+        const startOfCurrentMonth = startOfMonth(now);
+        
+        const newThisMonth = memberships.filter(sub => {
+            if (!sub.created_at) return false;
+            return isWithinInterval(parseISO(sub.created_at), { start: startOfCurrentMonth, end: now });
+        }).length;
+
+        const growthRate = memberships.length > 0 
+            ? Math.round((newThisMonth / memberships.length) * 100)
+            : 0;
+
+        const delinquency = memberships.filter(m => m.status === 'past_due').length;
+
+        return { mrr, total: memberships.length, growthRate, delinquency };
+    }, [memberships]);
 
     const createPlanMutation = useMutation({
         mutationFn: async (plan: Partial<SubscriptionPlan>) => {
@@ -121,6 +153,45 @@ export const AdminSubscriptions: React.FC = () => {
                     </Button>
                 </div>
             </header>
+
+            {/* Header Stats / BI Row */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card className="p-6 bg-surface/50 border-white/5 relative overflow-hidden group">
+                    <div className="flex flex-col">
+                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Recorrência (MRR)</span>
+                        <h3 className="text-3xl font-display font-bold text-white">R$ {stats.mrr.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</h3>
+                        <div className="flex items-center gap-1.5 mt-2 text-green-500 bg-green-500/10 w-fit px-2 py-0.5 rounded-full border border-green-500/20">
+                            <DollarSign size={10} />
+                            <span className="text-[10px] font-bold">ATIVA</span>
+                        </div>
+                    </div>
+                    <TrendingUp size={48} className="absolute -bottom-2 -right-2 text-primary opacity-5 group-hover:scale-110 transition-transform duration-500" />
+                </Card>
+
+                <Card className="p-6 bg-surface/50 border-white/5 relative overflow-hidden group">
+                    <div className="flex flex-col">
+                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Total de Assinantes</span>
+                        <h3 className="text-3xl font-display font-bold text-white">{stats.total}</h3>
+                        <div className="flex items-center gap-1.5 mt-2 text-primary bg-primary/10 w-fit px-2 py-0.5 rounded-full border border-primary/20">
+                            <TrendingUp size={10} />
+                            <span className="text-[10px] font-bold">+{stats.growthRate}% este mês</span>
+                        </div>
+                    </div>
+                    <Users size={48} className="absolute -bottom-2 -right-2 text-primary opacity-5 group-hover:scale-110 transition-transform duration-500" />
+                </Card>
+
+                <Card className="p-6 bg-surface/50 border-white/5 relative overflow-hidden group">
+                    <div className="flex flex-col">
+                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Inadimplência</span>
+                        <h3 className="text-3xl font-display font-bold text-white">{stats.delinquency}</h3>
+                        <div className={`flex items-center gap-1.5 mt-2 w-fit px-2 py-0.5 rounded-full border ${stats.delinquency > 0 ? 'text-red-500 bg-red-500/10 border-red-500/20' : 'text-zinc-500 bg-zinc-500/10 border-zinc-500/20'}`}>
+                            {stats.delinquency > 0 ? <AlertCircle size={10} /> : <CheckCircle2 size={10} />}
+                            <span className="text-[10px] font-bold uppercase">{stats.delinquency > 0 ? 'ATENÇÃO' : 'OK'}</span>
+                        </div>
+                    </div>
+                    <TrendingDown size={48} className="absolute -bottom-2 -right-2 text-red-500 opacity-5 group-hover:scale-110 transition-transform duration-500" />
+                </Card>
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Plans List */}
@@ -195,27 +266,38 @@ export const AdminSubscriptions: React.FC = () => {
                         </Card>
                     ) : (
                         plans.map(plan => (
-                            <Card key={plan.id} className="bg-zinc-900 border-zinc-800 p-6 group hover:border-primary/30 transition-colors">
-                                <div className="flex justify-between items-start mb-4">
-                                    <div>
-                                        <h3 className="text-lg font-bold text-white">{plan.name}</h3>
-                                        <p className="text-2xl font-display font-bold text-primary mt-1">
-                                            R$ {plan.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                                            <span className="text-xs text-zinc-500 ml-1 font-sans">/{plan.interval === 'month' ? 'mês' : 'semana'}</span>
-                                        </p>
-                                    </div>
+                            <Card key={plan.id} className="bg-surface/50 border-white/5 p-6 group hover:border-primary/50 transition-all duration-300 relative overflow-hidden">
+                                <div className="absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <button 
                                         onClick={() => deletePlanMutation.mutate(plan.id)}
-                                        className="p-2 text-zinc-600 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                                        className="text-zinc-600 hover:text-red-500 transition-colors"
                                     >
-                                        <Trash2 size={18} />
+                                        <Trash2 size={16} />
                                     </button>
                                 </div>
-                                {plan.description && <p className="text-sm text-zinc-500 line-clamp-2">{plan.description}</p>}
-                                <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between text-xs text-zinc-500 font-bold uppercase tracking-wider">
-                                    <span>Status: <span className="text-green-500">Ativo</span></span>
-                                    <span className="flex items-center gap-1">
-                                        <Users size={12} /> {memberships.filter(m => m.plan_id === plan.id).length} Assinantes
+                                
+                                <div className="mb-6">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <h3 className="text-lg font-bold text-white tracking-tight">{plan.name}</h3>
+                                        {plan.description && (
+                                            <div className="group/info relative">
+                                                <List size={14} className="text-zinc-600 cursor-help hover:text-primary transition-colors" />
+                                                <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-48 p-2 bg-zinc-900 border border-white/10 rounded-lg text-[10px] text-zinc-400 invisible group-hover/info:visible animate-in fade-in zoom-in duration-200 z-50 shadow-2xl">
+                                                    {plan.description}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <p className="text-3xl font-display font-black text-primary">
+                                        R$ {plan.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                        <span className="text-xs text-zinc-500 ml-1 font-sans font-medium uppercase tracking-widest italic opacity-50">/{plan.interval === 'month' ? 'mês' : 'sem'}</span>
+                                    </p>
+                                </div>
+                                
+                                <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between text-[10px] text-zinc-500 font-bold uppercase tracking-[0.2em]">
+                                    <span className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)] animate-pulse" /> Ativo</span>
+                                    <span className="flex items-center gap-1 text-zinc-400">
+                                        <Users size={12} className="text-primary/50" /> {memberships.filter(m => m.plan_id === plan.id).length} MESTRES
                                     </span>
                                 </div>
                             </Card>
@@ -270,39 +352,66 @@ export const AdminSubscriptions: React.FC = () => {
                                     ) : memberships.length === 0 ? (
                                         <tr><td colSpan={5} className="p-12 text-center text-zinc-500">Nenhum assinante cadastrado ainda.</td></tr>
                                     ) : memberships.map(sub => (
-                                        <tr key={sub.id} className="hover:bg-white/5 transition-colors">
+                                        <tr key={sub.id} className="hover:bg-white/[0.02] transition-colors group">
                                             <td className="px-6 py-4">
-                                                <p className="font-bold text-white text-sm">{sub.customer?.name}</p>
-                                                <p className="text-xs text-zinc-500">{sub.customer?.phone}</p>
+                                                <p className="font-bold text-white text-sm tracking-tight">{sub.customer?.name}</p>
+                                                <p className="text-[10px] text-zinc-500 font-mono">{sub.customer?.phone}</p>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <span className="text-xs bg-zinc-800 text-zinc-300 px-2 py-1 rounded font-bold uppercase">
+                                                <span className="text-[10px] bg-zinc-800 text-zinc-300 px-2 py-0.5 rounded font-bold uppercase tracking-wider border border-white/5 whitespace-nowrap">
                                                     {sub.plan?.name}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-2">
-                                                    {sub.status === 'active' ? (
-                                                        <span className="flex items-center gap-1 text-[10px] font-bold uppercase text-green-500 bg-green-500/10 px-2 py-1 rounded">
-                                                            <CheckCircle2 size={10} /> Ativo
-                                                        </span>
-                                                    ) : (
-                                                        <span className="flex items-center gap-1 text-[10px] font-bold uppercase text-orange-500 bg-orange-500/10 px-2 py-1 rounded">
-                                                            <AlertCircle size={10} /> Pendente
-                                                        </span>
-                                                    )}
+                                                    <div className={`w-1.5 h-1.5 rounded-full shadow-[0_0_8px] ${
+                                                        sub.status === 'active' ? 'bg-green-500 shadow-green-500/40' : 
+                                                        sub.status === 'past_due' ? 'bg-red-500 shadow-red-500/40' : 
+                                                        'bg-yellow-500 shadow-yellow-500/40 animate-pulse'
+                                                    }`} />
+                                                    <span className={`text-[10px] font-bold uppercase tracking-widest ${
+                                                        sub.status === 'active' ? 'text-green-500' : 
+                                                        sub.status === 'past_due' ? 'text-red-500' : 
+                                                        'text-yellow-500'
+                                                    }`}>
+                                                        {sub.status === 'active' ? 'PAGO' : sub.status === 'past_due' ? 'FALHA' : 'PROCESSANDO'}
+                                                    </span>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <div className="flex items-center gap-2 text-xs text-zinc-400">
-                                                    <Calendar size={14} className="text-zinc-600" />
+                                                <div className="flex items-center gap-2 text-xs text-zinc-400 group-hover:text-white transition-colors">
+                                                    <Calendar size={12} className="text-zinc-600" />
                                                     {format(parseISO(sub.next_billing_date), 'dd/MM/yyyy')}
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <Button size="sm" variant="outline" className="h-8 text-[10px] border-zinc-800">
-                                                    Detalhes
-                                                </Button>
+                                                <div className="relative">
+                                                    <Button 
+                                                        size="sm" 
+                                                        variant="outline" 
+                                                        className={`h-8 text-[10px] border-zinc-800 gap-2 font-bold uppercase tracking-widest transition-all ${activeMenu === sub.id ? 'bg-white/10 text-white border-white/20' : ''}`}
+                                                        onClick={() => setActiveMenu(activeMenu === sub.id ? null : sub.id)}
+                                                    >
+                                                        Ações <ChevronDown size={12} className={`transition-transform duration-300 ${activeMenu === sub.id ? 'rotate-180' : ''}`} />
+                                                    </Button>
+                                                    
+                                                    {activeMenu === sub.id && (
+                                                        <>
+                                                            <div className="fixed inset-0 z-10" onClick={() => setActiveMenu(null)} />
+                                                            <div className="absolute right-0 mt-2 w-48 bg-zinc-900 border border-white/10 rounded-xl shadow-2xl z-20 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                                                                <button className="w-full px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-widest text-zinc-400 hover:bg-white/5 hover:text-white flex items-center gap-2 transition-colors">
+                                                                    <Pause size={14} className="text-zinc-600" /> Pausar Assinatura
+                                                                </button>
+                                                                <button className="w-full px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-widest text-zinc-400 hover:bg-white/5 hover:text-white flex items-center gap-2 transition-colors border-t border-white/5">
+                                                                    <RefreshCw size={14} className="text-zinc-600" /> Trocar Plano
+                                                                </button>
+                                                                <button className="w-full px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-widest text-zinc-400 hover:bg-white/5 hover:text-white flex items-center gap-2 transition-colors border-t border-white/5">
+                                                                    <History size={14} className="text-zinc-600" /> Histórico
+                                                                </button>
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}
