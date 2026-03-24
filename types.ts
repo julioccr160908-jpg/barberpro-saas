@@ -97,10 +97,14 @@ export interface ShopSettings {
   custom_amenities: any[] | null;
   loyalty_enabled: boolean | null;
   loyalty_target: number | null;
+  loyalty_reward_description: string | null;
+  loyalty_expiration_days: number | null;
   banner_opacity: number | null;
   // Aliases for legacy compatibility
   loyaltyEnabled?: boolean | null;
   loyaltyTarget?: number | null;
+  loyaltyRewardDescription?: string | null;
+  loyaltyExpirationDays?: number | null;
 }
 
 // Stats for dashboard
