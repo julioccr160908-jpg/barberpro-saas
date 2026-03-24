@@ -3,11 +3,12 @@ import { Card, CardHeader } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { supabase } from '../../services/supabase';
 import { db } from '../../services/database';
-import { DollarSign, TrendingDown, TrendingUp, Plus, Trash2, Edit2, Loader2, X } from 'lucide-react';
+import { DollarSign, TrendingDown, TrendingUp, Plus, Trash2, Edit2, Loader2, X, AlertTriangle, Users } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns';
 import { AppointmentStatus, Expense } from '../../types';
 import { toast } from 'sonner';
 import { FeatureGate } from '../ui/FeatureGate';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface ExpenseModalProps {
     isOpen: boolean;
@@ -145,6 +146,7 @@ export const AdminFinancials: React.FC = () => {
     const [modalOpen, setModalOpen] = useState(false);
     const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
     const [organizationId, setOrganizationId] = useState<string | null>(null);
+    const { isAdmin } = useAuth();
 
     // Date Filter (Default: Current Month)
     const [dateRange, setDateRange] = useState({
@@ -168,7 +170,7 @@ export const AdminFinancials: React.FC = () => {
         // Fetch Appointments (Revenue)
         const { data: appts } = await supabase
             .from('appointments')
-            .select(`*, service:services(price)`)
+            .select(`*, service:services(price), barber:profiles(name)`)
             .eq('organization_id', org.id)
             .eq('status', AppointmentStatus.COMPLETED);
 
@@ -271,15 +273,33 @@ export const AdminFinancials: React.FC = () => {
         const revenue = appointmentRevenue + salesRevenue;
         const totalExpenses = filteredExpenses.reduce((sum, e) => sum + Number(e.amount), 0);
 
-        // Commissions (Real Data)
-        const commissions = filteredAppts.reduce((sum, a) => {
-            return sum + (Number(a.commission_amount) || 0);
+        // Commissions (Real Data & Grouped)
+        const barberCommissions: Record<string, { name: string, total: number, count: number }> = {};
+        
+        const totalCommissions = filteredAppts.reduce((sum, a) => {
+            const amount = Number(a.commission_amount) || 0;
+            const barberId = a.barber_id;
+            const barberName = a.barber?.name || 'Profissional';
+
+            if (!barberCommissions[barberId]) {
+                barberCommissions[barberId] = { name: barberName, total: 0, count: 0 };
+            }
+            barberCommissions[barberId].total += amount;
+            barberCommissions[barberId].count += 1;
+
+            return sum + amount;
         }, 0);
 
-        const netProfit = revenue - totalExpenses - commissions;
+        const netProfit = revenue - totalExpenses - totalCommissions;
 
-        return { revenue, totalExpenses, commissions, netProfit };
-    }, [appointments, expenses, dateRange]);
+        return { 
+            revenue, 
+            totalExpenses, 
+            commissions: totalCommissions, 
+            netProfit,
+            barberCommissions: Object.values(barberCommissions).sort((a, b) => b.total - a.total)
+        };
+    }, [appointments, expenses, dateRange, sales]);
 
     if (loading) return <div className="flex h-96 items-center justify-center"><Loader2 className="animate-spin text-primary" /></div>;
 
@@ -318,15 +338,66 @@ export const AdminFinancials: React.FC = () => {
                     <Card className="p-6 bg-yellow-500/10 border-yellow-500/20">
                         <p className="text-xs font-semibold text-yellow-400 uppercase tracking-wider mb-1">Comissões</p>
                         <h3 className="text-2xl font-bold text-white">R$ {metrics.commissions.toFixed(2)}</h3>
-                        <DollarSign className="text-yellow-500 absolute top-4 right-4 opacity-20" size={40} />
+                        <Users className="text-yellow-500 absolute top-4 right-4 opacity-20" size={40} />
                     </Card>
 
-                    <Card className={`p-6 ${metrics.netProfit >= 0 ? 'bg-primary/10 border-primary/20' : 'bg-red-500/10 border-red-500/20'}`}>
-                        <p className={`text-xs font-semibold uppercase tracking-wider mb-1 ${metrics.netProfit >= 0 ? 'text-primary' : 'text-red-400'}`}>Lucro Líquido</p>
-                        <h3 className="text-2xl font-bold text-white">R$ {metrics.netProfit.toFixed(2)}</h3>
-                        <DollarSign className="text-white absolute top-4 right-4 opacity-20" size={40} />
-                    </Card>
+                    {isAdmin && (
+                        <Card className={`p-6 relative overflow-hidden transition-all duration-500 ${metrics.netProfit >= 0 ? 'bg-primary/10 border-primary/20' : 'bg-red-500/10 border-red-500/20'}`}>
+                            <p className={`text-xs font-semibold uppercase tracking-wider mb-1 ${metrics.netProfit >= 0 ? 'text-primary' : 'text-red-400'}`}>
+                                Lucro Líquido
+                            </p>
+                            <div className="flex items-center gap-2">
+                                <h3 className={`text-2xl font-bold ${metrics.netProfit >= 0 ? 'text-white' : 'text-red-500'}`}>
+                                    R$ {metrics.netProfit.toFixed(2)}
+                                </h3>
+                                {metrics.netProfit < 0 && (
+                                    <AlertTriangle size={20} className="text-red-500 animate-pulse" />
+                                )}
+                            </div>
+                            <DollarSign className={`absolute top-4 right-4 opacity-20 ${metrics.netProfit >= 0 ? 'text-primary' : 'text-red-500'}`} size={40} />
+                        </Card>
+                    )}
                 </div>
+
+                {/* Commissions Audit Section - ADMIN ONLY */}
+                {isAdmin && metrics.barberCommissions.length > 0 && (
+                    <Card className="border-yellow-500/10 bg-gradient-to-br from-surface to-yellow-500/[0.02]">
+                        <div className="text-yellow-500">
+                            <CardHeader 
+                                title="Distribuição de Comissões" 
+                            />
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left">
+                                <thead>
+                                    <tr className="border-b border-white/5 text-[10px] text-zinc-500 uppercase tracking-[0.2em]">
+                                        <th className="px-6 py-4">Profissional</th>
+                                        <th className="px-6 py-4">Serviços</th>
+                                        <th className="px-6 py-4 text-right">Total Comissão</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-white/5">
+                                    {metrics.barberCommissions.map((bc, idx) => (
+                                        <tr key={idx} className="hover:bg-white/[0.02] transition-colors">
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 rounded-full bg-yellow-500/10 flex items-center justify-center text-yellow-500 font-bold text-xs">
+                                                        {bc.name.charAt(0)}
+                                                    </div>
+                                                    <span className="font-medium text-white">{bc.name}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-zinc-400 text-sm">{bc.count} atendimentos</td>
+                                            <td className="px-6 py-4 text-right">
+                                                <span className="font-mono font-bold text-yellow-500">R$ {bc.total.toFixed(2)}</span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </Card>
+                )}
 
                 {/* Expenses List */}
                 <Card>
@@ -350,15 +421,28 @@ export const AdminFinancials: React.FC = () => {
                                         <tr key={e.id} className="hover:bg-white/5 transition-colors group">
                                             <td className="px-6 py-3 text-sm text-gray-300">{format(parseISO(e.date), 'dd/MM/yyyy')}</td>
                                             <td className="px-6 py-3 font-medium text-white">{e.title}</td>
-                                            <td className="px-6 py-3 text-sm text-gray-400">
-                                                <span className="bg-white/10 px-2 py-1 rounded text-xs">{e.category}</span>
+                                            <td className="px-6 py-3 text-sm">
+                                                {(() => {
+                                                    const colors: Record<string, string> = {
+                                                        'Fixo': 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+                                                        'Variável': 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+                                                        'Marketing': 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+                                                        'Manutenção': 'bg-red-500/20 text-red-400 border-red-500/30'
+                                                    };
+                                                    const style = colors[e.category] || 'bg-white/10 text-zinc-400 border-white/10';
+                                                    return (
+                                                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${style}`}>
+                                                            {e.category}
+                                                        </span>
+                                                    );
+                                                })()}
                                             </td>
                                             <td className="px-6 py-3 text-right text-red-400 font-mono">- R$ {Number(e.amount).toFixed(2)}</td>
-                                            <td className="px-6 py-3 text-right flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button onClick={() => openEditModal(e)} className="text-zinc-400 hover:text-white" title="Editar">
+                                            <td className="px-6 py-3 text-right flex justify-end gap-3 transition-all">
+                                                <button onClick={() => openEditModal(e)} className="p-1.5 text-zinc-500 hover:text-white hover:bg-white/5 rounded-lg transition-all" title="Editar">
                                                     <Edit2 size={16} />
                                                 </button>
-                                                <button onClick={() => handleDeleteExpense(e.id)} className="text-zinc-400 hover:text-red-500" title="Excluir">
+                                                <button onClick={() => handleDeleteExpense(e.id)} className="p-1.5 text-zinc-500 hover:text-red-500 hover:bg-red-500/5 rounded-lg transition-all" title="Excluir">
                                                     <Trash2 size={16} />
                                                 </button>
                                             </td>
