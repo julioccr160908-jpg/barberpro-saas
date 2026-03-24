@@ -93,6 +93,8 @@ import { Portfolio } from './Portfolio';
 import { useAuth } from '../contexts/AuthContext';
 import { useProfile } from '../hooks/useProfile';
 import { useProducts } from '../hooks/useProducts';
+import { LoyaltyCard } from './customer/LoyaltyCard';
+import { SubscriptionCard } from './customer/SubscriptionCard';
 
 enum BookingStep {
   SHOWCASE = 0,
@@ -135,8 +137,7 @@ export const BookingFlow: React.FC = () => {
   const { data: productsData, isLoading: isProductsLoading } = useProducts(orgId);
 
   // Auth Hook placement
-  const { user, isAdmin, loading: authLoading } = useAuth();
-  const { data: profile } = useProfile(user?.id);
+  const { user, isAdmin, role, profile, loading: authLoading } = useAuth();
 
   // Derived State
   const services = servicesData || [];
@@ -575,78 +576,8 @@ export const BookingFlow: React.FC = () => {
     '--color-secondary': activeSettings.secondary_color || '#1A1A1A',
   } as React.CSSProperties), [activeSettings]);
 
-  // Portal Components
-  const LoyaltyProgress = () => {
-    if (!loyaltyProfile || !loyaltyProfile.enabled) return null;
-    const missing = Math.max(0, loyaltyProfile.target - loyaltyProfile.count);
-
-    return (
-        <div className="space-y-4">
-            <div className="bg-gradient-to-br from-zinc-800 to-black rounded-3xl border border-white/10 p-5 relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-4 opacity-5">
-                    <Scissors size={80} />
-                </div>
-                <div className="flex justify-between items-start mb-4">
-                    <div>
-                        <p className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] mb-1">Cartão de Selos</p>
-                        <h4 className="text-white font-bold text-sm">Fidelidade Premium</h4>
-                    </div>
-                    <div className="bg-primary/20 rounded-full px-2 py-0.5 text-[10px] text-primary font-bold">
-                        {loyaltyProfile.count}/{loyaltyProfile.target}
-                    </div>
-                </div>
-
-                <div className="flex flex-wrap gap-2 justify-center py-2">
-                    {Array.from({ length: loyaltyProfile.target }).map((_, i) => (
-                        <div 
-                            key={i} 
-                            className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all duration-500 ${
-                                i < loyaltyProfile.count
-                                ? 'bg-primary border-primary shadow-[0_0_10px_rgba(234,179,8,0.4)] text-black font-bold' 
-                                : 'bg-white/5 border-white/10 text-zinc-700'
-                            }`}
-                        >
-                            <Scissors size={14} />
-                        </div>
-                    ))}
-                </div>
-            </div>
-            
-            <p className="text-xs text-center text-zinc-400">
-                {missing === 0 
-                    ? "✨ Você completou sua cartela! Use seus pontos agora."
-                    : `Faltam apenas ${missing} cortes para o seu próximo presente! 🎁`}
-            </p>
-        </div>
-    );
-  };
-
-  const SubscriptionCard = () => {
-    if (!customerSubscription) return null;
-    const plan = customerSubscription.plan;
-
-    return (
-        <div className="bg-gradient-to-r from-primary/10 to-transparent border border-primary/20 rounded-3xl p-5 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-10">
-                <Star size={40} className="text-primary" />
-            </div>
-            <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 bg-primary text-[10px] text-black font-black uppercase rounded shadow-[0_0_10px_rgba(234,179,8,0.5)]">VIP Member</span>
-                    <h3 className="text-white font-bold text-sm tracking-tight">{plan?.name}</h3>
-                </div>
-                <div>
-                     <p className="text-[10px] text-zinc-500 uppercase tracking-widest mb-1">Próxima Renovação</p>
-                     <p className="text-xs text-white font-medium">{format(new Date(customerSubscription.next_billing_date), 'dd/MM/yyyy')}</p>
-                </div>
-                <div className="pt-2 flex items-center gap-2 text-[10px] text-primary font-bold">
-                    <Zap size={10} />
-                    <span>Benefícios do Clube Ativos</span>
-                </div>
-            </div>
-        </div>
-    );
-  };
+  // The internal LoyaltyProgress and SubscriptionCard components are removed as they are now extracted
+  // and the Drawer is disabled for Customers who already have a Sidebar/Hub.
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative" style={brandingStyles}>
@@ -654,11 +585,17 @@ export const BookingFlow: React.FC = () => {
       <div className="fixed top-4 right-4 z-50 flex gap-2">
         {user ? (
             <button 
-                onClick={() => setIsPortalOpen(true)}
+                onClick={() => {
+                    if (role === Role.CUSTOMER) {
+                        navigate('/customer/profile');
+                    } else {
+                        setIsPortalOpen(true);
+                    }
+                }}
                 className="w-12 h-12 rounded-full overflow-hidden border-2 border-primary/20 shadow-lg hover:border-primary transition-all relative group"
             >
-                {profile?.avatar_url ? (
-                    <img src={profile.avatar_url} className="w-full h-full object-cover" alt="Profile" />
+                {profile?.avatarUrl ? (
+                    <img src={profile.avatarUrl} className="w-full h-full object-cover" alt="Profile" />
                 ) : (
                     <div className="w-full h-full bg-surfaceHighlight flex items-center justify-center">
                         <UserCircle size={24} className="text-zinc-400 group-hover:text-primary" />
@@ -688,8 +625,8 @@ export const BookingFlow: React.FC = () => {
         )}
       </div>
 
-      {/* Client Portal Drawer */}
-      {isPortalOpen && (
+      {/* Client Portal Drawer - Only for guests or admins, customers use Sidebar */}
+      {isPortalOpen && role !== Role.CUSTOMER && (
         <div className="fixed inset-0 z-[60] animate-in fade-in duration-300">
             <div className="absolute inset-0 bg-black/60 shadow-inner" onClick={() => setIsPortalOpen(false)} />
             <div className="absolute top-0 right-0 h-full w-full max-w-[320px] bg-zinc-900 border-l border-white/5 p-6 animate-in slide-in-from-right duration-500 overflow-y-auto custom-scrollbar">
@@ -725,7 +662,13 @@ export const BookingFlow: React.FC = () => {
                             <Gift size={14} className="text-primary" />
                             <h3 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Progressão Fidelidade</h3>
                         </div>
-                        <LoyaltyProgress />
+                        {loyaltyProfile && (
+                            <LoyaltyCard 
+                                count={loyaltyProfile.count} 
+                                target={loyaltyProfile.target} 
+                                enabled={loyaltyProfile.enabled} 
+                            />
+                        )}
                     </div>
 
                     {/* Subscription Area */}
@@ -735,7 +678,7 @@ export const BookingFlow: React.FC = () => {
                                 <Star size={14} className="text-primary" />
                                 <h3 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Área do Assinante</h3>
                             </div>
-                            <SubscriptionCard />
+                            <SubscriptionCard subscription={customerSubscription} />
                         </div>
                     )}
 

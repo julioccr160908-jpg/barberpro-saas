@@ -6,16 +6,37 @@ import { useSettings } from '../../contexts/SettingsContext';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
-import { User, Phone, Mail, Loader2, Save, Gift, Check, Camera, X, Upload } from 'lucide-react';
+import { User, Phone, Mail, Loader2, Save, Gift, Check, Camera, X, Upload, CreditCard } from 'lucide-react';
 import Cropper from 'react-easy-crop';
 import getCroppedImg from '../../utils/cropImage';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { LoyaltyCard } from './LoyaltyCard';
+import { SubscriptionCard } from './SubscriptionCard';
 
 export const CustomerProfile: React.FC = () => {
-    const { user } = useAuth();
+    const { user, profile: userProfile } = useAuth();
+    const navigate = useNavigate();
     const { settings } = useSettings();
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
+
+    // Fetch Subscription Status
+    const { data: subscription } = useQuery({
+        queryKey: ['customer-subscription', user?.id],
+        queryFn: async () => {
+            if (!user) return null;
+            const { data } = await supabase
+                .from('customer_subscriptions')
+                .select('*, plan:subscription_plans(*)')
+                .eq('customer_id', user.id)
+                .is('canceled_at', null)
+                .maybeSingle();
+            return data;
+        },
+        enabled: !!user
+    });
 
 
     const [formData, setFormData] = useState({
@@ -170,59 +191,33 @@ export const CustomerProfile: React.FC = () => {
         <div className="max-w-2xl mx-auto animate-fade-in">
             <h2 className="text-2xl font-bold text-white mb-6">Meu Perfil</h2>
 
-            {/* Loyalty Card Section */}
-            {formData.loyaltyEnabled && (
-                <Card className="mb-6 bg-gradient-to-br from-gray-900 to-black overflow-hidden relative" style={{ borderColor: `${primaryColor}4D` }}>
-                    <div className="absolute top-0 right-0 p-4 opacity-10">
-                        <Gift size={120} style={{ color: primaryColor }} />
-                    </div>
+            {/* Hub Widgets Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                {/* Loyalty Card */}
+                <LoyaltyCard 
+                    count={formData.loyaltyCount} 
+                    target={formData.loyaltyTarget} 
+                    enabled={formData.loyaltyEnabled} 
+                />
 
-                    <div className="relative z-10">
-                        <div className="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 className="text-xl font-display font-bold flex items-center gap-2" style={{ color: primaryColor }}>
-                                    <Gift size={20} />
-                                    Programa Fidelidade
-                                </h3>
-                                <p className="text-textMuted text-sm">Complete a cartela e ganhe um corte grátis!</p>
-                            </div>
-                            <div className="text-right">
-                                <span className="text-2xl font-bold text-white">{formData.loyaltyCount || 0}</span>
-                                <span className="text-textMuted text-sm">/{formData.loyaltyTarget || 10}</span>
-                            </div>
+                {/* Subscription Card */}
+                {subscription ? (
+                    <SubscriptionCard subscription={subscription} />
+                ) : (
+                    <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-6 flex flex-col items-center justify-center text-center space-y-4">
+                        <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center">
+                            <CreditCard className="text-zinc-700" size={24} />
                         </div>
-
-                        {/* Slots */}
-                        <div className="flex flex-wrap gap-2 mt-4 justify-center sm:justify-start">
-                            {Array.from({ length: formData.loyaltyTarget || 10 }).map((_, i) => (
-                                <div
-                                    key={i}
-                                    className={`
-                                        w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all
-                                    `}
-                                    style={
-                                        i < (formData.loyaltyCount || 0)
-                                            ? {
-                                                backgroundColor: primaryColor,
-                                                borderColor: primaryColor,
-                                                color: '#000', // Assuming dark text on primary
-                                                boxShadow: `0 0 10px ${primaryColor}80`,
-                                                transform: 'scale(1.1)'
-                                            }
-                                            : {
-                                                backgroundColor: 'transparent',
-                                                borderColor: 'rgba(255,255,255,0.2)',
-                                                color: 'rgba(255,255,255,0.2)'
-                                            }
-                                    }
-                                >
-                                    {i < (formData.loyaltyCount || 0) ? <Check size={20} strokeWidth={3} /> : <span className="text-xs">{i + 1}</span>}
-                                </div>
-                            ))}
+                        <div>
+                            <h4 className="text-white font-bold text-sm">Clube de Assinatura</h4>
+                            <p className="text-xs text-zinc-500">Torne-se membro e tenha cortes ilimitados.</p>
                         </div>
+                        <Button variant="outline" size="sm" onClick={() => navigate('/customer/subscriptions')} className="text-[10px] uppercase font-bold tracking-widest border-white/10 hover:border-primary">
+                            Ver Planos
+                        </Button>
                     </div>
-                </Card>
-            )}
+                )}
+            </div>
 
             <Card>
                 <form onSubmit={handleSave} className="space-y-6">

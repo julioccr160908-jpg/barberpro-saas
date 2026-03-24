@@ -1,18 +1,38 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Calendar, User, LogOut, Scissors, Menu, MapPin, CreditCard } from 'lucide-react';
+import { Calendar, User, LogOut, Scissors, Menu, MapPin, CreditCard, Star, UserCircle } from 'lucide-react';
 import { useSettings } from '../../contexts/SettingsContext';
 import { Button } from '../ui/Button';
+import { useAuth } from '../../contexts/AuthContext';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '../../services/supabase';
 
 interface CustomerLayoutProps {
     children: React.ReactNode;
 }
 
 export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
+    const { user, profile } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const [isOpen, setIsOpen] = useState(false);
     const { settings } = useSettings();
+
+    // Fetch Subscription Status for VIP badge
+    const { data: subscription } = useQuery({
+        queryKey: ['customer-subscription-sidebar', user?.id],
+        queryFn: async () => {
+            if (!user) return null;
+            const { data } = await supabase
+                .from('customer_subscriptions')
+                .select('id')
+                .eq('customer_id', user.id)
+                .is('canceled_at', null)
+                .maybeSingle();
+            return data;
+        },
+        enabled: !!user
+    });
 
     const handleOpenMaps = () => {
         if (!settings.address) return;
@@ -81,6 +101,35 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                             </div>
                         </div>
 
+                        {/* User Profile Section */}
+                        <div className="p-6 border-b border-border flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-xl border border-white/10 overflow-hidden shrink-0 relative">
+                                {profile?.avatarUrl ? (
+                                    <img src={profile.avatarUrl} className="w-full h-full object-cover" alt="Profile" />
+                                ) : (
+                                    <div className="w-full h-full bg-white/5 flex items-center justify-center text-zinc-500">
+                                        <User size={24} />
+                                    </div>
+                                )}
+                                {subscription && (
+                                    <div className="absolute -bottom-1 -right-1 bg-primary w-4 h-4 rounded-full flex items-center justify-center border-2 border-surface">
+                                        <Star size={8} className="text-black fill-current" />
+                                    </div>
+                                )}
+                            </div>
+                            <div className="min-w-0">
+                                <h3 className="text-sm font-bold text-white truncate">{profile?.name || 'Cliente'}</h3>
+                                {subscription ? (
+                                    <span className="inline-flex items-center gap-1 text-[10px] font-black text-primary uppercase tracking-tighter">
+                                        <Star size={8} className="fill-current" />
+                                        VIP Member
+                                    </span>
+                                ) : (
+                                    <p className="text-[10px] text-zinc-500 font-medium uppercase truncate">Cliente Bronze</p>
+                                )}
+                            </div>
+                        </div>
+
                         <nav className="flex-1 px-4 py-8 space-y-2">
                             {menuItems.map((item) => {
                                 const isActive = location.pathname === item.path;
@@ -92,10 +141,10 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                                             setIsOpen(false);
                                         }}
                                         className={`
-                                            w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200
+                                            w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 group
                                             ${isActive
-                                                ? 'border'
-                                                : 'text-textMuted hover:text-white hover:bg-surfaceHighlight'}
+                                                ? 'shadow-lg shadow-primary/10'
+                                                : 'text-zinc-500 hover:text-white hover:bg-white/5'}
                                         `}
                                         style={isActive ? { 
                                             backgroundColor: (settings.primary_color || '#D4AF37') + '1a', 
@@ -103,8 +152,13 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                                             borderColor: (settings.primary_color || '#D4AF37') + '33'
                                         } : {}}
                                     >
-                                        <item.icon size={18} />
-                                        {item.label}
+                                        <div className="flex items-center gap-3">
+                                            <item.icon size={18} className={isActive ? 'text-primary' : 'text-zinc-500 group-hover:text-zinc-300'} />
+                                            <span>{item.label}</span>
+                                        </div>
+                                        {item.id === 'subscriptions' && (
+                                            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shadow-[0_0_8px_rgba(234,179,8,0.8)]" />
+                                        )}
                                     </button>
                                 );
                             })}
