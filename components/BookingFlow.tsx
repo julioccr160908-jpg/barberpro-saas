@@ -3,7 +3,16 @@ import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { Button } from './ui/Button';
 import { WhatsAppButton } from './ui/WhatsAppButton';
 import { Card } from './ui/Card';
-import { ChevronRight, ChevronLeft, MapPin, Search, Star, Clock, User as UserIcon, Store, Loader2, Wifi, Coffee, Gamepad2, Tv, Snowflake, Beer, Car, Cigarette, GlassWater, Music, PawPrint, Flame, Accessibility, CreditCard, QrCode, Dices, Check, Calendar as CalendarIcon, Scissors, AlertCircle, Gift, Package, X, Dumbbell, Laptop, Utensils, Sofa, Baby, Heart, Camera, HelpCircle } from 'lucide-react';
+import { 
+  ChevronRight, ChevronLeft, MapPin, Search, Star, Clock, User as UserIcon, Store, Loader2, 
+  Wifi, Coffee, Gamepad2, Tv, Snowflake, Beer, Car, Cigarette, GlassWater, Music, 
+  PawPrint, Flame, Accessibility, CreditCard, QrCode, Dices, Check, Calendar as CalendarIcon, 
+  Scissors, AlertCircle, Gift, Package, X, Dumbbell, Laptop, Utensils, Sofa, Baby, Heart, 
+  Camera, HelpCircle, Wine, Pizza, Cookie, Sandwich, IceCream, Martini, MonitorPlay, 
+  Trophy, Disc, Radio, Mic, Speaker, Wind, Phone, Tablet, Smartphone, Sparkles, 
+  Brush, Shirt, Ruler, ShoppingBag, Tag, Watch, Award, Zap, Shield, Sun, Moon, 
+  Bell, Smile, Eye, ParkingCircle, Dog 
+} from 'lucide-react';
 
 const AMENITY_ICONS: Record<string, { label: string, icon: any }> = {
   wifi: { label: 'Wi-Fi Grátis', icon: Wifi },
@@ -39,7 +48,12 @@ const LUCIDE_ICONS: Record<string, any> = {
   Wifi, Coffee, Beer, GlassWater, Snowflake, Car, Tv, Gamepad2, 
   Dices, Music, PawPrint, Flame, Accessibility, CreditCard, 
   QrCode, Cigarette, Scissors, Dumbbell, Laptop, Utensils, 
-  Sofa, Baby, Heart, Star, Camera, MapPin, HelpCircle
+  Sofa, Baby, Heart, Star, Camera, MapPin, HelpCircle,
+  Wine, Pizza, Cookie, Sandwich, IceCream, Martini, MonitorPlay, 
+  Trophy, Disc, Radio, Mic, Speaker, Wind, Phone, Tablet, 
+  Smartphone, Sparkles, Brush, Shirt, Ruler, ShoppingBag, 
+  Tag, Watch, Award, Zap, Shield, Sun, Moon, Bell, Smile, Eye, 
+  ParkingCircle, Dog
 };
 import { User, Service, AppointmentStatus, Role } from '../types';
 import { db } from '../services/database';

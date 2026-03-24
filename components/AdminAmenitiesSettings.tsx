@@ -7,7 +7,10 @@ import {
     Loader2, Wifi, Coffee, Gamepad2, Tv, Snowflake, Beer, Car, Cigarette, 
     GlassWater, CheckCircle2, Music, PawPrint, Flame, Accessibility, 
     CreditCard, QrCode, Dices, Plus, X, Trash2, Scissors, Dumbbell, 
-    Laptop, Utensils, Sofa, Baby, Heart, Star, Camera, MapPin, Search, HelpCircle
+    Laptop, Utensils, Sofa, Baby, Heart, Star, Camera, MapPin, Search, HelpCircle,
+    Wine, Pizza, Cookie, Sandwich, IceCream, Martini, MonitorPlay, Trophy, Disc, Radio, 
+    Mic, Speaker, Wind, Phone, Tablet, Smartphone, Sparkles, Brush, Shirt, Ruler, 
+    ShoppingBag, Tag, Watch, Award, Zap, Shield, Sun, Moon, Bell, Smile, Eye, ParkingCircle, Dog
 } from 'lucide-react';
 
 // Unified icon map for Lucide components
@@ -15,8 +18,36 @@ const ICON_MAP: Record<string, any> = {
     Wifi, Coffee, Beer, GlassWater, Snowflake, Car, Tv, Gamepad2, 
     Dices, Music, PawPrint, Flame, Accessibility, CreditCard, 
     QrCode, Cigarette, Scissors, Dumbbell, Laptop, Utensils, 
-    Sofa, Baby, Heart, Star, Camera, MapPin, HelpCircle
+    Sofa, Baby, Heart, Star, Camera, MapPin, HelpCircle,
+    Wine, Pizza, Cookie, Sandwich, IceCream, Martini, MonitorPlay, 
+    Trophy, Disc, Radio, Mic, Speaker, Wind, Phone, Tablet, 
+    Smartphone, Sparkles, Brush, Shirt, Ruler, ShoppingBag, 
+    Tag, Watch, Award, Zap, Shield, Sun, Moon, Bell, Smile, Eye, 
+    ParkingCircle, Dog
 };
+
+const ICON_LIBRARY = [
+  {
+    category: 'Bebidas & Gastronomia',
+    icons: ['Coffee', 'Beer', 'Wine', 'GlassWater', 'Utensils', 'Pizza', 'Cookie', 'Sandwich', 'IceCream', 'Martini']
+  },
+  {
+    category: 'Entretenimento',
+    icons: ['Gamepad2', 'Tv', 'Music', 'MonitorPlay', 'Dumbbell', 'Trophy', 'Disc', 'Radio', 'Mic', 'Speaker']
+  },
+  {
+    category: 'Conforto & Facilidades',
+    icons: ['Wifi', 'Wind', 'Sofa', 'ParkingCircle', 'Baby', 'Accessibility', 'Laptop', 'Snowflake', 'Flame', 'Car', 'MapPin', 'Phone', 'Tablet', 'Smartphone']
+  },
+  {
+    category: 'Estilo & Barba',
+    icons: ['Scissors', 'Sparkles', 'Brush', 'Shirt', 'Ruler', 'ShoppingBag', 'Tag', 'Watch']
+  },
+  {
+    category: 'Outros',
+    icons: ['Cigarette', 'Dog', 'CreditCard', 'QrCode', 'Heart', 'Star', 'Award', 'Zap', 'Camera', 'Shield', 'Sun', 'Moon', 'Bell', 'Smile', 'Eye']
+  }
+];
 
 export const AVAILABLE_AMENITIES = [
     { id: 'wifi', label: 'Wi-Fi Grátis', icon: 'Wifi' },
@@ -226,21 +257,38 @@ export const AdminAmenitiesSettings: React.FC = () => {
                             </div>
 
                             <div>
-                                <label className="block text-xs font-medium text-zinc-500 uppercase tracking-widest mb-2 px-1">Selecione um Ícone</label>
-                                <div className="grid grid-cols-5 gap-3 p-4 bg-zinc-950/30 rounded-3xl border border-white/5 max-h-[220px] overflow-y-auto no-scrollbar">
-                                    {Object.keys(ICON_MAP).map(iconName => {
-                                        const Icon = ICON_MAP[iconName];
-                                        const isSelected = newAmenity.icon === iconName;
-                                        return (
-                                            <button
-                                                key={iconName}
-                                                onClick={() => setNewAmenity({...newAmenity, icon: iconName})}
-                                                className={`p-3 rounded-xl transition-all duration-300 flex items-center justify-center ${isSelected ? 'bg-primary text-black shadow-lg scale-110' : 'text-zinc-500 hover:bg-white/5 hover:text-zinc-300'}`}
-                                            >
-                                                <Icon size={20} strokeWidth={1.5} />
-                                            </button>
-                                        );
-                                    })}
+                                <label className="block text-xs font-medium text-zinc-500 uppercase tracking-widest mb-4 px-1">Selecione um Ícone</label>
+                                <div className="space-y-6 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                                    {ICON_LIBRARY.map((group) => (
+                                        <div key={group.category} className="space-y-3">
+                                            <h4 className="text-[10px] font-bold text-zinc-600 uppercase tracking-[0.2em] px-1 px-1 flex items-center gap-2">
+                                                <div className="h-px flex-1 bg-white/5"></div>
+                                                {group.category}
+                                                <div className="h-px flex-1 bg-white/5"></div>
+                                            </h4>
+                                            <div className="grid grid-cols-5 gap-2 p-2 bg-black/20 rounded-[1.5rem] border border-white/5">
+                                                {group.icons.map(iconName => {
+                                                    const Icon = ICON_MAP[iconName] || HelpCircle;
+                                                    const isSelected = newAmenity.icon === iconName;
+                                                    return (
+                                                        <button
+                                                            key={iconName}
+                                                            type="button"
+                                                            onClick={() => setNewAmenity({...newAmenity, icon: iconName})}
+                                                            className={`
+                                                                relative p-3 rounded-xl transition-all duration-300 flex items-center justify-center group/icon
+                                                                ${isSelected 
+                                                                    ? 'bg-primary text-black shadow-xl scale-110 shadow-primary/20 z-10' 
+                                                                    : 'text-zinc-500 hover:bg-white/5 hover:text-zinc-200'}
+                                                            `}
+                                                        >
+                                                            <Icon size={18} strokeWidth={isSelected ? 2 : 1.5} />
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
 
