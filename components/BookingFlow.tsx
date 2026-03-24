@@ -3,7 +3,7 @@ import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { Button } from './ui/Button';
 import { WhatsAppButton } from './ui/WhatsAppButton';
 import { Card } from './ui/Card';
-import { ChevronRight, ChevronLeft, MapPin, Search, Star, Clock, User as UserIcon, Store, Loader2, Wifi, Coffee, Gamepad2, Tv, Snowflake, Beer, Car, Cigarette, GlassWater, Music, PawPrint, Flame, Accessibility, CreditCard, QrCode, Dices, Check, Calendar as CalendarIcon, Scissors, AlertCircle, Gift, Package, X } from 'lucide-react';
+import { ChevronRight, ChevronLeft, MapPin, Search, Star, Clock, User as UserIcon, Store, Loader2, Wifi, Coffee, Gamepad2, Tv, Snowflake, Beer, Car, Cigarette, GlassWater, Music, PawPrint, Flame, Accessibility, CreditCard, QrCode, Dices, Check, Calendar as CalendarIcon, Scissors, AlertCircle, Gift, Package, X, Dumbbell, Laptop, Utensils, Sofa, Baby, Heart, Camera, HelpCircle } from 'lucide-react';
 
 const AMENITY_ICONS: Record<string, { label: string, icon: any }> = {
   wifi: { label: 'Wi-Fi Grátis', icon: Wifi },
@@ -39,7 +39,7 @@ const LUCIDE_ICONS: Record<string, any> = {
   Wifi, Coffee, Beer, GlassWater, Snowflake, Car, Tv, Gamepad2, 
   Dices, Music, PawPrint, Flame, Accessibility, CreditCard, 
   QrCode, Cigarette, Scissors, Dumbbell, Laptop, Utensils, 
-  Sofa, Baby, Heart, Star, Camera, MapPin
+  Sofa, Baby, Heart, Star, Camera, MapPin, HelpCircle
 };
 import { User, Service, AppointmentStatus, Role } from '../types';
 import { db } from '../services/database';
@@ -672,7 +672,7 @@ export const BookingFlow: React.FC = () => {
                     {/* Custom Amenities */}
                     {(activeSettings.custom_amenities as any[])?.map((amenity: any) => {
                       if (!activeSettings.amenities?.includes(amenity.id)) return null;
-                      const Icon = LUCIDE_ICONS[amenity.icon] || Star;
+                      const Icon = LUCIDE_ICONS[amenity.icon] || HelpCircle;
                       return (
                         <div key={amenity.id} className="flex flex-col items-center gap-2 text-zinc-400 bg-white/5 px-4 py-3 rounded-xl border border-white/5 hover:border-white/10 transition-colors">
                           <Icon size={20} className="text-white/80" />

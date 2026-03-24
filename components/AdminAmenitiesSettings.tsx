@@ -7,7 +7,7 @@ import {
     Loader2, Wifi, Coffee, Gamepad2, Tv, Snowflake, Beer, Car, Cigarette, 
     GlassWater, CheckCircle2, Music, PawPrint, Flame, Accessibility, 
     CreditCard, QrCode, Dices, Plus, X, Trash2, Scissors, Dumbbell, 
-    Laptop, Utensils, Sofa, Baby, Heart, Star, Camera, MapPin, Search
+    Laptop, Utensils, Sofa, Baby, Heart, Star, Camera, MapPin, Search, HelpCircle
 } from 'lucide-react';
 
 // Unified icon map for Lucide components
@@ -15,7 +15,7 @@ const ICON_MAP: Record<string, any> = {
     Wifi, Coffee, Beer, GlassWater, Snowflake, Car, Tv, Gamepad2, 
     Dices, Music, PawPrint, Flame, Accessibility, CreditCard, 
     QrCode, Cigarette, Scissors, Dumbbell, Laptop, Utensils, 
-    Sofa, Baby, Heart, Star, Camera, MapPin
+    Sofa, Baby, Heart, Star, Camera, MapPin, HelpCircle
 };
 
 export const AVAILABLE_AMENITIES = [
