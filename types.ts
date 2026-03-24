@@ -94,6 +94,7 @@ export interface ShopSettings {
   primary_color: string | null;
   secondary_color: string | null;
   amenities: string[] | null;
+  custom_amenities: any[] | null;
   loyalty_enabled: boolean | null;
   loyalty_target: number | null;
   banner_opacity: number | null;

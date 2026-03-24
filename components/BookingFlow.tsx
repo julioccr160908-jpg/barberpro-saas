@@ -22,6 +22,24 @@ const AMENITY_ICONS: Record<string, { label: string, icon: any }> = {
   credit_card: { label: 'Aceita Cartão', icon: CreditCard },
   pix: { label: 'Aceita Pix', icon: QrCode },
   smoking_area: { label: 'Área de Fumantes', icon: Cigarette },
+  scissors: { label: 'Corte Premium', icon: Scissors },
+  dumbbell: { label: 'Fitness', icon: Dumbbell },
+  laptop: { label: 'Espaço Work', icon: Laptop },
+  utensils: { label: 'Restaurante', icon: Utensils },
+  sofa: { label: 'Lounge', icon: Sofa },
+  baby: { label: 'Área Kids', icon: Baby },
+  heart: { label: 'Cuidado Especial', icon: Heart },
+  star: { label: 'Destaque', icon: Star },
+  camera: { label: 'Estúdio', icon: Camera },
+  map_pin: { label: 'Localização', icon: MapPin },
+};
+
+// Map lowercase icon names to Lucide components for dynamic custom icons
+const LUCIDE_ICONS: Record<string, any> = {
+  Wifi, Coffee, Beer, GlassWater, Snowflake, Car, Tv, Gamepad2, 
+  Dices, Music, PawPrint, Flame, Accessibility, CreditCard, 
+  QrCode, Cigarette, Scissors, Dumbbell, Laptop, Utensils, 
+  Sofa, Baby, Heart, Star, Camera, MapPin
 };
 import { User, Service, AppointmentStatus, Role } from '../types';
 import { db } from '../services/database';
@@ -634,16 +652,29 @@ export const BookingFlow: React.FC = () => {
               </Button>
 
               {/* Amenities Section */}
-              {activeSettings.amenities && activeSettings.amenities.length > 0 && (
+              {((activeSettings.amenities && activeSettings.amenities.length > 0) || (activeSettings.custom_amenities && (activeSettings.custom_amenities as any[]).length > 0)) && (
                 <div className="w-full mt-8 pt-8 border-t border-white/5">
                   <h3 className="text-sm font-medium text-textMuted uppercase tracking-wider mb-6">Comodidades</h3>
                   <div className="flex flex-wrap items-center justify-center gap-4">
-                    {activeSettings.amenities.map(amenityId => {
+                    {/* Standard Amenities */}
+                    {activeSettings.amenities?.map(amenityId => {
                       const amenity = AMENITY_ICONS[amenityId as keyof typeof AMENITY_ICONS];
                       if (!amenity) return null;
                       const Icon = amenity.icon;
                       return (
                         <div key={amenityId} className="flex flex-col items-center gap-2 text-zinc-400 bg-white/5 px-4 py-3 rounded-xl border border-white/5 hover:border-white/10 transition-colors">
+                          <Icon size={20} className="text-white/80" />
+                          <span className="text-xs font-medium">{amenity.label}</span>
+                        </div>
+                      );
+                    })}
+                    
+                    {/* Custom Amenities */}
+                    {(activeSettings.custom_amenities as any[])?.map((amenity: any) => {
+                      if (!activeSettings.amenities?.includes(amenity.id)) return null;
+                      const Icon = LUCIDE_ICONS[amenity.icon] || Star;
+                      return (
+                        <div key={amenity.id} className="flex flex-col items-center gap-2 text-zinc-400 bg-white/5 px-4 py-3 rounded-xl border border-white/5 hover:border-white/10 transition-colors">
                           <Icon size={20} className="text-white/80" />
                           <span className="text-xs font-medium">{amenity.label}</span>
                         </div>

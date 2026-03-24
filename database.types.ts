@@ -545,6 +545,7 @@ export type Database = {
         Row: {
           address: string | null
           amenities: string[] | null
+          custom_amenities: Json | null
           banner_opacity: number | null
           city: string | null
           establishment_name: string | null
