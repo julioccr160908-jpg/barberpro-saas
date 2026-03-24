@@ -11,7 +11,8 @@ import {
   Camera, HelpCircle, Wine, Pizza, Cookie, Sandwich, IceCream, Martini, MonitorPlay, 
   Trophy, Disc, Radio, Mic, Speaker, Wind, Phone, Tablet, Smartphone, Sparkles, 
   Brush, Shirt, Ruler, ShoppingBag, Tag, Watch, Award, Zap, Shield, Sun, Moon, 
-  Bell, Smile, Eye, ParkingCircle, Dog 
+  Bell, Smile, Eye, ParkingCircle, Dog, UserCircle, LogOut, ChevronRight as ChevronRightIcon,
+  ShoppingBag as StoreIcon, CreditCard as CardIcon
 } from 'lucide-react';
 
 const AMENITY_ICONS: Record<string, { label: string, icon: any }> = {
@@ -111,6 +112,8 @@ export const BookingFlow: React.FC = () => {
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [selectedProducts, setSelectedProducts] = useState<Record<string, number>>({});
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isPortalOpen, setIsPortalOpen] = useState(false);
+  const [customerSubscription, setCustomerSubscription] = useState<any>(null);
 
   // Marketing Hooks
   const [couponCode, setCouponCode] = useState('');
@@ -301,6 +304,18 @@ export const BookingFlow: React.FC = () => {
             target: settingsRes.data.loyalty_target || 10,
             enabled: true
           });
+        }
+
+        // Fetch Subscription
+        const { data: subData } = await supabase
+            .from('customer_subscriptions')
+            .select('*, plan:subscription_plans(*)')
+            .eq('customer_id', currentUser.id)
+            .eq('status', 'active')
+            .maybeSingle();
+        
+        if (subData) {
+            setCustomerSubscription(subData);
         }
       }
     };
@@ -560,34 +575,199 @@ export const BookingFlow: React.FC = () => {
     '--color-secondary': activeSettings.secondary_color || '#1A1A1A',
   } as React.CSSProperties), [activeSettings]);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4" style={brandingStyles}>
-        <Loader2 className="w-12 h-12 text-primary animate-spin" />
-      </div>
-    );
-  }
+  // Portal Components
+  const LoyaltyProgress = () => {
+    if (!loyaltyProfile || !loyaltyProfile.enabled) return null;
+    const missing = Math.max(0, loyaltyProfile.target - loyaltyProfile.count);
 
-  if (!isLoading && slug && !org) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center text-white p-4">
-        <Store size={64} className="text-textMuted mb-4" />
-        <h2 className="text-2xl font-bold mb-2">Barbearia não encontrada</h2>
-        <Button variant="outline" onClick={() => navigate('/')}>Voltar ao Início</Button>
-      </div>
-    );
-  }
+        <div className="space-y-4">
+            <div className="bg-gradient-to-br from-zinc-800 to-black rounded-3xl border border-white/10 p-5 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-4 opacity-5">
+                    <Scissors size={80} />
+                </div>
+                <div className="flex justify-between items-start mb-4">
+                    <div>
+                        <p className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] mb-1">Cartão de Selos</p>
+                        <h4 className="text-white font-bold text-sm">Fidelidade Premium</h4>
+                    </div>
+                    <div className="bg-primary/20 rounded-full px-2 py-0.5 text-[10px] text-primary font-bold">
+                        {loyaltyProfile.count}/{loyaltyProfile.target}
+                    </div>
+                </div>
 
-  // Only show the back button if they are really an admin
-  // isAdmin from useAuth is safer as it's global
+                <div className="flex flex-wrap gap-2 justify-center py-2">
+                    {Array.from({ length: loyaltyProfile.target }).map((_, i) => (
+                        <div 
+                            key={i} 
+                            className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all duration-500 ${
+                                i < loyaltyProfile.count
+                                ? 'bg-primary border-primary shadow-[0_0_10px_rgba(234,179,8,0.4)] text-black font-bold' 
+                                : 'bg-white/5 border-white/10 text-zinc-700'
+                            }`}
+                        >
+                            <Scissors size={14} />
+                        </div>
+                    ))}
+                </div>
+            </div>
+            
+            <p className="text-xs text-center text-zinc-400">
+                {missing === 0 
+                    ? "✨ Você completou sua cartela! Use seus pontos agora."
+                    : `Faltam apenas ${missing} cortes para o seu próximo presente! 🎁`}
+            </p>
+        </div>
+    );
+  };
+
+  const SubscriptionCard = () => {
+    if (!customerSubscription) return null;
+    const plan = customerSubscription.plan;
+
+    return (
+        <div className="bg-gradient-to-r from-primary/10 to-transparent border border-primary/20 rounded-3xl p-5 relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-10">
+                <Star size={40} className="text-primary" />
+            </div>
+            <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 bg-primary text-[10px] text-black font-black uppercase rounded shadow-[0_0_10px_rgba(234,179,8,0.5)]">VIP Member</span>
+                    <h3 className="text-white font-bold text-sm tracking-tight">{plan?.name}</h3>
+                </div>
+                <div>
+                     <p className="text-[10px] text-zinc-500 uppercase tracking-widest mb-1">Próxima Renovação</p>
+                     <p className="text-xs text-white font-medium">{format(new Date(customerSubscription.next_billing_date), 'dd/MM/yyyy')}</p>
+                </div>
+                <div className="pt-2 flex items-center gap-2 text-[10px] text-primary font-bold">
+                    <Zap size={10} />
+                    <span>Benefícios do Clube Ativos</span>
+                </div>
+            </div>
+        </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative" style={brandingStyles}>
-      {isAdmin && (
-        <div className="absolute top-4 right-4 z-50">
-          <Button variant="outline" onClick={() => navigate('/admin/dashboard')}>
-            <ChevronLeft size={16} className="mr-2" /> Voltar ao Painel
+      {/* Client Portal Button */}
+      <div className="fixed top-4 right-4 z-50 flex gap-2">
+        {user ? (
+            <button 
+                onClick={() => setIsPortalOpen(true)}
+                className="w-12 h-12 rounded-full overflow-hidden border-2 border-primary/20 shadow-lg hover:border-primary transition-all relative group"
+            >
+                {profile?.avatar_url ? (
+                    <img src={profile.avatar_url} className="w-full h-full object-cover" alt="Profile" />
+                ) : (
+                    <div className="w-full h-full bg-surfaceHighlight flex items-center justify-center">
+                        <UserCircle size={24} className="text-zinc-400 group-hover:text-primary" />
+                    </div>
+                )}
+                {customerSubscription && (
+                    <div className="absolute -bottom-1 -right-1 bg-primary w-4 h-4 rounded-full flex items-center justify-center border-2 border-background">
+                        <Star size={8} className="text-black fill-current" />
+                    </div>
+                )}
+            </button>
+        ) : (
+            <Button 
+                variant="outline" 
+                size="sm" 
+                className="rounded-full border-white/10 text-[10px] uppercase font-bold tracking-widest"
+                onClick={() => navigate('/login')}
+            >
+                Entrar
+            </Button>
+        )}
+
+        {isAdmin && (
+          <Button variant="outline" size="sm" className="rounded-full" onClick={() => navigate('/admin/dashboard')}>
+            <ChevronLeft size={16} />
           </Button>
+        )}
+      </div>
+
+      {/* Client Portal Drawer */}
+      {isPortalOpen && (
+        <div className="fixed inset-0 z-[60] animate-in fade-in duration-300">
+            <div className="absolute inset-0 bg-black/60 shadow-inner" onClick={() => setIsPortalOpen(false)} />
+            <div className="absolute top-0 right-0 h-full w-full max-w-[320px] bg-zinc-900 border-l border-white/5 p-6 animate-in slide-in-from-right duration-500 overflow-y-auto custom-scrollbar">
+                <div className="flex justify-between items-center mb-8">
+                    <h2 className="text-lg font-bold text-white tracking-tight">Portal do Cliente</h2>
+                    <button onClick={() => setIsPortalOpen(false)} className="text-zinc-500 hover:text-white transition-colors">
+                        <X size={20} />
+                    </button>
+                </div>
+
+                <div className="space-y-8">
+                    {/* Identification */}
+                    <div className="flex items-center gap-4">
+                        <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-primary/20">
+                             {profile?.avatar_url ? (
+                                <img src={profile.avatar_url} className="w-full h-full object-cover" alt="Profile" />
+                             ) : (
+                                <div className="w-full h-full bg-white/5 flex items-center justify-center">
+                                    <UserCircle size={32} className="text-zinc-600" />
+                                </div>
+                             )}
+                        </div>
+                        <div>
+                            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-0.5">Olá, reserva feita!</p>
+                            <h3 className="text-white font-bold leading-tight line-clamp-1">{profile?.name || 'Cliente'}</h3>
+                            {customerSubscription && <span className="text-[10px] text-primary font-black uppercase tracking-tighter">Membro do Clube</span>}
+                        </div>
+                    </div>
+
+                    {/* Loyalty Visualizer */}
+                    <div className="space-y-3">
+                         <div className="flex items-center gap-2 px-1">
+                            <Gift size={14} className="text-primary" />
+                            <h3 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Progressão Fidelidade</h3>
+                        </div>
+                        <LoyaltyProgress />
+                    </div>
+
+                    {/* Subscription Area */}
+                    {customerSubscription && (
+                        <div className="space-y-3 pt-2">
+                             <div className="flex items-center gap-2 px-1">
+                                <Star size={14} className="text-primary" />
+                                <h3 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Área do Assinante</h3>
+                            </div>
+                            <SubscriptionCard />
+                        </div>
+                    )}
+
+                    {/* Quick Links */}
+                    <div className="pt-4 border-t border-white/5 space-y-2">
+                         <button 
+                            onClick={() => { navigate('/customer/appointments'); setIsPortalOpen(false); }}
+                            className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-all group"
+                        >
+                            <span className="text-sm text-zinc-400 group-hover:text-white transition-colors">Meus Agendamentos</span>
+                            <ChevronRightIcon size={16} className="text-zinc-600 group-hover:text-primary transition-colors" />
+                        </button>
+                        <button 
+                            onClick={() => { navigate('/customer/profile'); setIsPortalOpen(false); }}
+                            className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-all group"
+                        >
+                            <span className="text-sm text-zinc-400 group-hover:text-white transition-colors">Editar Perfil</span>
+                            <ChevronRightIcon size={16} className="text-zinc-600 group-hover:text-primary transition-colors" />
+                        </button>
+                    </div>
+
+                    <div className="pt-8">
+                        <button 
+                            onClick={() => supabase.auth.signOut()}
+                            className="w-full flex items-center justify-center gap-2 p-3 text-red-500/60 hover:text-red-500 hover:bg-red-500/5 rounded-2xl transition-all text-xs font-bold uppercase tracking-widest"
+                        >
+                            <LogOut size={14} />
+                            Sair da Conta
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
       )}
 
@@ -790,44 +970,60 @@ export const BookingFlow: React.FC = () => {
 
           {step === BookingStep.UPSELL && (
             <div className="animate-fade-in flex-1">
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center justify-between mb-8">
                 <div>
-                  <h2 className="text-xl font-display text-white">Adicionar algo mais?</h2>
-                  <p className="text-sm text-textMuted">Aproveite para garantir seus produtos favoritos.</p>
+                  <h2 className="text-2xl font-display text-white tracking-tight">Retire na Cadeira 🧴</h2>
+                  <p className="text-sm text-zinc-400">Garanta seus produtos favoritos e retire durante o serviço.</p>
                 </div>
-                <Button variant="ghost" size="sm" onClick={() => setStep(selectedBarber ? BookingStep.BARBER : BookingStep.DATETIME)}>Voltar</Button>
+                <Button variant="ghost" size="sm" onClick={() => setStep(selectedBarber ? BookingStep.BARBER : BookingStep.DATETIME)} className="text-zinc-500">Voltar</Button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {productsData?.map(product => {
                   const quantity = selectedProducts[product.id] || 0;
                   return (
-                    <div key={product.id} className="p-4 rounded-xl border border-white/10 bg-background flex gap-4 items-center">
-                      <div className="w-16 h-16 rounded-lg overflow-hidden bg-surfaceHighlight flex-shrink-0">
+                    <div key={product.id} className="group relative bg-zinc-900/50 rounded-3xl border border-white/5 overflow-hidden hover:border-primary/20 transition-all duration-300">
+                      <div className="aspect-[4/3] w-full bg-zinc-800 relative overflow-hidden">
                         {product.image_url ? (
-                          <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                          <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center"><Package className="text-textMuted" size={20} /></div>
+                          <div className="w-full h-full flex items-center justify-center bg-white/5"><StoreIcon className="text-zinc-700" size={32} /></div>
                         )}
+                        <div className="absolute top-3 right-3">
+                             <div className="bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg text-[10px] font-black text-white border border-white/10 uppercase tracking-widest">
+                                R$ {product.price}
+                             </div>
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <h4 className="font-bold text-white text-sm">{product.name}</h4>
-                        <p className="text-xs text-textMuted mb-2">R$ {product.price}</p>
+                      
+                      <div className="p-4 space-y-3">
+                        <div>
+                            <h4 className="font-bold text-white text-sm line-clamp-1">{product.name}</h4>
+                            <p className="text-[10px] text-zinc-500 uppercase tracking-widest line-clamp-1">{product.category || 'Cuidados'}</p>
+                        </div>
 
-                        <div className="flex items-center gap-3">
-                          <button
-                            onClick={() => setSelectedProducts(prev => ({ ...prev, [product.id]: Math.max(0, (prev[product.id] || 0) - 1) }))}
-                            className="w-6 h-6 rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-white/10"
-                          >
-                            -
-                          </button>
-                          <span className="text-sm text-white font-bold w-4 text-center">{quantity}</span>
-                          <button
-                            onClick={() => setSelectedProducts(prev => ({ ...prev, [product.id]: (prev[product.id] || 0) + 1 }))}
-                            className="w-6 h-6 rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-white/10"
-                          >
-                            +
-                          </button>
+                        <div className="flex items-center justify-between gap-2 pt-2">
+                             <div className="flex items-center bg-black/40 rounded-full border border-white/5 p-1">
+                                <button
+                                    onClick={() => setSelectedProducts(prev => ({ ...prev, [product.id]: Math.max(0, (prev[product.id] || 0) - 1) }))}
+                                    className="w-8 h-8 rounded-full flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/5 transition-all text-lg font-light"
+                                >
+                                    -
+                                </button>
+                                <span className="text-xs text-white font-bold w-6 text-center">{quantity}</span>
+                                <button
+                                    onClick={() => setSelectedProducts(prev => ({ ...prev, [product.id]: (prev[product.id] || 0) + 1 }))}
+                                    className="w-8 h-8 rounded-full flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/5 transition-all text-lg font-light"
+                                >
+                                    +
+                                </button>
+                             </div>
+                             
+                             {quantity > 0 && (
+                                <div className="text-[10px] text-primary font-bold animate-in zoom-in slide-in-from-right-2">
+                                    Adicionado!
+                                </div>
+                             )}
                         </div>
                       </div>
                     </div>
@@ -835,11 +1031,24 @@ export const BookingFlow: React.FC = () => {
                 })}
               </div>
 
-              <div className="mt-8 flex justify-center">
-                <Button onClick={() => setStep(BookingStep.CONFIRM)} size="lg" className="px-12">
-                  Próximo <ChevronRight size={18} className="ml-2" />
-                </Button>
-              </div>
+                {productsData && productsData.length > 0 && (
+                    <div className="mt-12 flex flex-col items-center gap-4">
+                        <Button 
+                            onClick={() => setStep(BookingStep.CONFIRM)} 
+                            size="lg" 
+                            className="px-16 py-7 rounded-2xl shadow-xl shadow-primary/10 hover:shadow-primary/20 transition-all font-black uppercase tracking-widest text-xs"
+                            style={{ backgroundColor: activeSettings.primary_color || '#D4AF37' }}
+                        >
+                            Ir para Confirmação
+                        </Button>
+                        <button 
+                            onClick={() => setStep(BookingStep.CONFIRM)} 
+                            className="text-[10px] text-zinc-500 uppercase tracking-[0.2em] font-bold hover:text-white transition-colors"
+                        >
+                            Pular, apenas o serviço por enquanto
+                        </button>
+                    </div>
+                )}
             </div>
           )}
 
@@ -857,8 +1066,14 @@ export const BookingFlow: React.FC = () => {
                   if (!product) return null;
                   return (
                     <div key={id} className="flex justify-between border-b border-white/5 pb-2 text-xs">
-                      <span className="text-textMuted">{quantity}x {product.name}</span>
-                      <span className="text-white">R$ {(product.price * quantity).toFixed(2)}</span>
+                      <div className="flex flex-col">
+                        <span className="text-white font-medium">{product.name}</span>
+                        <span className="text-[10px] text-primary uppercase tracking-tight">Reserva para retirada</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-white font-bold">{quantity}x</span>
+                        <p className="text-[10px] text-zinc-500">R$ {(product.price * quantity).toFixed(2)}</p>
+                      </div>
                     </div>
                   );
                 })}
