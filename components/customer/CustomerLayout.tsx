@@ -49,7 +49,6 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
         { id: 'book', label: 'Novo Agendamento', icon: Scissors, path: bookPath },
         { id: 'subscriptions', label: 'Clube de Assinatura', icon: CreditCard, path: '/customer/subscriptions' },
         { id: 'appointments', label: 'Meus Agendamentos', icon: Calendar, path: '/customer/appointments' },
-        { id: 'profile', label: 'Meu Perfil', icon: User, path: '/customer/profile' },
     ];
 
     const handleLogout = () => {

@@ -661,7 +661,7 @@ export const BookingFlow: React.FC = () => {
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative" style={brandingStyles}>
       {/* Client Portal Button */}
       <div className="fixed top-4 right-4 z-50 flex gap-2">
-        {user ? (
+        {user && role !== Role.CUSTOMER ? (
             <button 
                 onClick={() => {
                     if (role === Role.CUSTOMER) {
