@@ -56,8 +56,65 @@ const LUCIDE_ICONS: Record<string, any> = {
   Tag, Watch, Award, Zap, Shield, Sun, Moon, Bell, Smile, Eye, 
   ParkingCircle, Dog
 };
-import { User, Service, AppointmentStatus, Role } from '../types';
+import { User, Service, AppointmentStatus, Role, Product } from '../types';
 import { db } from '../services/database';
+
+// Reusable Product Card Component
+const ProductCard: React.FC<{
+  product: Product;
+  quantity: number;
+  onUpdate: (id: string, delta: number) => void;
+  primaryColor: string;
+}> = ({ product, quantity, onUpdate, primaryColor }) => {
+  const isLowStock = product.stock_quantity && product.stock_quantity < 3;
+  
+  return (
+    <div className="group relative bg-zinc-900/50 rounded-2xl border border-white/5 overflow-hidden hover:border-white/20 transition-all duration-300 flex flex-col">
+      <div className="aspect-square w-full bg-black relative overflow-hidden">
+        {product.image_url ? (
+          <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-white/5"><StoreIcon className="text-zinc-700" size={32} /></div>
+        )}
+        {isLowStock && (
+            <div className="absolute top-3 left-3 bg-red-500/90 backdrop-blur-md px-2 py-1 rounded-md text-[10px] font-black text-white uppercase tracking-widest shadow-lg">
+                Últimas unidades
+            </div>
+        )}
+        <div className="absolute bottom-3 right-3">
+             <div className="bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-black text-amber-400 border border-white/10 shadow-lg">
+                R$ {product.price?.toFixed(2)}
+             </div>
+        </div>
+      </div>
+      
+      <div className="p-4 space-y-4 flex-1 flex flex-col justify-between">
+        <div>
+            <h4 className="font-bold text-white text-sm line-clamp-2 leading-tight">{product.name}</h4>
+            <p className="text-[10px] text-zinc-500 uppercase tracking-widest line-clamp-1 mt-1">{product.category || 'Cuidados'}</p>
+        </div>
+
+        <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/5">
+             <div className="flex items-center bg-zinc-950 rounded-xl border border-white/10 p-1 w-full justify-between">
+                <button
+                    onClick={(e) => { e.stopPropagation(); onUpdate(product.id, -1); }}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-all text-lg font-light"
+                >
+                    -
+                </button>
+                <span className={`text-sm font-bold w-8 text-center ${quantity > 0 ? 'text-amber-400' : 'text-white'}`}>{quantity}</span>
+                <button
+                    onClick={(e) => { e.stopPropagation(); onUpdate(product.id, 1); }}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-all text-lg font-light"
+                >
+                    +
+                </button>
+             </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 import {
   format,
   addMonths,
@@ -862,8 +919,44 @@ export const BookingFlow: React.FC = () => {
 
               {/* Portfolio Section */}
               {currentOrgId && !selectedBarber && (
-                <div className="w-full mt-12 border-t border-white/5 pt-12">
+                <div className="w-full mt-12 border-t border-white/5 pt-12 space-y-12">
                   <Portfolio organizationId={currentOrgId} />
+                  
+                  {/* Recommended Products in Showcase */}
+                  {productsData && productsData.length > 0 && (
+                    <div className="animate-fade-in">
+                      <div className="flex items-center gap-2 mb-6">
+                        <div className="p-2 bg-primary/10 rounded-lg">
+                          <Package className="text-primary w-5 h-5" />
+                        </div>
+                        <h3 className="text-xl font-display text-white uppercase tracking-wider">Produtos em Destaque</h3>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {productsData.slice(0, 3).map(product => (
+                          <ProductCard 
+                            key={product.id}
+                            product={product}
+                            quantity={selectedProducts[product.id] || 0}
+                            onUpdate={(id, delta) => setSelectedProducts(prev => {
+                              const curr = prev[id] || 0;
+                              const next = delta > 0 
+                                ? Math.min(product.stock_quantity || 99, curr + 1)
+                                : Math.max(0, curr - 1);
+                              return { ...prev, [id]: next };
+                            })}
+                            primaryColor={activeSettings.primary_color || '#D4AF37'}
+                          />
+                        ))}
+                      </div>
+                      
+                      {productsData.length > 3 && (
+                        <div className="mt-8 text-center">
+                          <p className="text-xs text-zinc-500 uppercase tracking-widest">Selecione o serviço para ver o catálogo completo</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -1025,56 +1118,21 @@ export const BookingFlow: React.FC = () => {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {productsData?.map(product => {
-                    const quantity = selectedProducts[product.id] || 0;
-                    const isLowStock = product.stock_quantity && product.stock_quantity < 3;
-                    return (
-                      <div key={product.id} className="group relative bg-zinc-900/50 rounded-2xl border border-white/5 overflow-hidden hover:border-white/20 transition-all duration-300 flex flex-col">
-                        <div className="aspect-square w-full bg-black relative overflow-hidden">
-                          {product.image_url ? (
-                            <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-white/5"><StoreIcon className="text-zinc-700" size={32} /></div>
-                          )}
-                          {isLowStock && (
-                              <div className="absolute top-3 left-3 bg-red-500/90 backdrop-blur-md px-2 py-1 rounded-md text-[10px] font-black text-white uppercase tracking-widest shadow-lg">
-                                  Últimas unidades
-                              </div>
-                          )}
-                          <div className="absolute bottom-3 right-3">
-                               <div className="bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-black text-amber-400 border border-white/10 shadow-lg">
-                                  R$ {product.price?.toFixed(2)}
-                               </div>
-                          </div>
-                        </div>
-                        
-                        <div className="p-4 space-y-4 flex-1 flex flex-col justify-between">
-                          <div>
-                              <h4 className="font-bold text-white text-sm line-clamp-2 leading-tight">{product.name}</h4>
-                              <p className="text-[10px] text-zinc-500 uppercase tracking-widest line-clamp-1 mt-1">{product.category || 'Cuidados'}</p>
-                          </div>
-
-                          <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/5">
-                               <div className="flex items-center bg-zinc-950 rounded-xl border border-white/10 p-1 w-full justify-between">
-                                  <button
-                                      onClick={() => setSelectedProducts(prev => ({ ...prev, [product.id]: Math.max(0, (prev[product.id] || 0) - 1) }))}
-                                      className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-all text-lg font-light"
-                                  >
-                                      -
-                                  </button>
-                                  <span className={`text-sm font-bold w-8 text-center ${quantity > 0 ? 'text-amber-400' : 'text-white'}`}>{quantity}</span>
-                                  <button
-                                      onClick={() => setSelectedProducts(prev => ({ ...prev, [product.id]: Math.min(product.stock_quantity || 99, (prev[product.id] || 0) + 1) }))}
-                                      className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-all text-lg font-light"
-                                  >
-                                      +
-                                  </button>
-                               </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {productsData?.map(product => (
+                    <ProductCard 
+                      key={product.id}
+                      product={product}
+                      quantity={selectedProducts[product.id] || 0}
+                      onUpdate={(id, delta) => setSelectedProducts(prev => {
+                        const curr = prev[id] || 0;
+                        const next = delta > 0 
+                          ? Math.min(product.stock_quantity || 99, curr + 1)
+                          : Math.max(0, curr - 1);
+                        return { ...prev, [id]: next };
+                      })}
+                      primaryColor={activeSettings.primary_color || '#D4AF37'}
+                    />
+                  ))}
                 </div>
               )}
 
