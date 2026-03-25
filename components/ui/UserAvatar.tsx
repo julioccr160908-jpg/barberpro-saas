@@ -63,7 +63,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
   }
 
   return (
-    <div className={`${sizeClasses[size]} rounded-full overflow-hidden border border-white/10 shadow-sm relative ${className}`}>
+    <div className={`${sizeClasses[size]} rounded-full overflow-hidden border border-white/10 relative ${className}`}>
       <img 
         src={src} 
         alt={name || 'User'} 
