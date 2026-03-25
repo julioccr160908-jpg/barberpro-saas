@@ -260,18 +260,14 @@ export const AdminFinancials: React.FC = () => {
         );
 
         // Revenue = Appointment service price (if no linked sale) + Sales total_amount
-        // To avoid double counting, we'll only use 'sales' for revenue if it exists,
-        // or fallback to appointments if there were appointments during the period without sales records.
-        // Actually, since all completed appointments now create a sale record via CheckoutModal,
-        // we should favor the sales table.
         const appointmentRevenue = filteredAppts
             .filter(a => !sales.some(s => s.appointment_id === a.id))
-            .reduce((sum, a) => sum + (a.service?.price || 0), 0);
+            .reduce((sum, a) => sum + (Number(a.service?.price) || 0), 0);
             
-        const salesRevenue = filteredSales.reduce((sum, s) => sum + Number(s.total_amount), 0);
+        const salesRevenue = filteredSales.reduce((sum, s) => sum + (Number(s.total_amount) || 0), 0);
         
         const revenue = appointmentRevenue + salesRevenue;
-        const totalExpenses = filteredExpenses.reduce((sum, e) => sum + Number(e.amount), 0);
+        const totalExpenses = filteredExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
 
         // Commissions (Real Data & Grouped)
         const barberCommissions: Record<string, { name: string, total: number, count: number }> = {};
@@ -290,14 +286,15 @@ export const AdminFinancials: React.FC = () => {
             return sum + amount;
         }, 0);
 
-        const netProfit = revenue - totalExpenses - totalCommissions;
+        const netProfit = revenue - (totalExpenses + totalCommissions);
 
         return { 
             revenue, 
             totalExpenses, 
             commissions: totalCommissions, 
             netProfit,
-            barberCommissions: Object.values(barberCommissions).sort((a, b) => b.total - a.total)
+            barberCommissions: Object.values(barberCommissions).sort((a, b) => b.total - a.total),
+            filteredExpenses
         };
     }, [appointments, expenses, dateRange, sales]);
 
@@ -325,19 +322,19 @@ export const AdminFinancials: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <Card className="p-6 bg-green-500/10 border-green-500/20">
                         <p className="text-xs font-semibold text-green-400 uppercase tracking-wider mb-1">Receita Bruta</p>
-                        <h3 className="text-2xl font-bold text-white">R$ {metrics.revenue.toFixed(2)}</h3>
+                        <h3 className="text-2xl font-bold text-white">{metrics.revenue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</h3>
                         <TrendingUp className="text-green-500 absolute top-4 right-4 opacity-20" size={40} />
                     </Card>
 
                     <Card className="p-6 bg-red-500/10 border-red-500/20">
                         <p className="text-xs font-semibold text-red-400 uppercase tracking-wider mb-1">Despesas</p>
-                        <h3 className="text-2xl font-bold text-white">R$ {metrics.totalExpenses.toFixed(2)}</h3>
+                        <h3 className="text-2xl font-bold text-white">{metrics.totalExpenses.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</h3>
                         <TrendingDown className="text-red-500 absolute top-4 right-4 opacity-20" size={40} />
                     </Card>
 
                     <Card className="p-6 bg-yellow-500/10 border-yellow-500/20">
                         <p className="text-xs font-semibold text-yellow-400 uppercase tracking-wider mb-1">Comissões</p>
-                        <h3 className="text-2xl font-bold text-white">R$ {metrics.commissions.toFixed(2)}</h3>
+                        <h3 className="text-2xl font-bold text-white">{metrics.commissions.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</h3>
                         <Users className="text-yellow-500 absolute top-4 right-4 opacity-20" size={40} />
                     </Card>
 
@@ -348,7 +345,7 @@ export const AdminFinancials: React.FC = () => {
                             </p>
                             <div className="flex items-center gap-2">
                                 <h3 className={`text-2xl font-bold ${metrics.netProfit >= 0 ? 'text-white' : 'text-red-500'}`}>
-                                    R$ {metrics.netProfit.toFixed(2)}
+                                    {metrics.netProfit.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                                 </h3>
                                 {metrics.netProfit < 0 && (
                                     <AlertTriangle size={20} className="text-red-500 animate-pulse" />
@@ -389,7 +386,7 @@ export const AdminFinancials: React.FC = () => {
                                             </td>
                                             <td className="px-6 py-4 text-zinc-400 text-sm">{bc.count} atendimentos</td>
                                             <td className="px-6 py-4 text-right">
-                                                <span className="font-mono font-bold text-yellow-500">R$ {bc.total.toFixed(2)}</span>
+                                                <span className="font-mono font-bold text-yellow-500">{bc.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                                             </td>
                                         </tr>
                                     ))}
@@ -414,10 +411,10 @@ export const AdminFinancials: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/5">
-                                {expenses.length === 0 ? (
-                                    <tr><td colSpan={5} className="px-6 py-4 text-center text-textMuted">Nenhuma despesa registrada.</td></tr>
+                                {metrics.filteredExpenses.length === 0 ? (
+                                    <tr><td colSpan={5} className="px-6 py-4 text-center text-textMuted">Nenhuma despesa neste período.</td></tr>
                                 ) : (
-                                    expenses.map(e => (
+                                    metrics.filteredExpenses.map(e => (
                                         <tr key={e.id} className="hover:bg-white/5 transition-colors group">
                                             <td className="px-6 py-3 text-sm text-gray-300">{format(parseISO(e.date), 'dd/MM/yyyy')}</td>
                                             <td className="px-6 py-3 font-medium text-white">{e.title}</td>
@@ -437,7 +434,7 @@ export const AdminFinancials: React.FC = () => {
                                                     );
                                                 })()}
                                             </td>
-                                            <td className="px-6 py-3 text-right text-red-400 font-mono">- R$ {Number(e.amount).toFixed(2)}</td>
+                                            <td className="px-6 py-3 text-right text-red-400 font-mono">- {(Number(e.amount) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
                                             <td className="px-6 py-3 text-right flex justify-end gap-3 transition-all">
                                                 <button onClick={() => openEditModal(e)} className="p-1.5 text-zinc-500 hover:text-white hover:bg-white/5 rounded-lg transition-all" title="Editar">
                                                     <Edit2 size={16} />
