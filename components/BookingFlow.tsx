@@ -65,7 +65,8 @@ const ProductCard: React.FC<{
   quantity: number;
   onUpdate: (id: string, delta: number) => void;
   primaryColor: string;
-}> = ({ product, quantity, onUpdate, primaryColor }) => {
+  hideControls?: boolean;
+}> = ({ product, quantity, onUpdate, primaryColor, hideControls }) => {
   const isLowStock = product.stock_quantity && product.stock_quantity < 3;
   
   return (
@@ -94,23 +95,25 @@ const ProductCard: React.FC<{
             <p className="text-[10px] text-zinc-500 uppercase tracking-widest line-clamp-1 mt-1">{product.category || 'Cuidados'}</p>
         </div>
 
-        <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/5">
-             <div className="flex items-center bg-zinc-950 rounded-xl border border-white/10 p-1 w-full justify-between">
-                <button
-                    onClick={(e) => { e.stopPropagation(); onUpdate(product.id, -1); }}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-all text-lg font-light"
-                >
-                    -
-                </button>
-                <span className={`text-sm font-bold w-8 text-center ${quantity > 0 ? 'text-amber-400' : 'text-white'}`}>{quantity}</span>
-                <button
-                    onClick={(e) => { e.stopPropagation(); onUpdate(product.id, 1); }}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-all text-lg font-light"
-                >
-                    +
-                </button>
-             </div>
-        </div>
+        {!hideControls && (
+          <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/5">
+               <div className="flex items-center bg-zinc-950 rounded-xl border border-white/10 p-1 w-full justify-between">
+                  <button
+                      onClick={(e) => { e.stopPropagation(); onUpdate(product.id, -1); }}
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-all text-lg font-light"
+                  >
+                      -
+                  </button>
+                  <span className={`text-sm font-bold w-8 text-center ${quantity > 0 ? 'text-amber-400' : 'text-white'}`}>{quantity}</span>
+                  <button
+                      onClick={(e) => { e.stopPropagation(); onUpdate(product.id, 1); }}
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-all text-lg font-light"
+                  >
+                      +
+                  </button>
+               </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -946,6 +949,7 @@ export const BookingFlow: React.FC = () => {
                               return { ...prev, [id]: next };
                             })}
                             primaryColor={activeSettings.primary_color || '#D4AF37'}
+                            hideControls={true}
                           />
                         ))}
                       </div>
