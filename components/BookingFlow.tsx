@@ -134,7 +134,10 @@ export const BookingFlow: React.FC = () => {
   const { data: staffData, isLoading: isStaffLoading, isError: isStaffError } = useStaff(orgId);
   const { data: appointmentsData, isLoading: isAppointmentsLoading, isError: isAppointmentsError } = useAppointments({ orgId }, !!orgId, false);
   const { data: settingsData, isLoading: isSettingsLoading, isError: isSettingsError } = useSettingsQuery(orgId);
-  const { data: productsData, isLoading: isProductsLoading } = useProducts(orgId);
+  const { data: rawProductsData, isLoading: isProductsLoading } = useProducts(orgId);
+  const productsData = useMemo(() => {
+    return (rawProductsData || []).filter(p => p.image_url && p.stock_quantity && p.stock_quantity > 0);
+  }, [rawProductsData]);
 
   // Auth Hook placement
   const { user, isAdmin, role, profile, loading: authLoading } = useAuth();
@@ -924,49 +927,49 @@ export const BookingFlow: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {productsData?.map(product => {
                   const quantity = selectedProducts[product.id] || 0;
+                  const isLowStock = product.stock_quantity && product.stock_quantity < 3;
                   return (
-                    <div key={product.id} className="group relative bg-zinc-900/50 rounded-3xl border border-white/5 overflow-hidden hover:border-primary/20 transition-all duration-300">
-                      <div className="aspect-[4/3] w-full bg-zinc-800 relative overflow-hidden">
+                    <div key={product.id} className="group relative bg-zinc-900/50 rounded-2xl border border-white/5 overflow-hidden hover:border-white/20 transition-all duration-300 flex flex-col">
+                      <div className="aspect-square w-full bg-black relative overflow-hidden">
                         {product.image_url ? (
-                          <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                          <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center bg-white/5"><StoreIcon className="text-zinc-700" size={32} /></div>
                         )}
-                        <div className="absolute top-3 right-3">
-                             <div className="bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg text-[10px] font-black text-white border border-white/10 uppercase tracking-widest">
-                                R$ {product.price}
+                        {isLowStock && (
+                            <div className="absolute top-3 left-3 bg-red-500/90 backdrop-blur-md px-2 py-1 rounded-md text-[10px] font-black text-white uppercase tracking-widest shadow-lg">
+                                Últimas unidades
+                            </div>
+                        )}
+                        <div className="absolute bottom-3 right-3">
+                             <div className="bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-black text-amber-400 border border-white/10 shadow-lg">
+                                R$ {product.price?.toFixed(2)}
                              </div>
                         </div>
                       </div>
                       
-                      <div className="p-4 space-y-3">
+                      <div className="p-4 space-y-4 flex-1 flex flex-col justify-between">
                         <div>
-                            <h4 className="font-bold text-white text-sm line-clamp-1">{product.name}</h4>
-                            <p className="text-[10px] text-zinc-500 uppercase tracking-widest line-clamp-1">{product.category || 'Cuidados'}</p>
+                            <h4 className="font-bold text-white text-sm line-clamp-2 leading-tight">{product.name}</h4>
+                            <p className="text-[10px] text-zinc-500 uppercase tracking-widest line-clamp-1 mt-1">{product.category || 'Cuidados'}</p>
                         </div>
 
-                        <div className="flex items-center justify-between gap-2 pt-2">
-                             <div className="flex items-center bg-black/40 rounded-full border border-white/5 p-1">
+                        <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/5">
+                             <div className="flex items-center bg-zinc-950 rounded-xl border border-white/10 p-1 w-full justify-between">
                                 <button
                                     onClick={() => setSelectedProducts(prev => ({ ...prev, [product.id]: Math.max(0, (prev[product.id] || 0) - 1) }))}
-                                    className="w-8 h-8 rounded-full flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/5 transition-all text-lg font-light"
+                                    className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-all text-lg font-light"
                                 >
                                     -
                                 </button>
-                                <span className="text-xs text-white font-bold w-6 text-center">{quantity}</span>
+                                <span className={`text-sm font-bold w-8 text-center ${quantity > 0 ? 'text-amber-400' : 'text-white'}`}>{quantity}</span>
                                 <button
-                                    onClick={() => setSelectedProducts(prev => ({ ...prev, [product.id]: (prev[product.id] || 0) + 1 }))}
-                                    className="w-8 h-8 rounded-full flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/5 transition-all text-lg font-light"
+                                    onClick={() => setSelectedProducts(prev => ({ ...prev, [product.id]: Math.min(product.stock_quantity || 99, (prev[product.id] || 0) + 1) }))}
+                                    className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-all text-lg font-light"
                                 >
                                     +
                                 </button>
                              </div>
-                             
-                             {quantity > 0 && (
-                                <div className="text-[10px] text-primary font-bold animate-in zoom-in slide-in-from-right-2">
-                                    Adicionado!
-                                </div>
-                             )}
                         </div>
                       </div>
                     </div>
@@ -1004,22 +1007,29 @@ export const BookingFlow: React.FC = () => {
                 <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-textMuted text-sm">Data</span><span className="text-white font-bold">{format(selectedDate, 'dd/MM/yyyy')}</span></div>
                 <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-textMuted text-sm">Horário</span><span className="font-bold" style={{ color: activeSettings.primary_color || '#D4AF37' }}>{selectedTime}</span></div>
 
-                {Object.entries(selectedProducts).filter(([_, q]) => q > 0).map(([id, quantity]) => {
-                  const product = productsData?.find(p => p.id === id);
-                  if (!product) return null;
-                  return (
-                    <div key={id} className="flex justify-between border-b border-white/5 pb-2 text-xs">
-                      <div className="flex flex-col">
-                        <span className="text-white font-medium">{product.name}</span>
-                        <span className="text-[10px] text-primary uppercase tracking-tight">Reserva para retirada</span>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-white font-bold">{quantity}x</span>
-                        <p className="text-[10px] text-zinc-500">R$ {(product.price * quantity).toFixed(2)}</p>
-                      </div>
-                    </div>
-                  );
-                })}
+                {Object.keys(selectedProducts).some(id => selectedProducts[id] > 0) && (
+                    <>
+                        <div className="pt-2">
+                           <h4 className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-3">Produtos Adicionados</h4>
+                        </div>
+                        {Object.entries(selectedProducts).filter(([_, q]) => q > 0).map(([id, quantity]) => {
+                          const product = productsData?.find(p => p.id === id);
+                          if (!product) return null;
+                          return (
+                            <div key={id} className="flex justify-between border-b border-white/5 pb-2 text-xs">
+                              <div className="flex flex-col">
+                                <span className="text-white font-medium">{product.name}</span>
+                                <span className="text-[10px] text-amber-400 uppercase tracking-tight">Reserva para retirada</span>
+                              </div>
+                              <div className="text-right">
+                                <span className="text-white font-bold">{quantity}x</span>
+                                <p className="text-[10px] text-zinc-500">R$ {(product.price * quantity).toFixed(2)}</p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </>
+                )}
 
                 {affiliateLink?.type && affiliateLink.value && (
                   <div className="flex justify-between border-b border-white/5 pb-2 text-emerald-400 text-xs font-bold">
