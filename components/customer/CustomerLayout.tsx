@@ -27,7 +27,7 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                 .from('customer_subscriptions')
                 .select('id')
                 .eq('customer_id', user.id)
-                .is('canceled_at', null)
+                .eq('status', 'active')
                 .maybeSingle();
             return data;
         },

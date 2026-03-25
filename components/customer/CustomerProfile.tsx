@@ -31,7 +31,7 @@ export const CustomerProfile: React.FC = () => {
                 .from('customer_subscriptions')
                 .select('*, plan:subscription_plans(*)')
                 .eq('customer_id', user.id)
-                .is('canceled_at', null)
+                .eq('status', 'active')
                 .maybeSingle();
             return data;
         },
