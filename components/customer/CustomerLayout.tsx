@@ -68,7 +68,7 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
     } as React.CSSProperties), [settings]);
 
     return (
-        <div className="min-h-screen bg-background text-textMain font-sans flex flex-col" style={brandingStyles}>
+        <div className="h-screen overflow-hidden bg-background text-textMain font-sans flex flex-col" style={brandingStyles}>
             {/* Mobile Header */}
             <div className="lg:hidden flex items-center justify-between p-4 border-b border-border bg-background z-50 relative">
                 <div className="flex items-center gap-2">
@@ -87,7 +87,7 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
 
                 {/* Sidebar / Drawer */}
                 <aside className={`
-            fixed lg:sticky top-0 left-0 z-40 w-64 h-screen bg-surface border-r border-border transform transition-transform duration-300 ease-in-out overflow-hidden
+            fixed lg:relative inset-y-0 left-0 z-40 w-64 h-full bg-surface border-r border-border transform transition-transform duration-300 ease-in-out overflow-hidden flex-none
             ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
             lg:block
         `}>
@@ -206,9 +206,9 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                     <div className="fixed inset-0 bg-black/80 z-30 lg:hidden" onClick={() => setIsOpen(false)} />
                 )}
 
-                {/* Content */}
-                <main className="flex-1 overflow-y-auto p-4 lg:p-8">
-                    <div className="max-w-5xl mx-auto">
+                {/* Content Area - Independent Scroll */}
+                <main className="flex-1 h-full overflow-y-auto p-4 lg:p-8 custom-scrollbar">
+                    <div className="max-w-5xl mx-auto pb-20 lg:pb-8">
                         {children}
                     </div>
                 </main>
