@@ -87,45 +87,46 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
 
                 {/* Sidebar / Drawer */}
                 <aside className={`
-            fixed lg:relative inset-y-0 left-0 z-40 w-64 bg-surface border-r border-border transform transition-transform duration-300 ease-in-out
+            fixed lg:sticky top-0 left-0 z-40 w-64 h-screen bg-surface border-r border-border transform transition-transform duration-300 ease-in-out overflow-hidden
             ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-            lg:block pt-20 lg:pt-0
+            lg:block
         `}>
                     <div className="flex flex-col h-full">
                         {/* Logo Desktop - Compact */}
-                        <div className="hidden lg:flex h-16 items-center px-6 border-b border-border bg-black/10">
-                            <div className="flex items-center gap-3">
-                                <div className="w-7 h-7 rounded-sm flex items-center justify-center" style={{ backgroundColor: settings.primary_color || '#D4AF37' }}>
-                                    <Scissors size={15} className="text-black" />
+                        <div className="hidden lg:flex h-14 items-center px-4 border-b border-border bg-black/5 shrink-0">
+                            <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 rounded-sm flex items-center justify-center" style={{ backgroundColor: settings.primary_color || '#D4AF37' }}>
+                                    <Scissors size={14} className="text-black" />
                                 </div>
-                                <span className="font-display font-black text-lg tracking-tight text-white uppercase">{settings.establishment_name || 'Barbearia'}</span>
+                                <span className="font-display font-black text-base tracking-tight text-white uppercase">{settings.establishment_name || 'Barbearia'}</span>
                             </div>
                         </div>
 
                         {/* User Profile Section - Compact Horizontal */}
-                        <div className="p-4 border-b border-border flex items-center gap-3 bg-white/5 active:bg-white/10 cursor-pointer transition-colors shrink-0" onClick={() => navigate('/customer/profile')}>
+                        <div className="p-3 border-b border-border flex items-center gap-3 bg-white/5 active:bg-white/10 cursor-pointer transition-colors shrink-0" onClick={() => navigate('/customer/profile')}>
                             <UserAvatar 
                                 src={profile?.avatarUrl} 
                                 name={profile?.name} 
-                                size="md" 
+                                size="sm" 
                                 vip={!!subscription}
-                                className={subscription ? 'ring-2 ring-primary/50' : ''}
+                                className={subscription ? 'ring-1 ring-primary/30' : ''}
                             />
                             <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-1.5">
-                                    <h3 className="text-sm font-bold text-white truncate">{profile?.name || 'Cliente'}</h3>
-                                    {subscription && <Star size={10} className="text-primary fill-current" />}
+                                    <h3 className="text-xs font-bold text-white truncate leading-tight">{profile?.name || 'Cliente'}</h3>
+                                    {subscription && <Star size={8} className="text-primary fill-current" />}
                                 </div>
                                 {subscription ? (
-                                    <p className="text-[10px] text-primary font-black uppercase tracking-tighter">VIP Member</p>
+                                    <p className="text-[9px] text-primary font-black uppercase tracking-tighter">VIP Member</p>
                                 ) : (
-                                    <p className="text-[10px] text-zinc-500 font-medium uppercase truncate">Plano Bronze</p>
+                                    <p className="text-[9px] text-zinc-500 font-medium uppercase truncate">Plano Bronze</p>
                                 )}
                             </div>
-                            <UserCircle size={16} className="text-zinc-500 hover:text-white transition-colors" />
+                            <UserCircle size={14} className="text-zinc-500 hover:text-white transition-colors" />
                         </div>
 
-                        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+                        {/* Scrollable Navigation Area */}
+                        <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto min-h-0 custom-scrollbar">
                             {menuItems.map((item) => {
                                 const isActive = location.pathname === item.path;
                                 return (
@@ -136,22 +137,22 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                                             setIsOpen(false);
                                         }}
                                         className={`
-                                            w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 group relative
+                                            w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all duration-300 group relative
                                             ${isActive
                                                 ? 'bg-primary/5 text-primary shadow-sm'
                                                 : 'text-zinc-500 hover:text-white hover:bg-white/5'}
                                         `}
                                     >
-                                        <div className="flex items-center gap-3">
-                                            <div className={`p-1.5 rounded-lg transition-colors ${isActive ? 'bg-primary/10 text-primary' : 'bg-white/5 text-zinc-500 group-hover:bg-white/10 group-hover:text-zinc-300'}`}>
-                                                <item.icon size={16} />
+                                        <div className="flex items-center gap-2.5">
+                                            <div className={`p-1 rounded-md transition-colors ${isActive ? 'bg-primary/10 text-primary' : 'bg-white/5 text-zinc-500 group-hover:bg-white/10 group-hover:text-zinc-300'}`}>
+                                                <item.icon size={14} />
                                             </div>
                                             <span className={isActive ? 'font-bold' : ''}>{item.label}</span>
                                         </div>
                                         
                                         {/* Active Indicator Bar */}
                                         {isActive && (
-                                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full shadow-[0_0_8px_rgba(212,175,55,0.4)]" />
+                                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-primary rounded-r-full shadow-[0_0_8px_rgba(212,175,55,0.4)]" />
                                         )}
                                         
                                         {item.id === 'subscriptions' && (
@@ -162,38 +163,39 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                             })}
                         </nav>
 
-                        <div className="mt-auto p-4 border-t border-border space-y-3 bg-surface/50 backdrop-blur-md">
-                            {/* Location Box - Minimal */}
+                        {/* Sticky Footer Area */}
+                        <div className="mt-auto p-3 border-t border-border space-y-2.5 bg-background/80 backdrop-blur-md shrink-0">
+                            {/* Location Box - Minimal Notebook Style */}
                             {settings.address && (
-                                <div className="bg-background/40 rounded-xl p-3 border border-white/5 flex items-center justify-between gap-3 group hover:border-primary/20 transition-colors">
+                                <div className="bg-white/5 rounded-lg p-2.5 border border-white/5 flex items-center justify-between gap-3 group hover:border-primary/20 transition-colors">
                                     <div className="flex items-center gap-2 min-w-0">
-                                        <div className="p-1.5 bg-primary/10 rounded-lg shrink-0">
-                                            <MapPin size={14} className="text-primary" />
+                                        <div className="p-1 px-1.5 bg-primary/10 rounded-md shrink-0">
+                                            <MapPin size={12} className="text-primary" />
                                         </div>
-                                        <div className="text-[10px] text-textMuted truncate">
+                                        <div className="text-[9px] text-zinc-400 truncate leading-tight">
                                             <p className="font-bold text-white truncate">{settings.establishment_name || 'Barbearia'}</p>
-                                            <p className="truncate opacity-70">{settings.address}</p>
+                                            <p className="truncate opacity-60">Ver localização</p>
                                         </div>
                                     </div>
                                     <Button
                                         size="sm"
                                         variant="ghost"
                                         onClick={handleOpenMaps}
-                                        className="h-7 w-7 p-0 flex items-center justify-center border-white/5 hover:bg-primary/20 group-hover:text-primary transition-all"
+                                        className="h-6 w-6 p-0 flex items-center justify-center border-white/5 hover:bg-primary/20 group-hover:text-primary transition-all"
                                     >
-                                        <ChevronRight size={14} />
+                                        <ChevronRight size={12} />
                                     </Button>
                                 </div>
                             )}
                             
                             <button
                                 onClick={handleLogout}
-                                className="w-full flex items-center gap-3 px-3 py-2 text-xs text-textMuted hover:text-red-500 transition-all rounded-lg hover:bg-red-500/5 group"
+                                className="w-full flex items-center gap-2.5 px-3 py-1.5 text-[11px] text-zinc-500 hover:text-red-500 transition-all rounded-lg hover:bg-red-500/5 group"
                             >
-                                <div className="p-1.5 bg-white/5 rounded-lg group-hover:bg-red-500/10 transition-colors">
-                                    <LogOut size={14} />
+                                <div className="p-1 bg-white/5 rounded-md group-hover:bg-red-500/10 transition-colors">
+                                    <LogOut size={12} />
                                 </div>
-                                <span className="font-medium">Sair da Conta</span>
+                                <span className="font-medium">Encerrar Sessão</span>
                             </button>
                         </div>
                     </div>

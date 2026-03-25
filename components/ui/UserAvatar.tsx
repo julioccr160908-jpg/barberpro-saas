@@ -55,17 +55,8 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
   }
 
   if (error || !src) {
-    // Generate a consistent background color based on name
-    const colors = [
-        'bg-blue-500', 'bg-purple-500', 'bg-emerald-500', 
-        'bg-amber-500', 'bg-rose-500', 'bg-indigo-500',
-        'bg-cyan-500', 'bg-teal-500'
-    ];
-    const charCodeSum = name ? name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) : 0;
-    const bgColor = colors[charCodeSum % colors.length];
-
     return (
-      <div className={`${sizeClasses[size]} rounded-full flex items-center justify-center font-bold text-white shadow-inner border border-white/10 ${bgColor} ${className}`}>
+      <div className={`${sizeClasses[size]} rounded-full flex items-center justify-center font-bold text-zinc-400 bg-zinc-800 border border-white/5 ${className}`}>
         {initials}
       </div>
     );
