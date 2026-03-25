@@ -92,43 +92,43 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
             lg:block
         `}>
                     <div className="flex flex-col h-full">
-                        {/* Logo Desktop - Compact Editorial */}
-                        <div className="hidden lg:flex h-16 items-center px-6 border-b border-zinc-800 bg-black/20 shrink-0">
+                        {/* Logo Desktop - Compact Original DNA */}
+                        <div className="hidden lg:flex h-16 items-center px-6 border-b border-zinc-800 shrink-0">
                             <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br from-amber-400 to-amber-600 shadow-lg shadow-amber-900/20">
-                                    <Scissors size={16} className="text-black" />
+                                <div className="w-8 h-8 rounded flex items-center justify-center bg-primary shadow-lg shadow-primary/20" style={{ backgroundColor: settings.primary_color || '#D4AF37' }}>
+                                    <Scissors size={18} className="text-black" />
                                 </div>
-                                <span className="font-display font-black text-lg tracking-tighter text-white uppercase">{settings.establishment_name || 'Barbearia'}</span>
+                                <span className="font-display font-bold text-xl tracking-tight text-white uppercase">{settings.establishment_name || 'Barbearia'}</span>
                             </div>
                         </div>
 
-                        {/* User Profile Section - Compact Horizontal Editorial */}
-                        <div className="p-4 border-b border-zinc-800 flex items-center gap-3 bg-black/10 active:bg-black/20 cursor-pointer transition-colors shrink-0" onClick={() => navigate('/customer/profile')}>
+                        {/* User Profile Section - Compact Original Style */}
+                        <div className="p-3 lg:p-4 border-b border-zinc-800 flex items-center gap-3 bg-white/5 active:bg-white/10 cursor-pointer transition-colors shrink-0" onClick={() => navigate('/customer/profile')}>
                             <UserAvatar 
                                 src={profile?.avatarUrl} 
                                 name={profile?.name} 
                                 size="md" 
                                 vip={!!subscription}
-                                className={subscription ? 'ring-1 ring-amber-500/30' : 'border-zinc-800'}
+                                className={subscription ? 'ring-1 ring-primary/40' : 'border-zinc-800'}
                             />
                             <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-1.5">
-                                    <h3 className="text-sm font-bold text-zinc-100 truncate tracking-tight">{profile?.name || 'Cliente'}</h3>
-                                    {subscription && <Star size={10} className="text-amber-500 fill-current" />}
+                                    <h3 className="text-sm font-bold text-white truncate tracking-tight">{profile?.name || 'Cliente'}</h3>
+                                    {subscription && <Star size={10} className="text-primary fill-current" />}
                                 </div>
                                 {subscription ? (
-                                    <p className="text-[9px] text-amber-500 font-black uppercase tracking-[0.2em] opacity-80">VIP Membership</p>
+                                    <p className="text-[10px] text-primary font-bold uppercase tracking-widest">VIP Membership</p>
                                 ) : (
-                                    <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-[0.15em] truncate">Plano Exclusive</p>
+                                    <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-tight truncate">Plano Exclusive</p>
                                 )}
                             </div>
-                            <ChevronRight size={14} className="text-zinc-600 group-hover:text-zinc-400" />
+                            <ChevronRight size={14} className="text-zinc-600" />
                         </div>
 
-                        {/* Scrollable Navigation Area - Editorial Spacing */}
-                        <nav className="flex-1 px-4 py-8 space-y-1.5 overflow-y-auto min-h-0 custom-scrollbar">
-                            <div className="mb-4">
-                                <span className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.3em] px-3">Menu de Acesso</span>
+                        {/* Navigation - Compact Ergonomic */}
+                        <nav className="flex-1 px-3 py-4 lg:py-6 space-y-1 overflow-y-auto min-h-0 custom-scrollbar">
+                            <div className="mb-2 lg:mb-4">
+                                <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest px-3">Menu de Acesso</span>
                             </div>
                             {menuItems.map((item) => {
                                 const isActive = location.pathname === item.path;
@@ -140,24 +140,24 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                                             setIsOpen(false);
                                         }}
                                         className={`
-                                            w-full flex items-center justify-between px-3 py-3 rounded-lg text-[13px] font-medium transition-all duration-500 group relative
+                                            w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 group relative
                                             ${isActive
-                                                ? 'bg-amber-500/5 text-amber-500'
-                                                : 'text-zinc-500 hover:text-zinc-100 hover:bg-white/5'}
+                                                ? 'bg-primary/5 text-primary shadow-sm'
+                                                : 'text-zinc-500 hover:text-white hover:bg-white/5'}
                                         `}
                                     >
-                                        <div className="flex items-center gap-4">
-                                            <item.icon size={18} className={`transition-colors duration-500 ${isActive ? 'text-amber-500' : 'text-zinc-600 group-hover:text-zinc-300'}`} />
-                                            <span className={`tracking-tight ${isActive ? 'font-bold' : ''}`}>{item.label}</span>
+                                        <div className="flex items-center gap-3">
+                                            <item.icon size={18} className={`transition-colors duration-200 ${isActive ? 'text-primary' : 'text-zinc-600 group-hover:text-zinc-300'}`} />
+                                            <span className={isActive ? 'font-bold' : ''}>{item.label}</span>
                                         </div>
                                         
-                                        {/* Active Indicator Bar - Suttle Editorial */}
+                                        {/* Active Indicator Bar - Discrete */}
                                         {isActive && (
-                                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-5 bg-amber-500 rounded-r-full shadow-[0_0_12px_rgba(245,158,11,0.5)]" />
+                                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-primary rounded-r-full shadow-[0_0_10px_rgba(212,175,55,0.4)]" />
                                         )}
                                         
                                         {item.id === 'subscriptions' && !subscription && (
-                                            <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                                            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shadow-[0_0_8px_rgba(234,179,8,0.8)]" />
                                         )}
                                     </button>
                                 );
@@ -207,9 +207,9 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                     <div className="fixed inset-0 bg-black/80 z-30 lg:hidden" onClick={() => setIsOpen(false)} />
                 )}
 
-                {/* Content Area - Editorial Spacing */}
-                <main className="flex-1 h-full overflow-y-auto p-8 lg:p-14 custom-scrollbar bg-black">
-                    <div className="max-w-6xl mx-auto pb-24 lg:pb-12 animate-fade-in-up">
+                {/* Content Area - Independent Scroll Original Spacing */}
+                <main className="flex-1 h-full overflow-y-auto p-4 lg:p-8 custom-scrollbar bg-black">
+                    <div className="max-w-5xl mx-auto pb-20 lg:pb-8">
                         {children}
                     </div>
                 </main>

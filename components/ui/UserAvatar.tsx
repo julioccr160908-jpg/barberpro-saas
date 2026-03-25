@@ -56,7 +56,10 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
 
   if (error || !src) {
     return (
-      <div className={`${sizeClasses[size]} rounded-full flex items-center justify-center font-bold text-zinc-400 bg-zinc-800 border border-white/5 ${className}`}>
+      <div 
+        className={`${sizeClasses[size]} rounded-full flex items-center justify-center font-bold bg-zinc-800 border border-white/5 ${className}`}
+        style={{ color: 'var(--primary, #D4AF37)' }}
+      >
         {initials}
       </div>
     );
