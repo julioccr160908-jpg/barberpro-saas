@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Package, Plus, Search, AlertCircle, Edit2, Trash2, TrendingUp, History, Tag } from 'lucide-react';
+import { Package, Plus, Search, AlertCircle, Edit2, Trash2, TrendingUp, Upload, Loader2, Minus, Tag } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { useOrganization } from '../../contexts/OrganizationContext';
@@ -14,6 +14,8 @@ export const AdminInventory: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+    const [formDataUrl, setFormDataUrl] = useState<string>('');
+    const [isUploading, setIsUploading] = useState(false);
 
     // Fetch Products
     const { data: products = [], isLoading } = useQuery({
@@ -69,8 +71,7 @@ export const AdminInventory: React.FC = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['products'] });
             toast.success(editingProduct ? 'Produto atualizado' : 'Produto adicionado');
-            setIsAddModalOpen(false);
-            setEditingProduct(null);
+            handleCloseModal();
         },
         onError: (error: any) => {
             toast.error('Erro ao salvar produto: ' + error.message);
@@ -91,6 +92,69 @@ export const AdminInventory: React.FC = () => {
         }
     });
 
+    // Quick Update Stock Function
+    const updateStockMutation = useMutation({
+        mutationFn: async ({ id, newStock }: { id: string, newStock: number }) => {
+            const { error } = await supabase
+                .from('products')
+                .update({ stock_quantity: newStock })
+                .eq('id', id);
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['products'] });
+            toast.success('Estoque atualizado');
+        }
+    });
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !organization?.id) return;
+
+        try {
+            setIsUploading(true);
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${organization.id}/${Date.now()}.${fileExt}`;
+
+            // Upload to Supabase Storage
+            const { error: uploadError } = await supabase.storage
+                .from('product-images')
+                .upload(fileName, file);
+
+            if (uploadError) throw uploadError;
+
+            // Get Public URL
+            const { data: { publicUrl } } = supabase.storage
+                .from('product-images')
+                .getPublicUrl(fileName);
+
+            setFormDataUrl(publicUrl);
+            toast.success("Foto carregada com sucesso!");
+        } catch (error: any) {
+            console.error("Upload error:", error);
+            toast.error(`Erro no upload da foto: ${error.message}`);
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    const handleOpenModal = (product?: Product) => {
+        if (product) {
+            setEditingProduct(product);
+            setFormDataUrl(product.image_url || '');
+        } else {
+            setEditingProduct(null);
+            setFormDataUrl('');
+        }
+        setIsAddModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsAddModalOpen(false);
+        setEditingProduct(null);
+        setFormDataUrl('');
+    };
+
     const filteredProducts = products.filter(p => 
         p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.category?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -107,7 +171,7 @@ export const AdminInventory: React.FC = () => {
                     <h1 className="text-3xl font-display font-bold text-white mb-2 tracking-tight">Estoque e Produtos</h1>
                     <p className="text-zinc-400">Gerencie seus produtos e acompanhe as vendas.</p>
                 </div>
-                <Button onClick={() => setIsAddModalOpen(true)} className="flex items-center gap-2">
+                <Button onClick={() => handleOpenModal()} className="flex items-center gap-2 shadow-lg shadow-primary/10">
                     <Plus size={18} />
                     Novo Produto
                 </Button>
@@ -144,7 +208,9 @@ export const AdminInventory: React.FC = () => {
                         </div>
                         <div>
                             <p className="text-sm text-zinc-500 font-medium">Vendas (Mês)</p>
-                            <h3 className="text-2xl font-bold text-white">R$ {monthlySales.toFixed(2)}</h3>
+                            <h3 className="text-2xl font-bold text-white">
+                                {monthlySales.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                            </h3>
                         </div>
                     </div>
                 </Card>
@@ -152,135 +218,214 @@ export const AdminInventory: React.FC = () => {
 
             {/* Search and Filters */}
             <div className="relative group">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-yellow-500 transition-colors" size={20} />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-amber-400 transition-colors" size={20} />
                 <input
                     type="text"
                     placeholder="Buscar por nome ou categoria..."
-                    className="w-full bg-zinc-900/50 border border-zinc-800 text-white rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:border-yellow-500/50 focus:ring-1 focus:ring-yellow-500/50 transition-all font-medium"
+                    className="w-full bg-zinc-900/50 border border-zinc-800 text-white rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:border-amber-400/50 focus:ring-1 focus:ring-amber-400/50 transition-all font-medium placeholder:text-zinc-600"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </div>
 
-            {/* Products Table */}
-            <Card className="overflow-hidden border-zinc-800 bg-zinc-900/30">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="border-b border-zinc-800 bg-zinc-900/50">
-                                <th className="px-6 py-4 text-xs font-bold text-zinc-500 uppercase tracking-wider">Produto</th>
-                                <th className="px-6 py-4 text-xs font-bold text-zinc-500 uppercase tracking-wider">Categoria</th>
-                                <th className="px-6 py-4 text-xs font-bold text-zinc-500 uppercase tracking-wider">Preço</th>
-                                <th className="px-6 py-4 text-xs font-bold text-zinc-500 uppercase tracking-wider">Estoque</th>
-                                <th className="px-6 py-4 text-xs font-bold text-zinc-500 uppercase tracking-wider">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-zinc-800">
-                            {isLoading ? (
-                                <tr>
-                                    <td colSpan={5} className="px-6 py-8 text-center text-zinc-500">Carregando estoque...</td>
-                                </tr>
-                            ) : filteredProducts.length === 0 ? (
-                                <tr>
-                                    <td colSpan={5} className="px-6 py-8 text-center text-zinc-500">Nenhum produto encontrado.</td>
-                                </tr>
-                            ) : filteredProducts.map((product) => (
-                                <tr key={product.id} className="hover:bg-zinc-800/30 transition-colors group">
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-3">
-                                            {product.image_url ? (
-                                                <img src={product.image_url} className="w-10 h-10 rounded-lg object-cover" alt={product.name} />
-                                            ) : (
-                                                <div className="w-10 h-10 bg-zinc-800 rounded-lg flex items-center justify-center text-zinc-500">
-                                                    <Package size={20} />
-                                                </div>
-                                            )}
-                                            <span className="font-bold text-white">{product.name}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className="px-2 py-1 bg-zinc-800 text-zinc-400 text-[10px] font-bold uppercase rounded-full border border-zinc-700">
-                                            {product.category || 'Geral'}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-white font-mono font-bold">R$ {product.price.toFixed(2)}</td>
-                                    <td className="px-6 py-4">
-                                        <span className={`font-bold ${product.stock_quantity <= (product.min_stock_level || 5) ? 'text-red-500' : 'text-zinc-400'}`}>
-                                            {product.stock_quantity} un
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button 
-                                                onClick={() => { setEditingProduct(product); setIsAddModalOpen(true); }}
-                                                className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-all"
-                                            >
-                                                <Edit2 size={16} />
-                                            </button>
-                                            <button 
-                                                onClick={() => { if(confirm('Remover produto?')) deleteMutation.mutate(product.id); }}
-                                                className="p-2 text-zinc-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+            {/* Products Grid */}
+            {isLoading ? (
+                <div className="flex items-center justify-center p-12">
+                    <Loader2 className="animate-spin text-amber-400" size={32} />
                 </div>
-            </Card>
+            ) : filteredProducts.length === 0 ? (
+                <div className="text-center p-12 bg-zinc-900/30 border border-zinc-800 border-dashed rounded-2xl">
+                    <Package size={48} className="mx-auto text-zinc-700 mb-4" />
+                    <h3 className="text-lg font-medium text-white mb-2">Nenhum produto encontrado</h3>
+                    <p className="text-zinc-500">Adicione seu primeiro produto para começar a vender.</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    {filteredProducts.map((product) => {
+                        const isLowStock = product.stock_quantity <= (product.min_stock_level || 5);
+                        const isOutOfStock = product.stock_quantity === 0;
 
-            {/* Modal - Simplified for now */}
+                        return (
+                            <div key={product.id} className="group bg-zinc-900/50 border border-zinc-800/80 hover:border-amber-400/30 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-amber-400/5 relative flex flex-col">
+                                
+                                {/* Image Container */}
+                                <div className="aspect-square bg-zinc-950/50 relative overflow-hidden group">
+                                    {product.image_url ? (
+                                        <img 
+                                            src={product.image_url} 
+                                            alt={product.name} 
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-zinc-800 group-hover:text-zinc-700 transition-colors">
+                                            <Package size={48} strokeWidth={1} />
+                                        </div>
+                                    )}
+
+                                    {/* Category Badge overlaying image */}
+                                    <div className="absolute top-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-md rounded border border-white/5 text-[10px] items-center gap-1 font-bold text-zinc-300 uppercase tracking-wider flex">
+                                        <Tag size={10} />
+                                        {product.category || 'Geral'}
+                                    </div>
+                                    
+                                    {/* Action Hover Overlay */}
+                                    <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/90 to-transparent opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 flex justify-between items-end gap-2">
+                                        
+                                        <div className="flex bg-zinc-800/80 backdrop-blur-sm rounded-lg border border-white/10 overflow-hidden divide-x divide-white/5">
+                                            <button 
+                                                onClick={() => updateStockMutation.mutate({ id: product.id, newStock: Math.max(0, product.stock_quantity - 1) })}
+                                                className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors"
+                                                title="Reduzir Estoque"
+                                            >
+                                                <Minus size={14} />
+                                            </button>
+                                            <button 
+                                                onClick={() => updateStockMutation.mutate({ id: product.id, newStock: product.stock_quantity + 1 })}
+                                                className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors"
+                                                title="Adicionar Estoque"
+                                            >
+                                                <Plus size={14} />
+                                            </button>
+                                        </div>
+
+                                        <div className="flex gap-1">
+                                            <button 
+                                                onClick={() => handleOpenModal(product)}
+                                                className="p-2 bg-zinc-800/80 backdrop-blur-sm border border-white/10 text-zinc-300 hover:text-white hover:bg-blue-500/50 rounded-lg transition-colors"
+                                                title="Editar"
+                                            >
+                                                <Edit2 size={14} />
+                                            </button>
+                                            <button 
+                                                onClick={() => { if(confirm('Remover produto definitivamente?')) deleteMutation.mutate(product.id); }}
+                                                className="p-2 bg-zinc-800/80 backdrop-blur-sm border border-white/10 text-zinc-300 hover:text-white hover:bg-red-500/50 rounded-lg transition-colors"
+                                                title="Excluir"
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Content */}
+                                <div className="p-4 flex flex-col flex-1">
+                                    <h3 className="text-white font-bold leading-tight mb-1 line-clamp-2">{product.name}</h3>
+                                    <div className="mt-auto pt-3 flex items-center justify-between">
+                                        <span className="text-amber-400 font-mono font-bold">
+                                            {Number(product.price).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                        </span>
+                                        
+                                        <span className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-md border flex gap-1 items-center
+                                            ${isOutOfStock ? 'bg-red-500/10 text-red-400 border-red-500/20' 
+                                            : isLowStock ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' 
+                                            : 'bg-green-500/10 text-green-400 border-green-500/20'}`}
+                                        >
+                                            {isOutOfStock ? 'Esgotado' : `${product.stock_quantity} un`}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
+
+            {/* Modal de Criação / Edição */}
             {isAddModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-                    <Card className="w-full max-w-md bg-zinc-900 border-zinc-800 p-6 animate-scale-in">
-                        <h2 className="text-xl font-bold text-white mb-6 uppercase tracking-wider">
-                            {editingProduct ? 'Editar Produto' : 'Novo Produto'}
-                        </h2>
-                        <form onSubmit={(e) => {
-                            e.preventDefault();
-                            const formData = new FormData(e.currentTarget);
-                            const data = {
-                                name: formData.get('name') as string,
-                                price: parseFloat(formData.get('price') as string),
-                                stock_quantity: parseInt(formData.get('stock') as string),
-                                category: formData.get('category') as string,
-                                min_stock_level: parseInt(formData.get('min_stock') as string),
-                                id: editingProduct?.id
-                            };
-                            upsertMutation.mutate(data);
-                        }} className="space-y-4">
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-zinc-500 uppercase">Nome</label>
-                                <input name="name" defaultValue={editingProduct?.name} required className="w-full bg-zinc-800 border-zinc-700 text-white p-3 rounded-xl" />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                    <label className="text-xs font-bold text-zinc-500 uppercase">Preço</label>
-                                    <input name="price" type="number" step="0.01" defaultValue={editingProduct?.price} required className="w-full bg-zinc-800 border-zinc-700 text-white p-3 rounded-xl" />
+                    <Card className="w-full max-w-lg bg-zinc-900 border-zinc-800 p-0 animate-scale-in overflow-hidden flex flex-col max-h-[90vh]">
+                        <div className="p-6 border-b border-zinc-800 bg-zinc-900/50 flex justify-between items-center shrink-0">
+                            <h2 className="text-xl font-display font-bold text-white uppercase tracking-wider">
+                                {editingProduct ? 'Editar Produto' : 'Novo Produto'}
+                            </h2>
+                            <button onClick={handleCloseModal} className="text-zinc-500 hover:text-white transition-colors">
+                                <Plus className="rotate-45" size={24} />
+                            </button>
+                        </div>
+                        
+                        <div className="overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-zinc-700">
+                            <form id="productForm" onSubmit={(e) => {
+                                e.preventDefault();
+                                const formData = new FormData(e.currentTarget);
+                                const data = {
+                                    name: formData.get('name') as string,
+                                    price: parseFloat(formData.get('price') as string),
+                                    stock_quantity: parseInt(formData.get('stock') as string),
+                                    category: formData.get('category') as string,
+                                    min_stock_level: parseInt(formData.get('min_stock') as string),
+                                    image_url: formDataUrl || null,
+                                    id: editingProduct?.id
+                                };
+                                upsertMutation.mutate(data);
+                            }} className="space-y-5">
+                                
+                                {/* Image Upload Area */}
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Foto do Produto</label>
+                                    <label className="aspect-[21/9] w-full rounded-xl border-2 border-dashed border-zinc-700 hover:border-amber-400/50 cursor-pointer flex items-center justify-center overflow-hidden relative bg-zinc-950/50 group transition-all">
+                                        {formDataUrl ? (
+                                            <>
+                                                <img src={formDataUrl} alt="Preview" className="w-full h-full object-cover" />
+                                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity flex-col gap-2">
+                                                    <Upload className="text-white" size={24} />
+                                                    <span className="text-white text-xs font-medium">Trocar Imagem</span>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="text-center p-4">
+                                                {isUploading ? (
+                                                    <Loader2 className="mx-auto text-amber-400 animate-spin mb-2" size={32} />
+                                                ) : (
+                                                    <Upload className="mx-auto text-zinc-600 group-hover:text-amber-400 transition-colors mb-2" size={32} />
+                                                )}
+                                                <span className="text-xs text-zinc-500 block">
+                                                    {isUploading ? 'Enviando ao servidor...' : 'Clique para selecionar a foto'}
+                                                </span>
+                                            </div>
+                                        )}
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            className="hidden"
+                                            onChange={handleFileUpload}
+                                            disabled={isUploading}
+                                        />
+                                    </label>
                                 </div>
+
                                 <div className="space-y-1">
-                                    <label className="text-xs font-bold text-zinc-500 uppercase">Estoque</label>
-                                    <input name="stock" type="number" defaultValue={editingProduct?.stock_quantity} required className="w-full bg-zinc-800 border-zinc-700 text-white p-3 rounded-xl" />
+                                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest pl-1">Nome</label>
+                                    <input name="name" defaultValue={editingProduct?.name} required placeholder="Ex: Pomada Efeito Matte 150g" className="w-full bg-zinc-950/50 border border-zinc-800 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50 text-white p-3 rounded-xl transition-all" />
                                 </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                    <label className="text-xs font-bold text-zinc-500 uppercase">Categoria</label>
-                                    <input name="category" defaultValue={editingProduct?.category} className="w-full bg-zinc-800 border-zinc-700 text-white p-3 rounded-xl" />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest pl-1">Preço (R$)</label>
+                                        <input name="price" type="number" step="0.01" defaultValue={editingProduct?.price} required placeholder="0.00" className="w-full bg-zinc-950/50 border border-zinc-800 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50 text-white p-3 rounded-xl transition-all font-mono" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest pl-1">Qtd Estoque</label>
+                                        <input name="stock" type="number" defaultValue={editingProduct?.stock_quantity} required placeholder="Ex: 50" className="w-full bg-zinc-950/50 border border-zinc-800 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50 text-white p-3 rounded-xl transition-all font-mono" />
+                                    </div>
                                 </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs font-bold text-zinc-500 uppercase">Aviso Estoque Baixo</label>
-                                    <input name="min_stock" type="number" defaultValue={editingProduct?.min_stock_level || 5} className="w-full bg-zinc-800 border-zinc-700 text-white p-3 rounded-xl" />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest pl-1">Categoria</label>
+                                        <input name="category" defaultValue={editingProduct?.category} placeholder="Ex: Cabelo, Barba..." className="w-full bg-zinc-950/50 border border-zinc-800 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50 text-white p-3 rounded-xl transition-all" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest pl-1" title="Avisa quando estoque ficar abaixo deste valor">Alerta Baixo</label>
+                                        <input name="min_stock" type="number" defaultValue={editingProduct?.min_stock_level || 5} placeholder="Ex: 5" className="w-full bg-zinc-950/50 border border-zinc-800 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50 text-white p-3 rounded-xl transition-all font-mono" />
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="flex gap-4 pt-4">
-                                <Button type="button" variant="outline" onClick={() => { setIsAddModalOpen(false); setEditingProduct(null); }} className="flex-1">Cancelar</Button>
-                                <Button type="submit" className="flex-1">Salvar</Button>
-                            </div>
-                        </form>
+                            </form>
+                        </div>
+                        
+                        <div className="p-6 border-t border-zinc-800 bg-zinc-900/50 shrink-0 flex gap-4">
+                            <Button type="button" variant="outline" onClick={handleCloseModal} className="flex-1 border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800">Cancelar</Button>
+                            <Button type="submit" form="productForm" className="flex-1 shadow-lg shadow-amber-400/10" disabled={isUploading || upsertMutation.isPending}>
+                                {upsertMutation.isPending ? <Loader2 className="animate-spin mx-auto" size={20} /> : (editingProduct ? 'Salvar Alterações' : 'Cadastrar Produto')}
+                            </Button>
+                        </div>
                     </Card>
                 </div>
             )}
