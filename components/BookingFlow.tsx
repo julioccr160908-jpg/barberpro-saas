@@ -661,15 +661,22 @@ export const BookingFlow: React.FC = () => {
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative" style={brandingStyles}>
       {/* Client Portal Button */}
       <div className="fixed top-4 right-4 z-50 flex gap-2">
-        {user && role !== Role.CUSTOMER ? (
+        {/* Only show Login button if NO user is present */}
+        {!user && (
+            <Button 
+                variant="outline" 
+                size="sm" 
+                className="rounded-full border-white/10 text-[10px] uppercase font-bold tracking-widest"
+                onClick={() => navigate('/login')}
+            >
+                Entrar
+            </Button>
+        )}
+
+        {/* Only show Portal button if user is Admin/Staff (Customers have Sidebar) */}
+        {user && role !== Role.CUSTOMER && (
             <button 
-                onClick={() => {
-                    if (role === Role.CUSTOMER) {
-                        navigate('/customer/profile');
-                    } else {
-                        setIsPortalOpen(true);
-                    }
-                }}
+                onClick={() => setIsPortalOpen(true)}
                 className="w-12 h-12 rounded-full overflow-hidden border-2 border-primary/20 shadow-lg hover:border-primary transition-all relative group"
             >
                 {profile?.avatarUrl ? (
@@ -685,15 +692,6 @@ export const BookingFlow: React.FC = () => {
                     </div>
                 )}
             </button>
-        ) : (
-            <Button 
-                variant="outline" 
-                size="sm" 
-                className="rounded-full border-white/10 text-[10px] uppercase font-bold tracking-widest"
-                onClick={() => navigate('/login')}
-            >
-                Entrar
-            </Button>
         )}
 
         {isAdmin && (
