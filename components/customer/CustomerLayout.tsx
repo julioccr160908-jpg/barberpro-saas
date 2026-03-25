@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Calendar, User, LogOut, Scissors, Menu, MapPin, CreditCard, Star, UserCircle } from 'lucide-react';
+import { Calendar, User, LogOut, Scissors, Menu, MapPin, CreditCard, Star, UserCircle, ChevronRight } from 'lucide-react';
 import { useSettings } from '../../contexts/SettingsContext';
 import { Button } from '../ui/Button';
 import { useAuth } from '../../contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../../services/supabase';
+import { UserAvatar } from '../ui/UserAvatar';
 
 interface CustomerLayoutProps {
     children: React.ReactNode;
@@ -91,46 +92,40 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
             lg:block pt-20 lg:pt-0
         `}>
                     <div className="flex flex-col h-full">
-                        {/* Logo Desktop */}
-                        <div className="hidden lg:flex h-20 items-center px-6 border-b border-border">
+                        {/* Logo Desktop - Compact */}
+                        <div className="hidden lg:flex h-16 items-center px-6 border-b border-border bg-black/10">
                             <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-sm flex items-center justify-center" style={{ backgroundColor: settings.primary_color || '#D4AF37' }}>
-                                    <Scissors size={18} className="text-black" />
+                                <div className="w-7 h-7 rounded-sm flex items-center justify-center" style={{ backgroundColor: settings.primary_color || '#D4AF37' }}>
+                                    <Scissors size={15} className="text-black" />
                                 </div>
-                                <span className="font-display font-bold text-xl tracking-wider text-white">{settings.establishment_name || 'Barbearia'}</span>
+                                <span className="font-display font-black text-lg tracking-tight text-white uppercase">{settings.establishment_name || 'Barbearia'}</span>
                             </div>
                         </div>
 
-                        {/* User Profile Section */}
-                        <div className="p-6 border-b border-border flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-xl border border-white/10 overflow-hidden shrink-0 relative">
-                                {profile?.avatarUrl ? (
-                                    <img src={profile.avatarUrl} className="w-full h-full object-cover" alt="Profile" />
-                                ) : (
-                                    <div className="w-full h-full bg-white/5 flex items-center justify-center text-zinc-500">
-                                        <User size={24} />
-                                    </div>
-                                )}
-                                {subscription && (
-                                    <div className="absolute -bottom-1 -right-1 bg-primary w-4 h-4 rounded-full flex items-center justify-center border-2 border-surface">
-                                        <Star size={8} className="text-black fill-current" />
-                                    </div>
-                                )}
-                            </div>
-                            <div className="min-w-0">
-                                <h3 className="text-sm font-bold text-white truncate">{profile?.name || 'Cliente'}</h3>
+                        {/* User Profile Section - Compact Horizontal */}
+                        <div className="p-4 border-b border-border flex items-center gap-3 bg-white/5 active:bg-white/10 cursor-pointer transition-colors shrink-0" onClick={() => navigate('/customer/profile')}>
+                            <UserAvatar 
+                                src={profile?.avatarUrl} 
+                                name={profile?.name} 
+                                size="md" 
+                                vip={!!subscription}
+                                className={subscription ? 'ring-2 ring-primary/50' : ''}
+                            />
+                            <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-1.5">
+                                    <h3 className="text-sm font-bold text-white truncate">{profile?.name || 'Cliente'}</h3>
+                                    {subscription && <Star size={10} className="text-primary fill-current" />}
+                                </div>
                                 {subscription ? (
-                                    <span className="inline-flex items-center gap-1 text-[10px] font-black text-primary uppercase tracking-tighter">
-                                        <Star size={8} className="fill-current" />
-                                        VIP Member
-                                    </span>
+                                    <p className="text-[10px] text-primary font-black uppercase tracking-tighter">VIP Member</p>
                                 ) : (
-                                    <p className="text-[10px] text-zinc-500 font-medium uppercase truncate">Cliente Bronze</p>
+                                    <p className="text-[10px] text-zinc-500 font-medium uppercase truncate">Plano Bronze</p>
                                 )}
                             </div>
+                            <UserCircle size={16} className="text-zinc-500 hover:text-white transition-colors" />
                         </div>
 
-                        <nav className="flex-1 px-4 py-8 space-y-2">
+                        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
                             {menuItems.map((item) => {
                                 const isActive = location.pathname === item.path;
                                 return (
@@ -141,21 +136,24 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                                             setIsOpen(false);
                                         }}
                                         className={`
-                                            w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 group
+                                            w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 group relative
                                             ${isActive
-                                                ? 'shadow-lg shadow-primary/10'
+                                                ? 'bg-primary/5 text-primary shadow-sm'
                                                 : 'text-zinc-500 hover:text-white hover:bg-white/5'}
                                         `}
-                                        style={isActive ? { 
-                                            backgroundColor: (settings.primary_color || '#D4AF37') + '1a', 
-                                            color: settings.primary_color || '#D4AF37',
-                                            borderColor: (settings.primary_color || '#D4AF37') + '33'
-                                        } : {}}
                                     >
                                         <div className="flex items-center gap-3">
-                                            <item.icon size={18} className={isActive ? 'text-primary' : 'text-zinc-500 group-hover:text-zinc-300'} />
-                                            <span>{item.label}</span>
+                                            <div className={`p-1.5 rounded-lg transition-colors ${isActive ? 'bg-primary/10 text-primary' : 'bg-white/5 text-zinc-500 group-hover:bg-white/10 group-hover:text-zinc-300'}`}>
+                                                <item.icon size={16} />
+                                            </div>
+                                            <span className={isActive ? 'font-bold' : ''}>{item.label}</span>
                                         </div>
+                                        
+                                        {/* Active Indicator Bar */}
+                                        {isActive && (
+                                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full shadow-[0_0_8px_rgba(212,175,55,0.4)]" />
+                                        )}
+                                        
                                         {item.id === 'subscriptions' && (
                                             <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shadow-[0_0_8px_rgba(234,179,8,0.8)]" />
                                         )}
@@ -164,36 +162,38 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                             })}
                         </nav>
 
-                        <div className="p-4 border-t border-border space-y-4">
-                            {/* Location Box */}
+                        <div className="mt-auto p-4 border-t border-border space-y-3 bg-surface/50 backdrop-blur-md">
+                            {/* Location Box - Minimal */}
                             {settings.address && (
-                                <div className="bg-background/50 rounded-lg p-3 border border-white/5">
-                                    <div className="flex items-start gap-2 mb-2">
-                                        <MapPin size={16} className="text-primary mt-0.5 shrink-0" />
-                                        <div className="text-xs text-textMuted">
-                                            <p className="font-medium text-white mb-1">{settings.establishment_name || 'Barbearia'}</p>
-                                            <p>{settings.address}</p>
-                                            <p>{settings.city} - {settings.state}</p>
+                                <div className="bg-background/40 rounded-xl p-3 border border-white/5 flex items-center justify-between gap-3 group hover:border-primary/20 transition-colors">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <div className="p-1.5 bg-primary/10 rounded-lg shrink-0">
+                                            <MapPin size={14} className="text-primary" />
+                                        </div>
+                                        <div className="text-[10px] text-textMuted truncate">
+                                            <p className="font-bold text-white truncate">{settings.establishment_name || 'Barbearia'}</p>
+                                            <p className="truncate opacity-70">{settings.address}</p>
                                         </div>
                                     </div>
                                     <Button
                                         size="sm"
-                                        variant="outline"
-                                        fullWidth
+                                        variant="ghost"
                                         onClick={handleOpenMaps}
-                                        className="h-8 text-xs border-white/10 hover:border-primary/50"
+                                        className="h-7 w-7 p-0 flex items-center justify-center border-white/5 hover:bg-primary/20 group-hover:text-primary transition-all"
                                     >
-                                        Como Chegar
+                                        <ChevronRight size={14} />
                                     </Button>
                                 </div>
                             )}
-
+                            
                             <button
                                 onClick={handleLogout}
-                                className="w-full flex items-center gap-3 px-4 py-3 text-textMuted hover:text-red-500 transition-colors"
+                                className="w-full flex items-center gap-3 px-3 py-2 text-xs text-textMuted hover:text-red-500 transition-all rounded-lg hover:bg-red-500/5 group"
                             >
-                                <LogOut size={18} />
-                                Sair
+                                <div className="p-1.5 bg-white/5 rounded-lg group-hover:bg-red-500/10 transition-colors">
+                                    <LogOut size={14} />
+                                </div>
+                                <span className="font-medium">Sair da Conta</span>
                             </button>
                         </div>
                     </div>
