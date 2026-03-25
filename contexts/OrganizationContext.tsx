@@ -115,8 +115,32 @@ export const OrganizationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     };
 
     const refreshOrganization = useCallback(async () => {
+        // Fallback: Check for persisted Slug (Customer Context / Public Routes)
+        const lastSlug = localStorage.getItem('barberhost_last_slug');
+        
         if (!user) {
-            console.log("OrgContext: No user, clearing org.");
+            if (lastSlug) {
+                console.log("OrgContext: No user, but found last_slug. Attempting public persistence.");
+                try {
+                    setLoading(true);
+                    const { data: slugOrg } = await supabase
+                        .from('organizations')
+                        .select('*')
+                        .eq('slug', lastSlug)
+                        .single();
+
+                    if (slugOrg) {
+                        setOrganization(await mapOrg(slugOrg));
+                        return;
+                    }
+                } catch (e) {
+                    console.error("Error fetching public org by slug", e);
+                } finally {
+                    setLoading(false);
+                }
+            }
+
+            console.log("OrgContext: No user and no last_slug, clearing org.");
             setOrganization(null);
             setLoading(false);
             return;

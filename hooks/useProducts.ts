@@ -12,7 +12,6 @@ export const useProducts = (orgId?: string) => {
                 .from('products')
                 .select('*')
                 .eq('organization_id', orgId)
-                .eq('is_active', true)
                 .gt('stock_quantity', 0)
                 .order('name', { ascending: true });
 

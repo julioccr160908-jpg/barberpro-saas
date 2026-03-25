@@ -134,7 +134,7 @@ export const BookingFlow: React.FC = () => {
   const { data: staffData, isLoading: isStaffLoading, isError: isStaffError } = useStaff(orgId);
   const { data: appointmentsData, isLoading: isAppointmentsLoading, isError: isAppointmentsError } = useAppointments({ orgId }, !!orgId, false);
   const { data: settingsData, isLoading: isSettingsLoading, isError: isSettingsError } = useSettingsQuery(orgId);
-  const { data: rawProductsData, isLoading: isProductsLoading } = useProducts(orgId);
+  const { data: rawProductsData, isLoading: isProductsLoading, isError: isProductsError } = useProducts(orgId);
   const productsData = useMemo(() => {
     return (rawProductsData || []).filter(p => p.image_url && p.stock_quantity && p.stock_quantity > 0);
   }, [rawProductsData]);
@@ -148,7 +148,7 @@ export const BookingFlow: React.FC = () => {
   const existingAppointments = appointmentsData || [];
 
   const isLoading = authLoading || isOrgLoading || isServicesLoading || isStaffLoading || isAppointmentsLoading || isSettingsLoading || isProductsLoading;
-  const isError = isOrgError || isServicesError || isStaffError || isAppointmentsError || isSettingsError;
+  const isError = isOrgError || isServicesError || isStaffError || isAppointmentsError || isSettingsError || isProductsError;
   const error = isError ? "Erro ao carregar dados. Verifique a conexão." : null;
 
   // Persist Slug
@@ -161,14 +161,15 @@ export const BookingFlow: React.FC = () => {
   // Construct Active Settings
   const activeSettings = useMemo(() => {
     const base = settingsData || settings;
-    if (!org) return base;
-
+    const organizationName = settingsData?.establishment_name || org?.name || base.establishment_name || 'Barbearia';
+    
     return {
       ...base,
-      primary_color: settingsData?.primary_color || org.primary_color || base.primary_color || '#D4AF37',
-      secondary_color: settingsData?.secondary_color || org.secondary_color || base.secondary_color || '#1A1A1A',
-      logo_url: settingsData?.logo_url || org.logo_url || base.logo_url || null,
-      banner_url: settingsData?.banner_url || org.banner_url || base.banner_url || null,
+      establishment_name: organizationName,
+      primary_color: settingsData?.primary_color || org?.primary_color || base.primary_color || '#D4AF37',
+      secondary_color: settingsData?.secondary_color || org?.secondary_color || base.secondary_color || '#1A1A1A',
+      logo_url: settingsData?.logo_url || org?.logo_url || base.logo_url || null,
+      banner_url: settingsData?.banner_url || org?.banner_url || base.banner_url || null,
     };
   }, [settingsData, org, settings]);
 
@@ -216,6 +217,12 @@ export const BookingFlow: React.FC = () => {
     }
   }, [isLoading, staff]);
 
+  // Reset scroll and close portal on step change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setIsPortalOpen(false);
+  }, [step]);
+
   // Restore pending appointment
   const location = useLocation();
 
@@ -245,6 +252,13 @@ export const BookingFlow: React.FC = () => {
     }
   }, [isLoading, services, staff]);
 
+  // UX Shielding: Debug Logs to monitor Org and Step stability
+  useEffect(() => {
+    if (orgId || step !== BookingStep.SHOWCASE) {
+        console.log(`[BookingFlow] State Update - Step: ${step}, OrgId: ${orgId}, Loading: ${isLoading}, IsError: ${isError}`);
+    }
+  }, [step, orgId, isLoading, isError]);
+
   const handleServiceSelect = async (service: Service) => {
     const { data: { user: currentUser } } = await supabase.auth.getUser();
 
@@ -269,8 +283,8 @@ export const BookingFlow: React.FC = () => {
   const handleTimeSelect = (time: string) => {
     setSelectedTime(time);
     if (isBarberPreselected) {
-      // If we have products, go to upsell, otherwise confirm
-      if (productsData && productsData.length > 0) {
+      // UX Shielding: Skip UPSELL if no products or error
+      if (!isProductsLoading && productsData && productsData.length > 0 && !isProductsError) {
         setStep(BookingStep.UPSELL);
       } else {
         setStep(BookingStep.CONFIRM);
@@ -282,7 +296,8 @@ export const BookingFlow: React.FC = () => {
 
   const handleBarberSelect = (barber: User) => {
     setSelectedBarber(barber);
-    if (productsData && productsData.length > 0) {
+    // UX Shielding: Skip UPSELL if no products or error
+    if (!isProductsLoading && productsData && productsData.length > 0 && !isProductsError) {
       setStep(BookingStep.UPSELL);
     } else {
       setStep(BookingStep.CONFIRM);
@@ -644,8 +659,8 @@ export const BookingFlow: React.FC = () => {
                     {/* Identification */}
                     <div className="flex items-center gap-4">
                         <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-primary/20">
-                             {profile?.avatar_url ? (
-                                <img src={profile.avatar_url} className="w-full h-full object-cover" alt="Profile" />
+                             {profile?.avatarUrl ? (
+                                <img src={profile.avatarUrl} className="w-full h-full object-cover" alt="Profile" />
                              ) : (
                                 <div className="w-full h-full bg-white/5 flex items-center justify-center">
                                     <UserCircle size={32} className="text-zinc-600" />
@@ -718,7 +733,7 @@ export const BookingFlow: React.FC = () => {
       )}
 
       {activeSettings.banner_url && !bannerError && (
-        <div className="absolute inset-0 z-0 overflow-hidden">
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
           <img 
             src={activeSettings.banner_url} 
             className="w-full h-full object-cover transition-opacity duration-500" 
@@ -726,24 +741,34 @@ export const BookingFlow: React.FC = () => {
             style={{ opacity: (activeSettings.banner_opacity ?? 20) / 100 }}
             onError={() => setBannerError(true)} 
           />
-          <div className="absolute inset-0 bg-background/80 blur-sm"></div>
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-[2px]"></div>
         </div>
       )}
 
       <div className="w-full max-w-4xl relative z-10">
         <div className="text-center mb-8">
-          {activeSettings.logo_url && !logoError && (
-            <div className="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden border-4 border-surface shadow-xl">
-              <img src={activeSettings.logo_url} className="w-full h-full object-cover" alt="Logo" onError={() => setLogoError(true)} />
-            </div>
+          {(isOrgLoading || isSettingsLoading) ? (
+            <>
+              <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-white/5 animate-pulse border-4 border-white/5 shadow-xl" />
+              <div className="h-10 w-64 bg-white/5 animate-pulse mx-auto mb-2 rounded-lg" />
+              <div className="h-4 w-48 bg-white/5 animate-pulse mx-auto rounded-md" />
+            </>
+          ) : (
+            <>
+              {activeSettings.logo_url && !logoError && (
+                <div className="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden border-4 border-surface shadow-xl">
+                  <img src={activeSettings.logo_url} className="w-full h-full object-cover" alt="Logo" onError={() => setLogoError(true)} />
+                </div>
+              )}
+              <h1 className="font-display font-bold text-4xl text-white tracking-widest mb-2">
+                {activeSettings.establishment_name}
+              </h1>
+              <div className="flex items-center justify-center gap-2 text-sm text-textMuted opacity-80">
+                <MapPin size={14} style={{ color: activeSettings.primary_color }} />
+                <p>{activeSettings.address} {activeSettings.city && ` - ${activeSettings.city}`}</p>
+              </div>
+            </>
           )}
-          <h1 className="font-display font-bold text-4xl text-white tracking-widest mb-2">
-            {activeSettings.establishment_name}
-          </h1>
-          <div className="flex items-center justify-center gap-2 text-sm text-textMuted opacity-80">
-            <MapPin size={14} style={{ color: activeSettings.primary_color }} />
-            <p>{activeSettings.address} {activeSettings.city && ` - ${activeSettings.city}`}</p>
-          </div>
         </div>
 
         {!showSuccessModal && step !== BookingStep.SHOWCASE && (
@@ -758,8 +783,19 @@ export const BookingFlow: React.FC = () => {
           </div>
         )}
 
-        <Card className="min-h-[500px] flex flex-col p-6">
-          {step === BookingStep.SHOWCASE && (
+        <Card className="min-h-[500px] flex flex-col p-6 relative overflow-hidden">
+            {/* UX Shielding: Safety check for orgId - prevent empty dark card if org vanishes */}
+            {!orgId && !isLoading ? (
+                <div className="flex-1 flex flex-col items-center justify-center text-center space-y-4 animate-fade-in">
+                    <AlertCircle className="w-12 h-12 text-red-500/50" />
+                    <h2 className="text-xl font-bold text-white">Estabelecimento não encontrado</h2>
+                    <p className="text-textMuted max-w-sm">Não foi possível carregar as informações desta barbearia. Por favor, verifique o link ou tente novamente.</p>
+                    <Button onClick={() => window.location.reload()} variant="outline">Tentar Novamente</Button>
+                </div>
+            ) : (
+                <>
+                    {/* Step Content with Integrated Loading */}
+           {step === BookingStep.SHOWCASE && (
             <div className="animate-fade-in flex-1 space-y-8 flex flex-col items-center justify-center text-center">
               {selectedBarber ? (
                 <>
@@ -836,26 +872,34 @@ export const BookingFlow: React.FC = () => {
           {step === BookingStep.SERVICE && (
             <div className="animate-fade-in flex-1">
               <h2 className="text-xl font-display text-white mb-6">Escolha o Serviço</h2>
-              <div className="space-y-3">
-                {services.map(service => (
-                  <div
-                    key={service.id}
-                    onClick={() => handleServiceSelect(service)}
-                    className="cursor-pointer group flex items-center justify-between p-4 rounded-xl bg-background border border-white/10 hover:border-primary transition-all"
-                  >
-                    <div className="flex items-center gap-4">
-                      {service.imageUrl && <img src={service.imageUrl} className="w-16 h-16 rounded-md object-cover" alt={service.name} />}
-                      <div>
-                        <h3 className="font-bold text-white group-hover:text-primary">{service.name}</h3>
-                        <p className="text-xs text-textMuted flex items-center gap-1">
-                          <Clock size={12} /> {service.durationMinutes} min
-                        </p>
+              {isServicesLoading ? (
+                <div className="space-y-3">
+                  {[1, 2, 3, 4].map(i => (
+                    <Skeleton key={i} className="h-24 w-full rounded-xl" />
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {services.map(service => (
+                    <div
+                      key={service.id}
+                      onClick={() => handleServiceSelect(service)}
+                      className="cursor-pointer group flex items-center justify-between p-4 rounded-xl bg-background border border-white/10 hover:border-primary transition-all"
+                    >
+                      <div className="flex items-center gap-4">
+                        {service.imageUrl && <img src={service.imageUrl} className="w-16 h-16 rounded-md object-cover" alt={service.name} />}
+                        <div>
+                          <h3 className="font-bold text-white group-hover:text-primary">{service.name}</h3>
+                          <p className="text-xs text-textMuted flex items-center gap-1">
+                            <Clock size={12} /> {service.durationMinutes} min
+                          </p>
+                        </div>
                       </div>
+                      <span className="font-display font-bold text-xl text-white">R$ {service.price}</span>
                     </div>
-                    <span className="font-display font-bold text-xl text-white">R$ {service.price}</span>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -865,51 +909,102 @@ export const BookingFlow: React.FC = () => {
                 <h2 className="text-xl font-display text-white">Data e Hora</h2>
                 <Button variant="ghost" size="sm" onClick={() => setStep(BookingStep.SERVICE)}>Voltar</Button>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="bg-surface p-4 rounded-xl border border-white/5">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-white capitalize">{format(currentMonth, 'MMMM yyyy', { locale: ptBR })}</h3>
-                    <div className="flex gap-1">
-                      <Button variant="ghost" size="sm" onClick={prevMonth}><ChevronLeft size={16} /></Button>
-                      <Button variant="ghost" size="sm" onClick={nextMonth}><ChevronRight size={16} /></Button>
+              
+              {isAppointmentsLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <Skeleton className="h-[300px] w-full rounded-xl" />
+                  <div className="space-y-2">
+                    {[1, 2, 3, 4, 5].map(i => <Skeleton key={i} className="h-12 w-full rounded-lg" />)}
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="bg-surface p-4 rounded-xl border border-white/5">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-bold text-white capitalize">{format(currentMonth, 'MMMM yyyy', { locale: ptBR })}</h3>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="sm" onClick={prevMonth}><ChevronLeft size={16} /></Button>
+                        <Button variant="ghost" size="sm" onClick={nextMonth}><ChevronRight size={16} /></Button>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-7 gap-1 text-center mb-2">
+                      {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map(d => <div key={d} className="text-[10px] text-textMuted font-bold">{d}</div>)}
+                    </div>
+                    <div className="grid grid-cols-7 gap-1">
+                      {calendarDays.map(day => {
+                        const isPast = isBefore(day, startOfDay(new Date()));
+                        const isSelected = isSameDay(day, selectedDate);
+                        return (
+                          <button
+                            key={day.toString()}
+                            onClick={() => handleDateSelect(day)}
+                            disabled={isPast}
+                            className={`aspect-square rounded-lg text-xs font-medium transition-all ${isSelected ? 'bg-primary text-black font-bold' : isPast ? 'text-white/10 cursor-not-allowed' : 'text-white hover:bg-white/10'}`}
+                          >
+                            {format(day, 'd')}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
-                  <div className="grid grid-cols-7 gap-1 text-center mb-2">
-                    {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map(d => <div key={d} className="text-[10px] text-textMuted font-bold">{d}</div>)}
-                  </div>
-                  <div className="grid grid-cols-7 gap-1">
-                    {calendarDays.map(day => {
-                      const isPast = isBefore(day, startOfDay(new Date()));
-                      const isSelected = isSameDay(day, selectedDate);
-                      return (
-                        <button
-                          key={day.toString()}
-                          onClick={() => handleDateSelect(day)}
-                          disabled={isPast}
-                          className={`aspect-square rounded-lg text-xs font-medium transition-all ${isSelected ? 'bg-primary text-black font-bold' : isPast ? 'text-white/10 cursor-not-allowed' : 'text-white hover:bg-white/10'}`}
-                        >
-                          {format(day, 'd')}
-                        </button>
-                      );
-                    })}
+                  <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                    {timeSlots.map(time => (
+                      <button
+                        key={time}
+                        onClick={() => handleTimeSelect(time)}
+                        className={`w-full py-3 rounded-lg border transition-all ${selectedTime === time ? 'text-black font-bold' : 'bg-white/5 border-transparent text-white hover:bg-white/10'}`}
+                        style={selectedTime === time ? {
+                          backgroundColor: activeSettings.primary_color || '#D4AF37',
+                          borderColor: activeSettings.primary_color || '#D4AF37'
+                        } : {}}
+                      >
+                        {time}
+                      </button>
+                    ))}
+                    {timeSlots.length === 0 && <div className="text-center py-8 text-textMuted">Nenhum horário disponível.</div>}
                   </div>
                 </div>
-                <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                  {timeSlots.map(time => (
-                    <button
-                      key={time}
-                      onClick={() => handleTimeSelect(time)}
-                      className={`w-full py-3 rounded-lg border transition-all ${selectedTime === time ? 'text-black font-bold' : 'bg-white/5 border-transparent text-white hover:bg-white/10'}`}
-                      style={selectedTime === time ? {
-                        backgroundColor: activeSettings.primary_color || '#D4AF37',
-                        borderColor: activeSettings.primary_color || '#D4AF37'
-                      } : {}}
-                    >
-                      {time}
-                    </button>
+              )}
+            </div>
+          )}
+
+          {step === BookingStep.BARBER && (
+            <div className="animate-fade-in flex-1">
+              <h2 className="text-xl font-display text-white mb-6">Escolha o Profissional</h2>
+              {isStaffLoading ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="flex flex-col items-center gap-3">
+                      <Skeleton className="w-24 h-24 rounded-full" />
+                      <Skeleton className="h-4 w-20" />
+                    </div>
                   ))}
-                  {timeSlots.length === 0 && <div className="text-center py-8 text-textMuted">Nenhum horário disponível.</div>}
                 </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  {staff.map(barber => (
+                    <div
+                      key={barber.id}
+                      onClick={() => handleBarberSelect(barber)}
+                      className={`cursor-pointer group flex flex-col items-center p-4 rounded-xl border transition-all ${selectedBarber?.id === barber.id ? 'bg-primary/10 border-primary' : 'bg-surface border-white/5 hover:border-white/20'}`}
+                    >
+                      <div className="w-20 h-20 rounded-full border-2 border-white/5 overflow-hidden mb-3 group-hover:scale-105 transition-transform">
+                        {barber.avatarUrl ? (
+                          <img src={barber.avatarUrl} alt={barber.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-white/5 flex items-center justify-center">
+                            <UserIcon size={32} className="text-textMuted" />
+                          </div>
+                        )}
+                      </div>
+                      <h3 className="font-bold text-sm text-center text-white">{barber.name}</h3>
+                      <p className="text-[10px] text-textMuted uppercase tracking-tighter mt-1">{barber.jobTitle || 'Profissional'}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="mt-8 flex justify-center">
+                <Button variant="ghost" size="sm" onClick={() => setStep(BookingStep.DATETIME)}>Voltar</Button>
               </div>
             </div>
           )}
@@ -924,152 +1019,171 @@ export const BookingFlow: React.FC = () => {
                 <Button variant="ghost" size="sm" onClick={() => setStep(selectedBarber ? BookingStep.BARBER : BookingStep.DATETIME)} className="text-zinc-500">Voltar</Button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {productsData?.map(product => {
-                  const quantity = selectedProducts[product.id] || 0;
-                  const isLowStock = product.stock_quantity && product.stock_quantity < 3;
-                  return (
-                    <div key={product.id} className="group relative bg-zinc-900/50 rounded-2xl border border-white/5 overflow-hidden hover:border-white/20 transition-all duration-300 flex flex-col">
-                      <div className="aspect-square w-full bg-black relative overflow-hidden">
-                        {product.image_url ? (
-                          <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-white/5"><StoreIcon className="text-zinc-700" size={32} /></div>
-                        )}
-                        {isLowStock && (
-                            <div className="absolute top-3 left-3 bg-red-500/90 backdrop-blur-md px-2 py-1 rounded-md text-[10px] font-black text-white uppercase tracking-widest shadow-lg">
-                                Últimas unidades
-                            </div>
-                        )}
-                        <div className="absolute bottom-3 right-3">
-                             <div className="bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-black text-amber-400 border border-white/10 shadow-lg">
-                                R$ {product.price?.toFixed(2)}
-                             </div>
+              {isProductsLoading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[1, 2, 3].map(i => <Skeleton key={i} className="h-64 w-full rounded-2xl" />)}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {productsData?.map(product => {
+                    const quantity = selectedProducts[product.id] || 0;
+                    const isLowStock = product.stock_quantity && product.stock_quantity < 3;
+                    return (
+                      <div key={product.id} className="group relative bg-zinc-900/50 rounded-2xl border border-white/5 overflow-hidden hover:border-white/20 transition-all duration-300 flex flex-col">
+                        <div className="aspect-square w-full bg-black relative overflow-hidden">
+                          {product.image_url ? (
+                            <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-white/5"><StoreIcon className="text-zinc-700" size={32} /></div>
+                          )}
+                          {isLowStock && (
+                              <div className="absolute top-3 left-3 bg-red-500/90 backdrop-blur-md px-2 py-1 rounded-md text-[10px] font-black text-white uppercase tracking-widest shadow-lg">
+                                  Últimas unidades
+                              </div>
+                          )}
+                          <div className="absolute bottom-3 right-3">
+                               <div className="bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-black text-amber-400 border border-white/10 shadow-lg">
+                                  R$ {product.price?.toFixed(2)}
+                               </div>
+                          </div>
                         </div>
-                      </div>
-                      
-                      <div className="p-4 space-y-4 flex-1 flex flex-col justify-between">
-                        <div>
-                            <h4 className="font-bold text-white text-sm line-clamp-2 leading-tight">{product.name}</h4>
-                            <p className="text-[10px] text-zinc-500 uppercase tracking-widest line-clamp-1 mt-1">{product.category || 'Cuidados'}</p>
-                        </div>
+                        
+                        <div className="p-4 space-y-4 flex-1 flex flex-col justify-between">
+                          <div>
+                              <h4 className="font-bold text-white text-sm line-clamp-2 leading-tight">{product.name}</h4>
+                              <p className="text-[10px] text-zinc-500 uppercase tracking-widest line-clamp-1 mt-1">{product.category || 'Cuidados'}</p>
+                          </div>
 
-                        <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/5">
-                             <div className="flex items-center bg-zinc-950 rounded-xl border border-white/10 p-1 w-full justify-between">
-                                <button
-                                    onClick={() => setSelectedProducts(prev => ({ ...prev, [product.id]: Math.max(0, (prev[product.id] || 0) - 1) }))}
-                                    className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-all text-lg font-light"
-                                >
-                                    -
-                                </button>
-                                <span className={`text-sm font-bold w-8 text-center ${quantity > 0 ? 'text-amber-400' : 'text-white'}`}>{quantity}</span>
-                                <button
-                                    onClick={() => setSelectedProducts(prev => ({ ...prev, [product.id]: Math.min(product.stock_quantity || 99, (prev[product.id] || 0) + 1) }))}
-                                    className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-all text-lg font-light"
-                                >
-                                    +
-                                </button>
-                             </div>
+                          <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/5">
+                               <div className="flex items-center bg-zinc-950 rounded-xl border border-white/10 p-1 w-full justify-between">
+                                  <button
+                                      onClick={() => setSelectedProducts(prev => ({ ...prev, [product.id]: Math.max(0, (prev[product.id] || 0) - 1) }))}
+                                      className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-all text-lg font-light"
+                                  >
+                                      -
+                                  </button>
+                                  <span className={`text-sm font-bold w-8 text-center ${quantity > 0 ? 'text-amber-400' : 'text-white'}`}>{quantity}</span>
+                                  <button
+                                      onClick={() => setSelectedProducts(prev => ({ ...prev, [product.id]: Math.min(product.stock_quantity || 99, (prev[product.id] || 0) + 1) }))}
+                                      className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-all text-lg font-light"
+                                  >
+                                      +
+                                  </button>
+                               </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
+              )}
+
+              {!isProductsLoading && (!productsData || productsData.length === 0) && (
+                <div className="py-12 text-center bg-white/5 rounded-3xl border border-dashed border-white/10 animate-fade-in mb-8">
+                  <Package className="mx-auto mb-4 text-zinc-600" size={40} />
+                  <p className="text-sm text-zinc-500">Nenhum produto em destaque no momento.</p>
+                </div>
+              )}
+
+              <div className="mt-8 flex flex-col items-center gap-4">
+                <Button 
+                  onClick={() => setStep(BookingStep.CONFIRM)} 
+                  size="lg" 
+                  className="px-16 py-7 rounded-2xl shadow-xl shadow-primary/10 hover:shadow-primary/20 transition-all font-black uppercase tracking-widest text-xs"
+                  style={{ backgroundColor: activeSettings.primary_color || '#D4AF37' }}
+                >
+                  Ir para Confirmação
+                </Button>
+                <button 
+                  onClick={() => setStep(BookingStep.CONFIRM)} 
+                  className="text-[10px] text-zinc-500 uppercase tracking-[0.2em] font-bold hover:text-white transition-colors"
+                >
+                  {(!productsData || productsData.length === 0) ? 'Continuar para o Resumo' : 'Pular, apenas o serviço por enquanto'}
+                </button>
               </div>
-
-                {productsData && productsData.length > 0 && (
-                    <div className="mt-12 flex flex-col items-center gap-4">
-                        <Button 
-                            onClick={() => setStep(BookingStep.CONFIRM)} 
-                            size="lg" 
-                            className="px-16 py-7 rounded-2xl shadow-xl shadow-primary/10 hover:shadow-primary/20 transition-all font-black uppercase tracking-widest text-xs"
-                            style={{ backgroundColor: activeSettings.primary_color || '#D4AF37' }}
-                        >
-                            Ir para Confirmação
-                        </Button>
-                        <button 
-                            onClick={() => setStep(BookingStep.CONFIRM)} 
-                            className="text-[10px] text-zinc-500 uppercase tracking-[0.2em] font-bold hover:text-white transition-colors"
-                        >
-                            Pular, apenas o serviço por enquanto
-                        </button>
-                    </div>
-                )}
             </div>
           )}
 
-          {step === BookingStep.CONFIRM && selectedBarber && selectedService && selectedTime && (
+          {step === BookingStep.CONFIRM && (
             <div className="animate-fade-in flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
               <h2 className="text-xl font-display text-white mb-6 text-center">Tudo certo?</h2>
-              <div className="bg-white/5 rounded-2xl p-6 space-y-4 mb-8">
-                <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-textMuted text-sm">Serviço</span><span className="text-white font-bold">{selectedService.name}</span></div>
-                <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-textMuted text-sm">Profissional</span><span className="text-white font-bold">{selectedBarber.name}</span></div>
-                <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-textMuted text-sm">Data</span><span className="text-white font-bold">{format(selectedDate, 'dd/MM/yyyy')}</span></div>
-                <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-textMuted text-sm">Horário</span><span className="font-bold" style={{ color: activeSettings.primary_color || '#D4AF37' }}>{selectedTime}</span></div>
-
-                {Object.keys(selectedProducts).some(id => selectedProducts[id] > 0) && (
-                    <>
-                        <div className="pt-2">
-                           <h4 className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-3">Produtos Adicionados</h4>
-                        </div>
-                        {Object.entries(selectedProducts).filter(([_, q]) => q > 0).map(([id, quantity]) => {
-                          const product = productsData?.find(p => p.id === id);
-                          if (!product) return null;
-                          return (
-                            <div key={id} className="flex justify-between border-b border-white/5 pb-2 text-xs">
-                              <div className="flex flex-col">
-                                <span className="text-white font-medium">{product.name}</span>
-                                <span className="text-[10px] text-amber-400 uppercase tracking-tight">Reserva para retirada</span>
-                              </div>
-                              <div className="text-right">
-                                <span className="text-white font-bold">{quantity}x</span>
-                                <p className="text-[10px] text-zinc-500">R$ {(product.price * quantity).toFixed(2)}</p>
-                              </div>
-                            </div>
-                          );
-                        })}
-                    </>
-                )}
-
-                {affiliateLink?.type && affiliateLink.value && (
-                  <div className="flex justify-between border-b border-white/5 pb-2 text-emerald-400 text-xs font-bold">
-                    <span>Desconto de Indicação</span>
-                    <span>- {affiliateLink.type === 'PERCENTAGE' ? `${affiliateLink.value}%` : `R$ ${affiliateLink.value}`}</span>
-                  </div>
-                )}
-
-                {!appliedCoupon ? (
-                  <div className="py-2 border-b border-white/5 mb-2">
-                    <div className="flex gap-2">
-                        <input 
-                            type="text" 
-                            placeholder="Cupom de desconto" 
-                            value={couponCode} 
-                            onChange={e => setCouponCode(e.target.value.toUpperCase())}
-                            className="flex-1 bg-black/40 border border-zinc-800 rounded-lg px-3 text-white text-sm uppercase"
-                        />
-                        <Button variant="outline" size="sm" onClick={handleApplyCoupon} disabled={!couponCode || isValidatingCoupon}>
-                            {isValidatingCoupon ? <Loader2 size={16} className="animate-spin" /> : 'Aplicar'}
-                        </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex justify-between border-b border-white/5 pb-2 text-yellow-500 text-xs font-bold items-center">
-                    <span className="flex items-center gap-2">
-                        Cupom Aplicado ({couponCode})
-                        <button onClick={() => { setAppliedCoupon(null); setCouponCode(''); }} className="text-zinc-500 hover:text-red-500"><X size={12} /></button>
-                    </span>
-                    <span>- {appliedCoupon.type === 'PERCENTAGE' ? `${appliedCoupon.value}%` : `R$ ${appliedCoupon.value}`}</span>
-                  </div>
-                )}
-
-                <div className="pt-4 flex justify-between items-center">
-                  <span className="text-white font-bold">Total</span>
-                  <span className="text-2xl font-display font-bold" style={{ color: activeSettings.primary_color || '#D4AF37' }}>
-                    R$ {calculateTotal().toFixed(2)}
-                  </span>
+              {!selectedBarber || !selectedService || !selectedTime ? (
+                <div className="space-y-4">
+                  <Skeleton className="h-24 w-full rounded-2xl" />
+                  <Skeleton className="h-24 w-full rounded-2xl" />
+                  <Skeleton className="h-10 w-full rounded-xl" />
                 </div>
-              </div>
+              ) : (
+                <div className="bg-white/5 rounded-2xl p-6 space-y-4 mb-8">
+                  <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-textMuted text-sm">Serviço</span><span className="text-white font-bold">{selectedService.name}</span></div>
+                  <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-textMuted text-sm">Profissional</span><span className="text-white font-bold">{selectedBarber.name}</span></div>
+                  <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-textMuted text-sm">Data</span><span className="text-white font-bold">{format(selectedDate, 'dd/MM/yyyy')}</span></div>
+                  <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-textMuted text-sm">Horário</span><span className="font-bold" style={{ color: activeSettings.primary_color || '#D4AF37' }}>{selectedTime}</span></div>
+
+                  {Object.keys(selectedProducts).some(id => selectedProducts[id] > 0) && (
+                      <>
+                          <div className="pt-2">
+                             <h4 className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-3">Produtos Adicionados</h4>
+                          </div>
+                          {Object.entries(selectedProducts).filter(([_, q]) => q > 0).map(([id, quantity]) => {
+                            const product = productsData?.find(p => p.id === id);
+                            if (!product) return null;
+                            return (
+                              <div key={id} className="flex justify-between border-b border-white/5 pb-2 text-xs">
+                                <div className="flex flex-col">
+                                  <span className="text-white font-medium">{product.name}</span>
+                                  <span className="text-[10px] text-amber-400 uppercase tracking-tight">Reserva para retirada</span>
+                                </div>
+                                <div className="text-right">
+                                  <span className="text-white font-bold">{quantity}x</span>
+                                  <p className="text-[10px] text-zinc-500">R$ {(product.price * quantity).toFixed(2)}</p>
+                                </div>
+                              </div>
+                            );
+                          })}
+                      </>
+                  )}
+
+                  {affiliateLink?.type && affiliateLink.value && (
+                    <div className="flex justify-between border-b border-white/5 pb-2 text-emerald-400 text-xs font-bold">
+                      <span>Desconto de Indicação</span>
+                      <span>- {affiliateLink.type === 'PERCENTAGE' ? `${affiliateLink.value}%` : `R$ ${affiliateLink.value}`}</span>
+                    </div>
+                  )}
+
+                  {!appliedCoupon ? (
+                    <div className="py-2 border-b border-white/5 mb-2">
+                      <div className="flex gap-2">
+                          <input 
+                              type="text" 
+                              placeholder="Cupom de desconto" 
+                              value={couponCode} 
+                              onChange={e => setCouponCode(e.target.value.toUpperCase())}
+                              className="flex-1 bg-black/40 border border-zinc-800 rounded-lg px-3 text-white text-sm uppercase"
+                          />
+                          <Button variant="outline" size="sm" onClick={handleApplyCoupon} disabled={!couponCode || isValidatingCoupon}>
+                              {isValidatingCoupon ? <Loader2 size={16} className="animate-spin" /> : 'Aplicar'}
+                          </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex justify-between border-b border-white/5 pb-2 text-yellow-500 text-xs font-bold items-center">
+                      <span className="flex items-center gap-2">
+                          Cupom Aplicado ({couponCode})
+                          <button onClick={() => { setAppliedCoupon(null); setCouponCode(''); }} className="text-zinc-500 hover:text-red-500"><X size={12} /></button>
+                      </span>
+                      <span>- {appliedCoupon.type === 'PERCENTAGE' ? `${appliedCoupon.value}%` : `R$ ${appliedCoupon.value}`}</span>
+                    </div>
+                  )}
+
+                  <div className="pt-4 flex justify-between items-center">
+                    <span className="text-white font-bold">Total</span>
+                    <span className="text-2xl font-display font-bold" style={{ color: activeSettings.primary_color || '#D4AF37' }}>
+                      R$ {calculateTotal().toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              )}
               <div className="space-y-3">
                 <Button fullWidth onClick={handleConfirmBooking} size="lg" style={{ backgroundColor: activeSettings.primary_color || '#D4AF37' }}>Confirmar Agendamento</Button>
                 <Button fullWidth variant="ghost" onClick={() => setStep(productsData && productsData.length > 0 ? BookingStep.UPSELL : (isBarberPreselected ? BookingStep.DATETIME : BookingStep.BARBER))}>
@@ -1078,7 +1192,9 @@ export const BookingFlow: React.FC = () => {
               </div>
             </div>
           )}
-        </Card>
+        </>
+      )}
+    </Card>
       </div>
 
       {showSuccessModal && (
