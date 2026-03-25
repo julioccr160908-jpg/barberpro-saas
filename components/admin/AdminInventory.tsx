@@ -7,6 +7,7 @@ import { supabase } from '../../services/supabase';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Product } from '../../types';
 import { toast } from 'sonner';
+import { ImageCropperModal } from '../ui/ImageCropperModal';
 
 export const AdminInventory: React.FC = () => {
     const { organization } = useOrganization();
@@ -16,6 +17,7 @@ export const AdminInventory: React.FC = () => {
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [formDataUrl, setFormDataUrl] = useState<string>('');
     const [isUploading, setIsUploading] = useState(false);
+    const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
 
     // Fetch Products
     const { data: products = [], isLoading } = useQuery({
@@ -111,15 +113,29 @@ export const AdminInventory: React.FC = () => {
         const file = e.target.files?.[0];
         if (!file || !organization?.id) return;
 
+        // Limpa o target pro usuário poder selecionar a mesma imagem de novo se cancelar
+        e.target.value = '';
+
+        // Lê o arquivo pra renderizar no Canvas e intercepta antes de enviar à nuvem
+        const reader = new FileReader();
+        reader.onload = () => {
+            setCropImageSrc(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const processAndUploadCroppedImage = async (croppedBlob: Blob) => {
+        if (!organization?.id) return;
+
         try {
+            setCropImageSrc(null); // Fecha o modal de recorte
             setIsUploading(true);
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${organization.id}/${Date.now()}.${fileExt}`;
+            const fileName = `${organization.id}/${Date.now()}.webp`; // O Blob já vem tipado como webp pela nossa função auxiliar
 
             // Upload to Supabase Storage
             const { error: uploadError } = await supabase.storage
                 .from('product-images')
-                .upload(fileName, file);
+                .upload(fileName, croppedBlob);
 
             if (uploadError) throw uploadError;
 
@@ -129,7 +145,7 @@ export const AdminInventory: React.FC = () => {
                 .getPublicUrl(fileName);
 
             setFormDataUrl(publicUrl);
-            toast.success("Foto carregada com sucesso!");
+            toast.success("Foto processada e carregada com sucesso!");
         } catch (error: any) {
             console.error("Upload error:", error);
             toast.error(`Erro no upload da foto: ${error.message}`);
@@ -428,6 +444,15 @@ export const AdminInventory: React.FC = () => {
                         </div>
                     </Card>
                 </div>
+            )}
+
+            {/* Modal de Crop da Imagem Interceptada */}
+            {cropImageSrc && (
+                <ImageCropperModal
+                    imageSrc={cropImageSrc}
+                    onCropComplete={processAndUploadCroppedImage}
+                    onCancel={() => setCropImageSrc(null)}
+                />
             )}
         </div>
     );

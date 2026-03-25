@@ -1,95 +1,99 @@
-
 import React, { useState, useCallback } from 'react';
 import Cropper from 'react-easy-crop';
-import { getCroppedImg } from '../../utils/canvasUtils';
-import { Button } from './Button';
-import { X, Check } from 'lucide-react';
 import { Card } from './Card';
+import { Button } from './Button';
+import { X, ZoomIn, ZoomOut, Check } from 'lucide-react';
+import getCroppedImg from '../../utils/cropImage';
 
 interface ImageCropperModalProps {
-    isOpen: boolean;
-    imageSrc: string | null;
-    aspect?: number; // e.g. 1 for square, 16/9 for banner
-    onClose: () => void;
+    imageSrc: string;
     onCropComplete: (croppedBlob: Blob) => void;
+    onCancel: () => void;
 }
 
-export const ImageCropperModal: React.FC<ImageCropperModalProps> = ({ isOpen, imageSrc, aspect = 1, onClose, onCropComplete }) => {
+export const ImageCropperModal: React.FC<ImageCropperModalProps> = ({ imageSrc, onCropComplete, onCancel }) => {
     const [crop, setCrop] = useState({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(1);
-    const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
-    const [loading, setLoading] = useState(false);
+    const [croppedAreaPixels, setCroppedAreaPixels] = useState<{ width: number; height: number; x: number; y: number } | null>(null);
+    const [isGenerating, setIsGenerating] = useState(false);
 
-    const onCropChange = (crop: { x: number; y: number }) => {
-        setCrop(crop);
-    };
-
-    const onZoomChange = (zoom: number) => {
-        setZoom(zoom);
-    };
-
-    const onCropCompleteHandler = useCallback((croppedArea: any, croppedAreaPixels: any) => {
-        setCroppedAreaPixels(croppedAreaPixels);
+    const handleCropComplete = useCallback((croppedArea: any, croppedPixels: any) => {
+        setCroppedAreaPixels(croppedPixels);
     }, []);
 
     const handleSave = async () => {
-        if (!imageSrc || !croppedAreaPixels) return;
-        setLoading(true);
+        if (!croppedAreaPixels) return;
+        
         try {
-            const croppedImage = await getCroppedImg(imageSrc, croppedAreaPixels);
-            if (croppedImage) {
-                onCropComplete(croppedImage);
+            setIsGenerating(true);
+            const croppedImageBlob = await getCroppedImg(imageSrc, croppedAreaPixels);
+            if (croppedImageBlob) {
+                onCropComplete(croppedImageBlob);
             }
         } catch (e) {
-            console.error(e);
+            console.error("Erro ao gerar imagem recortada", e);
         } finally {
-            setLoading(false);
+            setIsGenerating(false);
         }
     };
 
-    if (!isOpen || !imageSrc) return null;
-
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-            <Card className="w-full max-w-2xl bg-zinc-900 border-zinc-800 p-0 overflow-hidden flex flex-col max-h-[90vh]">
-                <div className="p-4 border-b border-zinc-800 flex justify-between items-center">
-                    <h3 className="text-white font-bold">Ajustar Imagem</h3>
-                    <button onClick={onClose} className="text-zinc-400 hover:text-white"><X size={20} /></button>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+            <Card className="w-full max-w-lg bg-zinc-900 border-zinc-800 p-0 overflow-hidden flex flex-col shadow-2xl animate-scale-in">
+                {/* Header */}
+                <div className="p-4 border-b border-zinc-800 flex justify-between items-center bg-zinc-950/50">
+                    <h2 className="text-lg font-bold text-white uppercase tracking-wider">Ajustar Imagem</h2>
+                    <button onClick={onCancel} className="text-zinc-500 hover:text-white transition-colors" disabled={isGenerating}>
+                        <X size={20} />
+                    </button>
                 </div>
 
-                <div className="relative h-[400px] w-full bg-black">
+                {/* Cropper Area */}
+                <div className="relative w-full h-80 bg-black">
                     <Cropper
                         image={imageSrc}
                         crop={crop}
                         zoom={zoom}
-                        aspect={aspect}
-                        onCropChange={onCropChange}
-                        onCropComplete={onCropCompleteHandler}
-                        onZoomChange={onZoomChange}
+                        aspect={1}
+                        onCropChange={setCrop}
+                        onCropComplete={handleCropComplete}
+                        onZoomChange={setZoom}
+                        cropShape="rect"
                         showGrid={true}
+                        style={{
+                            containerStyle: { background: '#000' }
+                        }}
                     />
                 </div>
 
-                <div className="p-6 space-y-4">
+                {/* Controls Area */}
+                <div className="p-6 space-y-6 bg-zinc-900">
                     <div className="flex items-center gap-4">
-                        <span className="text-xs text-zinc-400">Zoom</span>
+                        <ZoomOut size={18} className="text-zinc-500 shrink-0" />
                         <input
                             type="range"
                             value={zoom}
                             min={1}
                             max={3}
                             step={0.1}
-                            aria-labelledby="Zoom"
+                            aria-label="Zoom"
                             onChange={(e) => setZoom(Number(e.target.value))}
-                            className="w-full h-1 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-primary"
+                            className="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-amber-400 focus:outline-none"
                         />
+                        <ZoomIn size={18} className="text-zinc-500 shrink-0" />
                     </div>
 
-                    <div className="flex justify-end gap-2">
-                        <Button variant="outline" onClick={onClose}>Cancelar</Button>
-                        <Button onClick={handleSave} disabled={loading}>
-                            {loading ? 'Processando...' : 'Confirmar Recorte'}
-                            <Check size={16} className="ml-2" />
+                    <div className="flex gap-4">
+                        <Button variant="outline" onClick={onCancel} disabled={isGenerating} className="flex-1 border-zinc-700 text-zinc-300">
+                            Cancelar
+                        </Button>
+                        <Button onClick={handleSave} disabled={isGenerating} className="flex-1 shadow-lg shadow-amber-400/10">
+                            {isGenerating ? 'Processando...' : (
+                                <>
+                                    <Check size={18} className="mr-2" />
+                                    Confirmar Corte
+                                </>
+                            )}
                         </Button>
                     </div>
                 </div>
