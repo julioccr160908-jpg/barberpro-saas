@@ -4,7 +4,8 @@ import { Button } from '../ui/Button';
 import { supabase } from '../../services/supabase';
 import { db } from '../../services/database';
 import { DollarSign, TrendingDown, TrendingUp, Plus, Trash2, Edit2, Loader2, X, AlertTriangle, Users } from 'lucide-react';
-import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns';
+import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO, addMonths, subMonths } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { AppointmentStatus, Expense } from '../../types';
 import { toast } from 'sonner';
 import { FeatureGate } from '../ui/FeatureGate';
@@ -307,15 +308,43 @@ export const AdminFinancials: React.FC = () => {
             description="Acompanhe suas receitas, despesas e lucro líquido de forma automatizada. Recurso disponível a partir do plano Pro."
         >
             <div className="space-y-6 animate-fade-in">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
                         <h1 className="text-3xl font-display font-bold text-white">Financeiro</h1>
-                        <p className="text-textMuted">Gestão de receitas e despesas.</p>
+                        <p className="text-textMuted text-sm">Gestão de receitas e despesas.</p>
                     </div>
-                    <Button onClick={openNewModal}>
-                        <Plus size={16} className="mr-2" />
-                        Nova Despesa
-                    </Button>
+
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                        <div className="flex items-center bg-surface border border-white/10 rounded-lg p-1">
+                            <button 
+                                onClick={() => {
+                                    const newDate = subMonths(dateRange.start, 1);
+                                    setDateRange({ start: startOfMonth(newDate), end: endOfMonth(newDate) });
+                                }}
+                                className="p-2 hover:bg-white/5 rounded-md text-textMuted hover:text-white transition-colors"
+                                title="Mês Anterior"
+                            >
+                                <Plus size={16} className="rotate-45" /> 
+                            </button>
+                            <span className="px-4 py-1 text-xs font-bold text-white min-w-[140px] text-center capitalize tracking-wider">
+                                {format(dateRange.start, 'MMMM yyyy', { locale: ptBR })}
+                            </span>
+                            <button 
+                                onClick={() => {
+                                    const newDate = addMonths(dateRange.start, 1);
+                                    setDateRange({ start: startOfMonth(newDate), end: endOfMonth(newDate) });
+                                }}
+                                className="p-2 hover:bg-white/5 rounded-md text-textMuted hover:text-white transition-colors"
+                                title="Próximo Mês"
+                            >
+                                <Plus size={16} /> 
+                            </button>
+                        </div>
+                        <Button onClick={openNewModal} className="shadow-lg shadow-primary/10">
+                            <Plus size={16} className="mr-2" />
+                            Nova Despesa
+                        </Button>
+                    </div>
                 </div>
 
                 {/* KPI Cards */}
