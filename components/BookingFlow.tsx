@@ -659,47 +659,6 @@ export const BookingFlow: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative" style={brandingStyles}>
-      {/* Client Portal Button */}
-      <div className="fixed top-4 right-4 z-50 flex gap-2">
-        {/* Only show Login button if NO user is present */}
-        {!user && (
-            <Button 
-                variant="outline" 
-                size="sm" 
-                className="rounded-full border-white/10 text-[10px] uppercase font-bold tracking-widest"
-                onClick={() => navigate('/login')}
-            >
-                Entrar
-            </Button>
-        )}
-
-        {/* Only show Portal button if user is Admin/Staff (Customers have Sidebar) */}
-        {user && role !== Role.CUSTOMER && (
-            <button 
-                onClick={() => setIsPortalOpen(true)}
-                className="w-12 h-12 rounded-full overflow-hidden border-2 border-primary/20 shadow-lg hover:border-primary transition-all relative group"
-            >
-                {profile?.avatarUrl ? (
-                    <img src={profile.avatarUrl} className="w-full h-full object-cover" alt="Profile" />
-                ) : (
-                    <div className="w-full h-full bg-surfaceHighlight flex items-center justify-center">
-                        <UserCircle size={24} className="text-zinc-400 group-hover:text-primary" />
-                    </div>
-                )}
-                {customerSubscription && (
-                    <div className="absolute -bottom-1 -right-1 bg-primary w-4 h-4 rounded-full flex items-center justify-center border-2 border-background">
-                        <Star size={8} className="text-black fill-current" />
-                    </div>
-                )}
-            </button>
-        )}
-
-        {isAdmin && (
-          <Button variant="outline" size="sm" className="rounded-full" onClick={() => navigate('/admin/dashboard')}>
-            <ChevronLeft size={16} />
-          </Button>
-        )}
-      </div>
 
       {/* Client Portal Drawer - Only for guests or admins, customers use Sidebar */}
       {isPortalOpen && role !== Role.CUSTOMER && (
@@ -765,13 +724,6 @@ export const BookingFlow: React.FC = () => {
                             className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-all group"
                         >
                             <span className="text-sm text-zinc-400 group-hover:text-white transition-colors">Meus Agendamentos</span>
-                            <ChevronRightIcon size={16} className="text-zinc-600 group-hover:text-primary transition-colors" />
-                        </button>
-                        <button 
-                            onClick={() => { navigate('/customer/profile'); setIsPortalOpen(false); }}
-                            className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-all group"
-                        >
-                            <span className="text-sm text-zinc-400 group-hover:text-white transition-colors">Editar Perfil</span>
                             <ChevronRightIcon size={16} className="text-zinc-600 group-hover:text-primary transition-colors" />
                         </button>
                     </div>

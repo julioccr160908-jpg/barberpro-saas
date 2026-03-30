@@ -115,12 +115,6 @@ export const PublicBookingLayout: React.FC<PublicBookingLayoutProps> = ({ childr
                                                     >
                                                         <Calendar size={16} /> Meus Agendamentos
                                                     </button>
-                                                    <button
-                                                        onClick={() => navigate('/customer/profile')}
-                                                        className="w-full flex items-center gap-3 px-3 py-2 text-sm text-textMuted hover:text-white hover:bg-white/5 rounded-lg transition-colors"
-                                                    >
-                                                        <UserIcon size={16} /> Meu Perfil
-                                                    </button>
                                                 </>
                                             )}
                                             <div className="my-1 border-t border-border" />

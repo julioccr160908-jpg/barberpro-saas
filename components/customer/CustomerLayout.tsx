@@ -49,6 +49,7 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
         { id: 'book', label: 'Novo Agendamento', icon: Scissors, path: bookPath },
         { id: 'subscriptions', label: 'Clube de Assinatura', icon: CreditCard, path: '/customer/subscriptions' },
         { id: 'appointments', label: 'Meus Agendamentos', icon: Calendar, path: '/customer/appointments' },
+        { id: 'profile', label: 'Meu Perfil', icon: UserCircle, path: '/customer/profile' },
     ];
 
     const handleLogout = () => {
@@ -67,7 +68,7 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
     } as React.CSSProperties), [settings]);
 
     return (
-        <div className="h-screen overflow-hidden bg-black text-textMain font-sans flex flex-col" style={brandingStyles}>
+        <div className="min-h-screen md:h-screen md:overflow-hidden bg-black text-textMain font-sans flex flex-col antialiased" style={brandingStyles}>
             {/* Mobile Header */}
             <div className="lg:hidden flex items-center justify-between p-4 border-b border-border bg-background z-50 relative">
                 <div className="flex items-center gap-2">
@@ -101,8 +102,8 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                             </div>
                         </div>
 
-                        {/* User Profile Section - Classic Original Style */}
-                        <div className="p-3 lg:p-4 border-b border-zinc-800 flex items-center gap-3 bg-white/5 active:bg-white/10 cursor-pointer transition-colors shrink-0" onClick={() => navigate('/customer/profile')}>
+                        {/* User Profile Section - Identity Only (No Link) */}
+                        <div className="p-4 lg:p-6 border-b border-zinc-800/50 flex items-center gap-4 bg-white/[0.02] shrink-0">
                             <UserAvatar 
                                 src={profile?.avatarUrl} 
                                 name={profile?.name} 
@@ -121,7 +122,7 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                                     <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-tight truncate">Plano Exclusive</p>
                                 )}
                             </div>
-                            <ChevronRight size={14} className="text-zinc-600" />
+                            {/* No Chevron here to reinforce visual identity instead of navigation */}
                         </div>
 
                         {/* Navigation Area - Classic Original DNA */}
@@ -167,7 +168,10 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                         <div className="mt-auto p-3 border-t border-zinc-800 space-y-2.5 bg-background/80 backdrop-blur-md shrink-0">
                             {/* Location Box - Classic Original */}
                             {settings.address && (
-                                <div className="bg-white/5 rounded-lg p-2.5 border border-white/5 flex items-center justify-between gap-3 group hover:border-primary/20 transition-colors">
+                                <button 
+                                    onClick={handleOpenMaps}
+                                    className="w-full bg-white/5 rounded-lg p-2.5 border border-white/5 flex items-center justify-between gap-3 group hover:border-primary/20 transition-all text-left"
+                                >
                                     <div className="flex items-center gap-2 min-w-0">
                                         <div className="p-1 px-1.5 bg-primary/10 rounded-md shrink-0">
                                             <MapPin size={12} className="text-primary" />
@@ -177,15 +181,10 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                                             <p className="truncate opacity-60">Ver localização</p>
                                         </div>
                                     </div>
-                                    <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        onClick={handleOpenMaps}
-                                        className="h-6 w-6 p-0 flex items-center justify-center border-white/5 hover:bg-primary/20 group-hover:text-primary transition-all"
-                                    >
+                                    <div className="h-6 w-6 p-0 flex items-center justify-center border border-white/5 rounded-md hover:bg-primary/20 group-hover:text-primary transition-all">
                                         <ChevronRight size={12} />
-                                    </Button>
-                                </div>
+                                    </div>
+                                </button>
                             )}
                             
                             <button
@@ -206,8 +205,8 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                     <div className="fixed inset-0 bg-black/80 z-30 lg:hidden" onClick={() => setIsOpen(false)} />
                 )}
 
-                {/* Content Area - Independent Scroll Original Spacing */}
-                <main className="flex-1 h-full overflow-y-auto p-4 lg:p-8 custom-scrollbar bg-black">
+                {/* Content Area - Editorial Spacing & Stable MD+ Layout */}
+                <main className="flex-1 h-full overflow-y-auto p-6 md:p-10 lg:p-12 custom-scrollbar bg-black relative">
                     <div className="max-w-5xl mx-auto pb-20 lg:pb-8">
                         {children}
                     </div>
