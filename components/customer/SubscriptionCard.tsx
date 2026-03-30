@@ -18,18 +18,18 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ subscription
             </div>
             <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                    <span className="px-3 py-1 bg-primary text-[10px] text-black font-black uppercase rounded shadow-[0_0_15px_rgba(234,179,8,0.4)]">VIP Member</span>
+                    <span className="px-3 py-1 bg-primary text-xs text-black font-black uppercase rounded shadow-[0_0_15px_rgba(234,179,8,0.4)]">VIP Member</span>
                     <h3 className="text-white font-bold text-lg tracking-tight">{plan?.name}</h3>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4">
                     <div>
-                         <p className="text-[10px] text-zinc-500 uppercase tracking-widest mb-1">Próxima Renovação</p>
+                         <p className="text-xs text-zinc-500 uppercase tracking-wide mb-1">Próxima Renovação</p>
                          <p className="text-sm text-white font-bold">{format(new Date(subscription.next_billing_date), 'dd/MM/yyyy')}</p>
                     </div>
                     <div className="text-right">
-                         <p className="text-[10px] text-zinc-500 uppercase tracking-widest mb-1">Status</p>
-                         <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-bold border border-emerald-500/20">
+                         <p className="text-xs text-zinc-500 uppercase tracking-wide mb-1">Status</p>
+                         <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 text-xs font-bold border border-emerald-500/20">
                             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                             Ativo
                          </span>

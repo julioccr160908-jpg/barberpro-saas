@@ -25,7 +25,7 @@ export const Card: React.FC<CardProps> = ({ children, className = '', noPadding 
 export const CardHeader: React.FC<{ title: string; subtitle?: string; action?: React.ReactNode }> = ({ title, subtitle, action }) => (
   <div className="flex items-center justify-between mb-6">
     <div>
-      <h3 className="text-lg font-display font-medium text-white tracking-wide uppercase">{title}</h3>
+      <h3 className="text-lg font-display font-medium text-white tracking-tight">{title}</h3>
       {subtitle && <p className="text-sm text-textMuted mt-1">{subtitle}</p>}
     </div>
     {action && <div>{action}</div>}

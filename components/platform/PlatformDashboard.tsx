@@ -356,7 +356,7 @@ export const PlatformDashboard: React.FC = () => {
                                 </div>
                                 <div className="flex flex-col items-end">
                                     <span className="font-bold text-white">{org.memberCount}</span>
-                                    <span className="text-[10px] text-zinc-500 uppercase">Perfis</span>
+                                    <span className="text-xs text-zinc-500 uppercase">Perfis</span>
                                 </div>
                             </div>
                         ))}

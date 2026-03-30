@@ -89,7 +89,7 @@ export const PlatformUsers: React.FC = () => {
                                 <div>
                                     <h3 className="font-bold text-white text-sm flex items-center gap-2">
                                         {user.name || 'Sem nome'}
-                                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono uppercase ${user.role === 'SUPER_ADMIN' ? 'bg-purple-500/20 text-purple-400' :
+                                        <span className={`text-xs px-1.5 py-0.5 rounded font-mono uppercase ${user.role === 'SUPER_ADMIN' ? 'bg-purple-500/20 text-purple-400' :
                                             user.role === 'ADMIN' ? 'bg-blue-500/20 text-blue-400' :
                                                 'bg-zinc-700 text-zinc-400'
                                             }`}>

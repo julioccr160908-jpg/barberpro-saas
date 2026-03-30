@@ -60,7 +60,7 @@ export const PlatformBroadcasts: React.FC = () => {
                     <p className="text-zinc-400">Envie mensagens globais para públicos específicos.</p>
                 </div>
                 {!isCreating && (
-                    <Button onClick={() => setIsCreating(true)} className="bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2 font-display uppercase tracking-wider text-xs">
+                    <Button onClick={() => setIsCreating(true)} className="bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2 font-display uppercase tracking-wide text-xs">
                         <Plus size={16} />
                         Novo Aviso
                     </Button>
@@ -96,7 +96,7 @@ export const PlatformBroadcasts: React.FC = () => {
                     </div>
                     
                     <div className="space-y-2">
-                        <label className="text-xs font-bold text-zinc-500 uppercase font-display">Público Alvo</label>
+                        <label className="text-xs font-semibold text-zinc-500 uppercase font-display">Público Alvo</label>
                         <select 
                             value={newBroadcast.target_role}
                             onChange={e => setNewBroadcast({...newBroadcast, target_role: e.target.value as any})}
@@ -107,7 +107,7 @@ export const PlatformBroadcasts: React.FC = () => {
                             <option value="BARBER">✂️ Apenas Barbeiros</option>
                             <option value="CUSTOMER">👤 Apenas Clientes</option>
                         </select>
-                        <p className="text-[10px] text-zinc-500 italic">O aviso será exibido apenas para o grupo selecionado.</p>
+                        <p className="text-xs text-zinc-500 italic">O aviso será exibido apenas para o grupo selecionado.</p>
                     </div>
 
                     <div className="space-y-2">
@@ -145,14 +145,14 @@ export const PlatformBroadcasts: React.FC = () => {
                                 <h4 className="font-bold text-white text-sm">{b.title}</h4>
                                 <p className="text-sm text-zinc-500 line-clamp-1">{b.content}</p>
                                 <div className="flex gap-2 mt-1">
-                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700 uppercase font-mono">
+                                    <span className="text-xs px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700 uppercase font-mono">
                                         Público: {b.target_role === 'all' ? 'Todos' : b.target_role}
                                     </span>
                                 </div>
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
-                            <span className="text-[10px] bg-zinc-800 px-2 py-1 rounded text-zinc-500 font-mono">
+                            <span className="text-xs bg-zinc-800 px-2 py-1 rounded text-zinc-500 font-mono">
                                 {new Date(b.created_at).toLocaleDateString()}
                             </span>
                             <button onClick={() => handleDelete(b.id)} className="p-2 text-zinc-600 hover:text-red-400 transition-colors">

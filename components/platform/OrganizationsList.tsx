@@ -162,7 +162,7 @@ export const OrganizationsList: React.FC = () => {
                                     <h3 className="font-bold text-white text-lg flex items-center gap-2">
                                         {org.name || 'Barbearia Sem Nome'}
                                         {org.subscriptionStatus === 'pending' && (
-                                            <span className="bg-yellow-500 text-black text-[10px] uppercase font-bold px-1.5 py-0.5 rounded">
+                                            <span className="bg-yellow-500 text-black text-xs uppercase font-bold px-1.5 py-0.5 rounded">
                                                 Pendente
                                             </span>
                                         )}

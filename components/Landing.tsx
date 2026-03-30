@@ -21,8 +21,8 @@ export const Landing: React.FC = () => {
             <div className="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
 
             <div className="relative z-10 text-center max-w-lg p-8 w-full">
-                <h1 className="text-6xl font-display font-bold text-white mb-2 tracking-tighter">BARBER<span className="text-primary">HOST</span></h1>
-                <p className="text-textMuted mb-12 text-lg">Sistema de Gestão Premium para Barbearias</p>
+                <h1 className="text-6xl font-display font-extrabold text-white mb-3 tracking-tight">Barber<span className="text-primary">Host</span></h1>
+                <p className="text-textMuted mb-12 text-lg font-light tracking-wide">Sistema de Gestão Premium para Barbearias</p>
 
                 <div className="space-y-8 w-full">
                     {/* Search Section */}

@@ -136,7 +136,7 @@ export const MarketingCouponsModal = ({ onClose }: { onClose: () => void }) => {
                                         className={`w-full bg-black/40 border ${errors.code ? 'border-red-500' : 'border-zinc-800'} rounded-lg px-3 py-2 text-white text-sm uppercase focus:ring-1 focus:ring-white/20 outline-none`}
                                         placeholder="EX: NATAL20"
                                     />
-                                    {errors.code && <p className="text-[10px] text-red-500 mt-1">{errors.code.message}</p>}
+                                    {errors.code && <p className="text-xs text-red-500 mt-1">{errors.code.message}</p>}
                             </div>
                             <div>
                                 <label className="block text-xs font-medium text-zinc-400 mb-1">Tipo de Desconto</label>
@@ -162,7 +162,7 @@ export const MarketingCouponsModal = ({ onClose }: { onClose: () => void }) => {
                                     })}
                                     className={`w-full bg-black/40 border ${errors.discount_value ? 'border-red-500' : 'border-zinc-800'} rounded-lg px-3 py-2 text-white text-sm focus:ring-1 focus:ring-white/20 outline-none`}
                                 />
-                                {errors.discount_value && <p className="text-[10px] text-red-500 mt-1">{errors.discount_value.message}</p>}
+                                {errors.discount_value && <p className="text-xs text-red-500 mt-1">{errors.discount_value.message}</p>}
                             </div>
                             <div>
                                 <label className="block text-xs font-medium text-zinc-400 mb-1">Válido Até (Opcional)</label>
@@ -207,7 +207,7 @@ export const MarketingCouponsModal = ({ onClose }: { onClose: () => void }) => {
                                         <div>
                                             <div className="flex items-center gap-2 mb-1">
                                                 <span className="font-bold text-white tracking-wider">{coupon.code}</span>
-                                                <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${coupon.discount_type === 'PERCENTAGE' ? 'bg-primary/20 text-primary' : 'bg-emerald-500/20 text-emerald-500'}`}>
+                                                <span className={`text-xs px-2 py-0.5 rounded font-semibold ${coupon.discount_type === 'PERCENTAGE' ? 'bg-primary/20 text-primary' : 'bg-emerald-500/20 text-emerald-500'}`}>
                                                     {coupon.discount_type === 'PERCENTAGE' ? `${coupon.discount_value}% OFF` : `R$ ${coupon.discount_value} OFF`}
                                                 </span>
                                             </div>

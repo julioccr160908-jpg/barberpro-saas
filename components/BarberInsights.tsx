@@ -32,9 +32,9 @@ export const BarberInsights: React.FC = () => {
                 <Icon size={64} />
             </div>
             <div className="relative z-10">
-                <p className="text-xs font-bold text-textMuted uppercase tracking-widest mb-1">{title}</p>
+                <p className="text-xs font-bold text-textMuted uppercase tracking-wide mb-1">{title}</p>
                 <h3 className="text-2xl font-display font-bold text-white mb-2">{value}</h3>
-                {subValue && <p className="text-[10px] text-textMuted font-medium uppercase tracking-tighter">{subValue}</p>}
+                {subValue && <p className="text-xs text-textMuted font-medium tracking-normal">{subValue}</p>}
             </div>
         </Card>
     );
@@ -43,7 +43,7 @@ export const BarberInsights: React.FC = () => {
         <div className="space-y-8 animate-fade-in">
             <div className="flex items-center justify-between">
                <div>
-                  <h2 className="text-2xl font-display font-bold text-white uppercase tracking-widest">Meus Insights</h2>
+                  <h2 className="text-2xl font-display font-bold text-white tracking-tight">Meus Insights</h2>
                   <p className="text-sm text-textMuted">Acompanhe seu desempenho e crescimento profissional.</p>
                </div>
                <div className="px-4 py-2 bg-primary/10 border border-primary/20 rounded-full flex items-center gap-2">
@@ -96,7 +96,7 @@ export const BarberInsights: React.FC = () => {
                                     <span className="text-xs font-mono text-zinc-600">0{index + 1}</span>
                                     <p className="text-sm text-zinc-300 group-hover:text-white transition-colors">{service.name}</p>
                                 </div>
-                                <span className="px-2 py-0.5 bg-zinc-800 rounded text-[10px] font-bold text-zinc-500">{service.count}x</span>
+                                <span className="px-2 py-0.5 bg-zinc-800 rounded text-xs font-semibold text-zinc-500">{service.count}x</span>
                             </div>
                         ))}
                         {topServices.length === 0 && <p className="text-center py-8 text-zinc-600 italic text-sm">Nenhum serviço realizado.</p>}
@@ -124,7 +124,7 @@ export const BarberInsights: React.FC = () => {
                         
                         <div className="mt-auto pt-8 flex gap-4">
                             <button className="flex-1 p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all text-left">
-                                <p className="text-[10px] uppercase font-bold text-zinc-600 mb-1">Dica Pro</p>
+                                <p className="text-xs uppercase font-semibold text-zinc-600 mb-1">Dica Pro</p>
                                 <p className="text-xs text-zinc-400">Ofereça um Balm para barba após o corte para aumentar seu ticket médio.</p>
                             </button>
                         </div>

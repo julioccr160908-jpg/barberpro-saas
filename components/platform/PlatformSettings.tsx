@@ -88,7 +88,7 @@ export const PlatformSettings: React.FC = () => {
                                     className="w-full bg-black/40 border border-white/10 rounded-xl py-3.5 px-5 text-white text-lg font-medium focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all shadow-inner"
                                 />
                                 <div className="absolute right-2 top-1/2 -translate-y-1/2 bg-zinc-800/80 px-3 py-1.5 rounded-lg border border-white/5">
-                                    <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Dias</span>
+                                    <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wide">Dias</span>
                                 </div>
                             </div>
                         </div>
@@ -199,7 +199,7 @@ export const PlatformSettings: React.FC = () => {
                                     APP_USR-123***-XYZ-*******
                                 </div>
                                 <div className="absolute inset-0 flex items-center justify-center opacity-100 group-hover/token:opacity-0 transition-opacity bg-black/20">
-                                    <span className="text-xs font-bold text-emerald-500/70 tracking-widest uppercase bg-emerald-500/10 px-3 py-1 rounded-lg border border-emerald-500/20 backdrop-blur-md">Passe o mouse para revelar</span>
+                                    <span className="text-xs font-semibold text-emerald-500/70 tracking-wide uppercase bg-emerald-500/10 px-3 py-1 rounded-lg border border-emerald-500/20 backdrop-blur-md">Passe o mouse para revelar</span>
                                 </div>
                             </div>
                         </div>

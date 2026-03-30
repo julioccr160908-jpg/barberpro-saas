@@ -149,13 +149,13 @@ export const AdminNotificationSettings: React.FC = () => {
                 <div className="space-y-4">
                     <div className="space-y-2">
                         <div className="flex justify-between items-end">
-                            <label className="text-[10px] font-bold text-textMuted uppercase tracking-wider">Mensagem</label>
+                            <label className="text-xs font-semibold text-textMuted uppercase tracking-wide">Mensagem</label>
                             <div className="flex flex-wrap gap-1 justify-end">
                                 {VARIABLES.map(v => (
                                     <button
                                         key={v.value}
                                         onClick={() => insertVariable(template.id, v.value)}
-                                        className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 hover:bg-white/10 text-textMuted hover:text-white border border-white/5 transition-colors"
+                                        className="text-xs px-1.5 py-0.5 rounded bg-white/5 hover:bg-white/10 text-textMuted hover:text-white border border-white/5 transition-colors"
                                         title={`Inserir ${v.label}`}
                                     >
                                         {v.label}

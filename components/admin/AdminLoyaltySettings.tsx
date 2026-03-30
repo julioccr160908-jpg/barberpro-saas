@@ -117,7 +117,7 @@ export const AdminLoyaltySettings: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <Card className="p-4 bg-surface/50 border-white/5 relative overflow-hidden group">
                         <div className="flex flex-col">
-                            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Participantes Ativos</span>
+                            <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1">Participantes Ativos</span>
                             <div className="flex items-baseline gap-2">
                                 <h3 className="text-3xl font-display font-bold text-white">{loadingStats ? '...' : loyaltyStats?.activeParticipants}</h3>
                                 <Users size={16} className="text-primary opacity-50" />
@@ -127,7 +127,7 @@ export const AdminLoyaltySettings: React.FC = () => {
 
                     <Card className="p-4 bg-surface/50 border-white/5 relative overflow-hidden group">
                         <div className="flex flex-col">
-                            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Recompensas Entregues</span>
+                            <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1">Recompensas Entregues</span>
                             <div className="flex items-baseline gap-2">
                                 <h3 className="text-3xl font-display font-bold text-white">{loadingStats ? '...' : loyaltyStats?.rewardsDelivered}</h3>
                                 <Trophy size={16} className="text-yellow-500 opacity-50" />
@@ -137,7 +137,7 @@ export const AdminLoyaltySettings: React.FC = () => {
 
                     <Card className="p-4 bg-surface/50 border-white/5 relative overflow-hidden group">
                         <div className="flex flex-col">
-                            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Frequência Média</span>
+                            <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1">Frequência Média</span>
                             <div className="flex items-baseline gap-2">
                                 <h3 className="text-3xl font-display font-bold text-white">{loadingStats ? '...' : loyaltyStats?.avgFrequency}d</h3>
                                 <Zap size={16} className="text-blue-500 opacity-50" />
@@ -174,7 +174,7 @@ export const AdminLoyaltySettings: React.FC = () => {
                                     <Button 
                                         variant="ghost" 
                                         size="sm" 
-                                        className={`text-[10px] font-black uppercase tracking-tighter hover:bg-transparent ${enabled ? 'text-red-400 hover:text-red-300' : 'text-primary hover:text-primary/80'}`}
+                                        className={`text-xs font-bold uppercase tracking-wide hover:bg-transparent ${enabled ? 'text-red-400 hover:text-red-300' : 'text-primary hover:text-primary/80'}`}
                                         onClick={() => setEnabled(!enabled)}
                                     >
                                         {enabled ? 'Desativar' : 'Ativar Agora'}
@@ -186,7 +186,7 @@ export const AdminLoyaltySettings: React.FC = () => {
                                 <div className="space-y-5 animate-in slide-in-from-left-4 duration-500">
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Meta de Pontos</label>
+                                            <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2">Meta de Pontos</label>
                                             <Input
                                                 type="number"
                                                 value={target}
@@ -197,7 +197,7 @@ export const AdminLoyaltySettings: React.FC = () => {
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Prêmio (Curto)</label>
+                                            <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2">Prêmio (Curto)</label>
                                             <Input
                                                 placeholder="Ex: 1 Corte Grátis"
                                                 value={rewardDescription}
@@ -211,7 +211,7 @@ export const AdminLoyaltySettings: React.FC = () => {
                                         <div className="flex items-center justify-between mb-4">
                                             <div className="flex items-center gap-2">
                                                 <Calendar size={14} className="text-zinc-500" />
-                                                <span className="text-[10px] font-bold text-zinc-300 uppercase tracking-wider">Validade dos Pontos</span>
+                                                <span className="text-xs font-semibold text-zinc-300 uppercase tracking-wide">Validade dos Pontos</span>
                                             </div>
                                             <button 
                                                 onClick={() => setUseExpiration(!useExpiration)}
@@ -269,7 +269,7 @@ export const AdminLoyaltySettings: React.FC = () => {
                                 </div>
                                 <div className="flex justify-between items-start">
                                     <div>
-                                        <p className="text-[10px] font-bold text-primary uppercase tracking-[0.3em] mb-1">Loyalty Card</p>
+                                        <p className="text-xs font-bold text-primary uppercase tracking-wide mb-1">Loyalty Card</p>
                                         <h4 className="text-white font-bold tracking-tight text-sm line-clamp-1">{rewardDescription || 'Recompensa'}</h4>
                                     </div>
                                     <Gift size={20} className="text-primary opacity-50" />
@@ -295,7 +295,7 @@ export const AdminLoyaltySettings: React.FC = () => {
                                         <p className="text-[8px] text-zinc-600 font-bold uppercase tracking-widest">Client Name</p>
                                         <p className="text-[8px] text-zinc-700 font-mono">0000-1111-2222</p>
                                     </div>
-                                    <div className="px-3 py-1 bg-white/5 rounded-full text-[10px] text-zinc-400 font-black border border-white/10">
+                                    <div className="px-3 py-1 bg-white/5 rounded-full text-xs text-zinc-400 font-bold border border-white/10">
                                         3 / {target}
                                     </div>
                                 </div>

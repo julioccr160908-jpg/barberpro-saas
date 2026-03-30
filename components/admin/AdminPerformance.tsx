@@ -119,13 +119,13 @@ export const AdminPerformance: React.FC = () => {
                                                 <p className="text-sm font-bold text-white">{barber.name}</p>
                                                 <div className="flex items-center gap-1 mt-0.5">
                                                     <Star size={10} className="text-yellow-500 fill-yellow-500" />
-                                                    <span className="text-[10px] font-bold text-zinc-500">{barber.rating}</span>
+                                                    <span className="text-xs font-semibold text-zinc-500">{barber.rating}</span>
                                                 </div>
                                             </div>
                                         </div>
                                         <div className="text-right">
                                             <p className="text-sm font-bold text-white">R$ {barber.revenue.toLocaleString('pt-BR')}</p>
-                                            <p className="text-[10px] text-zinc-600 uppercase font-bold">{barber.appointments} atendimentos</p>
+                                            <p className="text-xs text-zinc-600 uppercase font-semibold">{barber.appointments} atendimentos</p>
                                         </div>
                                     </div>
                                 ))}
@@ -152,7 +152,7 @@ export const AdminPerformance: React.FC = () => {
                                     <BarChart3 size={20} className="text-primary" />
                                     <h3 className="text-lg font-bold text-white">Faturamento por Barbeiro</h3>
                                 </div>
-                                <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest">Este Mês</span>
+                                <span className="text-xs text-zinc-500 uppercase font-semibold tracking-wide">Este Mês</span>
                             </div>
                             
                             <div className="h-64 w-full">

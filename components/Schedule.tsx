@@ -161,7 +161,7 @@ export const Schedule: React.FC = () => {
     <div className="flex-1 flex flex-col min-h-0">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-xl font-display font-bold text-white uppercase">
+          <h2 className="text-xl font-display font-bold text-white">
             {isToday(selectedDate) ? 'Hoje' : format(selectedDate, 'dd/MM')}
           </h2>
           <p className="text-sm text-textMuted">
@@ -377,7 +377,7 @@ export const Schedule: React.FC = () => {
         {/* Week Days Header */}
         <div className="grid grid-cols-7 mb-2">
           {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'].map(day => (
-            <div key={day} className="text-center text-xs font-medium text-textMuted uppercase tracking-wider py-2">
+            <div key={day} className="text-center text-xs font-medium text-textMuted uppercase tracking-wide py-2">
               {day}
             </div>
           ))}

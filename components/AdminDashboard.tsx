@@ -87,7 +87,7 @@ export const AdminDashboard: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-display font-bold text-white uppercase mb-1">Dashboard</h1>
+          <h1 className="text-2xl font-display font-bold text-white tracking-tight mb-1">Dashboard</h1>
           <p className="text-sm text-textMuted">Visão geral do desempenho</p>
         </div>
 
@@ -147,7 +147,7 @@ export const AdminDashboard: React.FC = () => {
             </div>
             <div>
               <h4 className="text-sm font-bold text-white">Marketing Saudade</h4>
-              <p className="text-[10px] text-zinc-400">Reative clientes inativos agora</p>
+              <p className="text-xs text-zinc-400">Reative clientes inativos agora</p>
             </div>
           </div>
         </Card>
@@ -160,7 +160,7 @@ export const AdminDashboard: React.FC = () => {
             </div>
             <div>
               <h4 className="text-sm font-bold text-white">Rank de Performance</h4>
-              <p className="text-[10px] text-zinc-400">Veja quem é o destaque da equipe</p>
+              <p className="text-xs text-zinc-400">Veja quem é o destaque da equipe</p>
             </div>
           </div>
         </Card>
@@ -173,7 +173,7 @@ export const AdminDashboard: React.FC = () => {
             </div>
             <div>
               <h4 className="text-sm font-bold text-white">Clube de Assinatura</h4>
-              <p className="text-[10px] text-zinc-400">Gerencie sua receita recorrente</p>
+              <p className="text-xs text-zinc-400">Gerencie sua receita recorrente</p>
             </div>
           </div>
         </Card>

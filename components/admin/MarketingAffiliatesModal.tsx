@@ -234,15 +234,15 @@ export const MarketingAffiliatesModal = ({ onClose }: { onClose: () => void }) =
                                         
                                         <div className="grid grid-cols-3 gap-2 p-3 bg-black/40 rounded-lg">
                                             <div className="text-center border-r border-white/5">
-                                                <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1 flex items-center justify-center gap-1"><MousePointerClick size={10} /> Cliques</div>
+                                                <div className="text-xs text-zinc-500 uppercase tracking-wide mb-1 flex items-center justify-center gap-1"><MousePointerClick size={10} /> Cliques</div>
                                                 <span className="font-display font-bold text-white text-lg">{aff.clicks}</span>
                                             </div>
                                             <div className="text-center border-r border-white/5">
-                                                <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1 flex items-center justify-center gap-1"><CheckCircle2 size={10} /> Agendamentos</div>
+                                                <div className="text-xs text-zinc-500 uppercase tracking-wide mb-1 flex items-center justify-center gap-1"><CheckCircle2 size={10} /> Agendamentos</div>
                                                 <span className="font-display font-bold text-emerald-500 text-lg">{aff.conversions}</span>
                                             </div>
                                             <div className="text-center">
-                                                <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">Desconto</div>
+                                                <div className="text-xs text-zinc-500 uppercase tracking-wide mb-1">Desconto</div>
                                                 <span className="font-bold text-zinc-300 text-sm mt-1 block">
                                                     {aff.discount_type === 'PERCENTAGE' ? `${aff.discount_value}%` : aff.discount_type === 'FIXED' ? `R$${aff.discount_value}` : 'Nenhum'}
                                                 </span>

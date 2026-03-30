@@ -76,7 +76,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({ organizationId }) => {
             <div className="p-2 bg-primary/10 rounded-lg">
               <Camera size={20} className="text-primary" />
             </div>
-            <h3 className="text-xl font-display font-bold text-white uppercase tracking-widest">
+            <h3 className="text-xl font-display font-bold text-white tracking-tight">
               Nosso Portfólio
             </h3>
           </div>
@@ -114,7 +114,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({ organizationId }) => {
             <div className="p-2 bg-amber-500/10 rounded-lg">
               <Quote size={20} className="text-amber-500" />
             </div>
-            <h3 className="text-xl font-display font-bold text-white uppercase tracking-widest">
+            <h3 className="text-xl font-display font-bold text-white tracking-tight">
               O Que Nossos Clientes Dizem
             </h3>
           </div>
@@ -135,7 +135,7 @@ export const Portfolio: React.FC<PortfolioProps> = ({ organizationId }) => {
                         {review.customer?.name?.charAt(0) || 'C'}
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-white tracking-tight">
+                        <p className="text-sm font-bold text-white tracking-normal">
                           {review.customer?.name || 'Cliente'}
                         </p>
                         {/* Stars row */}

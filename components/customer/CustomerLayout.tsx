@@ -75,7 +75,7 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                     <div className="w-8 h-8 rounded-sm flex items-center justify-center" style={{ backgroundColor: settings.primary_color || '#D4AF37' }}>
                         <Scissors size={18} className="text-black" />
                     </div>
-                    <span className="font-display font-bold text-lg text-white">{settings.establishment_name || 'Barbearia'}</span>
+                    <span className="font-display font-bold text-lg text-white tracking-tight">{settings.establishment_name || 'Barbearia'}</span>
                 </div>
                 <button onClick={() => setIsOpen(!isOpen)} className="text-white p-2">
                     <Menu />
@@ -98,7 +98,7 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                                 <div className="w-8 h-8 rounded flex items-center justify-center bg-primary" style={{ backgroundColor: settings.primary_color || '#D4AF37' }}>
                                     <Scissors size={18} className="text-black" />
                                 </div>
-                                <span className="font-display font-bold text-xl tracking-tight text-white uppercase">{settings.establishment_name || 'Barbearia'}</span>
+                                <span className="font-display font-bold text-xl tracking-tight text-white">{settings.establishment_name || 'Barbearia'}</span>
                             </div>
                         </div>
 
@@ -117,9 +117,9 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                                     {subscription && <Star size={10} className="text-primary fill-current" />}
                                 </div>
                                 {subscription ? (
-                                    <p className="text-[10px] text-primary font-bold uppercase tracking-widest">VIP Membership</p>
+                                    <p className="text-xs text-primary font-bold uppercase tracking-wide">VIP Membership</p>
                                 ) : (
-                                    <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-tight truncate">Plano Exclusive</p>
+                                    <p className="text-xs text-zinc-500 font-semibold tracking-normal truncate">Plano Exclusive</p>
                                 )}
                             </div>
                             {/* No Chevron here to reinforce visual identity instead of navigation */}
@@ -128,7 +128,7 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                         {/* Navigation Area - Classic Original DNA */}
                         <nav className="flex-1 px-3 py-4 lg:py-6 space-y-1 overflow-y-auto min-h-0 custom-scrollbar">
                             <div className="mb-2 lg:mb-4">
-                                <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest px-3">Menu de Acesso</span>
+                                <span className="text-xs text-zinc-600 font-semibold uppercase tracking-wide px-3">Menu de Acesso</span>
                             </div>
                             {menuItems.map((item) => {
                                 const isActive = location.pathname === item.path;
@@ -176,7 +176,7 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                                         <div className="p-1 px-1.5 bg-primary/10 rounded-md shrink-0">
                                             <MapPin size={12} className="text-primary" />
                                         </div>
-                                        <div className="text-[9px] text-zinc-400 truncate leading-tight">
+                                        <div className="text-[10px] text-zinc-400 truncate leading-tight">
                                             <p className="font-bold text-white truncate uppercase">{settings.establishment_name || 'Barbearia'}</p>
                                             <p className="truncate opacity-60">Ver localização</p>
                                         </div>
@@ -189,7 +189,7 @@ export const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                             
                             <button
                                 onClick={handleLogout}
-                                className="w-full flex items-center gap-2.5 px-3 py-1.5 text-[11px] text-zinc-500 hover:text-red-500 transition-all rounded-lg hover:bg-red-500/5 group"
+                                className="w-full flex items-center gap-2.5 px-3 py-1.5 text-xs text-zinc-500 hover:text-red-500 transition-all rounded-lg hover:bg-red-500/5 group"
                             >
                                 <div className="p-1 bg-white/5 rounded-md group-hover:bg-red-500/10 transition-colors">
                                     <LogOut size={12} />

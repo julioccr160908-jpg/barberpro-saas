@@ -20,7 +20,7 @@ export const LoyaltyCard: React.FC<LoyaltyCardProps> = ({ count, target, enabled
                 </div>
                 <div className="flex justify-between items-start mb-6">
                     <div>
-                        <p className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] mb-1">Cartão de Selos</p>
+                        <p className="text-xs font-bold text-primary uppercase tracking-wide mb-1">Cartão de Selos</p>
                         <h4 className="text-white font-bold text-lg">Fidelidade Premium</h4>
                     </div>
                     <div className="bg-primary/20 rounded-full px-3 py-1 text-xs text-primary font-bold border border-primary/20">

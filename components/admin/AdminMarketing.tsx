@@ -76,7 +76,7 @@ export const AdminMarketing: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 px-3 py-1.5 rounded-full">
                     <Rocket size={16} className="text-yellow-500" />
-                    <span className="text-[10px] font-bold text-yellow-500 uppercase tracking-wider">Modo Pro Ativo</span>
+                    <span className="text-xs font-semibold text-yellow-500 uppercase tracking-wide">Modo Pro Ativo</span>
                 </div>
             </header>
 
@@ -134,7 +134,7 @@ export const AdminMarketing: React.FC = () => {
                             <div className="flex items-center justify-between">
                                 <div>
                                     <h3 className="text-sm font-bold text-white">Clientes "Sumidos" (+30 dias)</h3>
-                                    <p className="text-[10px] text-zinc-400">Clientes que demoram a voltar.</p>
+                                    <p className="text-xs text-zinc-400">Clientes que demoram a voltar.</p>
                                 </div>
                                 <div className="flex items-baseline gap-2">
                                     <span className="text-xl font-display font-bold text-primary leading-none">{inactiveCustomers.length}</span>
@@ -156,7 +156,7 @@ export const AdminMarketing: React.FC = () => {
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <h4 className="text-sm text-white font-bold">Tudo em dia!</h4>
-                                        <p className="text-[10px] text-zinc-500">Nenhum cliente inativo encontrado.</p>
+                                        <p className="text-xs text-zinc-500">Nenhum cliente inativo encontrado.</p>
                                     </div>
                                 </div>
                             ) : (
@@ -174,10 +174,10 @@ export const AdminMarketing: React.FC = () => {
                                                 <div>
                                                     <p className="text-sm font-bold text-white">{customer.name}</p>
                                                     <div className="flex items-center gap-3 mt-1">
-                                                        <span className="text-[10px] flex items-center gap-1 text-zinc-500 bg-zinc-800/50 px-1.5 py-0.5 rounded">
+                                                        <span className="text-xs flex items-center gap-1 text-zinc-500 bg-zinc-800/50 px-1.5 py-0.5 rounded">
                                                             <Calendar size={10} /> Último: {format(parseISO(customer.lastAppointmentDate), 'dd/MM/yy')}
                                                         </span>
-                                                        <span className="text-[10px] flex items-center gap-1 text-zinc-500 bg-zinc-800/50 px-1.5 py-0.5 rounded">
+                                                        <span className="text-xs flex items-center gap-1 text-zinc-500 bg-zinc-800/50 px-1.5 py-0.5 rounded">
                                                             <Users size={10} /> {customer.lastService}
                                                         </span>
                                                     </div>
@@ -185,7 +185,7 @@ export const AdminMarketing: React.FC = () => {
                                             </div>
                                             <div className="text-right">
                                                 <span className="text-xs font-bold text-red-400">{customer.daysInactive} dias</span>
-                                                <p className="text-[10px] text-zinc-600 uppercase font-bold">Sem Visita</p>
+                                                <p className="text-xs text-zinc-600 uppercase font-semibold">Sem Visita</p>
                                             </div>
                                         </div>
                                     ))}

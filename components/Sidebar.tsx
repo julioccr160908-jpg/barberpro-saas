@@ -162,8 +162,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentRole, setCurrentView, c
                 <Scissors size={14} className="text-black transform -rotate-45" />
               </div>
               <div className="flex flex-col">
-                <span className="font-display font-bold text-sm tracking-wider text-white leading-none">{organization?.name || 'BARBERHOST'}</span>
-                <span className="text-[7px] text-zinc-500 tracking-[0.2em] uppercase mt-0.5">Management</span>
+                <span className="font-display font-semibold text-sm tracking-tight text-white leading-none">{organization?.name || 'BarberHost'}</span>
+                <span className="text-xs text-zinc-500 tracking-wide uppercase mt-0.5">Management</span>
               </div>
             </div>
           </div>
@@ -185,7 +185,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentRole, setCurrentView, c
                   </div>
                   <div className="text-left overflow-hidden">
                     <p className="text-xs font-bold text-white truncate">{organization?.name || 'Selecionar Unidade'}</p>
-                    <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Unidade Atual</p>
+                    <p className="text-xs text-zinc-500 uppercase tracking-wide">Unidade Atual</p>
                   </div>
                 </div>
                 <ChevronDown size={14} className={`text-zinc-500 transition-transform ${showOrgSwitcher ? 'rotate-180' : ''}`} />
@@ -223,7 +223,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentRole, setCurrentView, c
 
             return (
               <div key={group.title} className="space-y-1">
-                <p className="px-4 text-[10px] font-bold text-zinc-600 uppercase tracking-widest mb-2">
+                <p className="px-4 text-xs font-semibold text-zinc-600 uppercase tracking-wide mb-2">
                   {group.title}
                 </p>
                 {visibleItems.map((item) => {
@@ -280,8 +280,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentRole, setCurrentView, c
                 />
               </div>
               <div className="flex flex-col min-w-0">
-                <span className="text-[11px] font-bold text-white truncate max-w-[100px] leading-tight">{profile?.name || 'Usuário'}</span>
-                <span className="text-[9px] text-zinc-500 uppercase tracking-wider leading-tight">{profile?.role || 'Admin'}</span>
+                <span className="text-xs font-semibold text-white truncate max-w-[100px] leading-tight">{profile?.name || 'Usuário'}</span>
+                <span className="text-xs text-zinc-500 uppercase tracking-wide leading-tight">{profile?.role || 'Admin'}</span>
               </div>
             </div>
             <button

@@ -396,7 +396,7 @@ export const AdminFinancials: React.FC = () => {
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
                                 <thead>
-                                    <tr className="border-b border-white/5 text-[10px] text-zinc-500 uppercase tracking-[0.2em]">
+                                    <tr className="border-b border-white/5 text-xs text-zinc-500 uppercase tracking-wide">
                                         <th className="px-6 py-4">Profissional</th>
                                         <th className="px-6 py-4">Serviços</th>
                                         <th className="px-6 py-4 text-right">Total Comissão</th>
@@ -457,7 +457,7 @@ export const AdminFinancials: React.FC = () => {
                                                     };
                                                     const style = colors[e.category] || 'bg-white/10 text-zinc-400 border-white/10';
                                                     return (
-                                                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${style}`}>
+                                                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wide border ${style}`}>
                                                             {e.category}
                                                         </span>
                                                     );

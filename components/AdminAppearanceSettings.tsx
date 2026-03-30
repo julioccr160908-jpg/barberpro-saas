@@ -239,7 +239,7 @@ export const AdminAppearanceSettings: React.FC = () => {
                                         max="100"
                                         className="w-full accent-primary bg-background"
                                     />
-                                    <p className="text-[10px] text-textMuted mt-1 italic">* Controla a visibilidade do banner de fundo na página principal.</p>
+                                    <p className="text-xs text-textMuted mt-1 italic">* Controla a visibilidade do banner de fundo na página principal.</p>
                                 </div>
 
                                 <div className="flex justify-end pt-2">
@@ -291,7 +291,7 @@ export const AdminAppearanceSettings: React.FC = () => {
                     <div className="flex justify-between items-center mb-6">
                         <div className="space-y-1">
                             <h3 className="text-xl font-display font-bold text-zinc-100 tracking-tight">Cenário Digital</h3>
-                            <p className="text-[10px] text-zinc-500 font-medium uppercase tracking-widest">Visualização em Tempo Real</p>
+                            <p className="text-xs text-zinc-500 font-medium uppercase tracking-wide">Visualização em Tempo Real</p>
                         </div>
                         <div className="flex p-1 bg-zinc-900/50 backdrop-blur-xl border border-white/5 rounded-2xl shadow-xl">
                             <button
@@ -389,7 +389,7 @@ export const AdminAppearanceSettings: React.FC = () => {
                                             <div className="px-10 py-2">
                                                 <div className="bg-white/5 rounded-lg h-6 flex items-center border border-white/5 px-3 gap-2">
                                                     <div className="w-2 h-2 rounded-full bg-zinc-700" />
-                                                    <span className="text-[9px] text-zinc-500 font-medium tracking-tight truncate">
+                                                    <span className="text-xs text-zinc-500 font-medium tracking-normal truncate">
                                                         barberhost.com.br/{organization?.slug}
                                                     </span>
                                                 </div>
@@ -511,7 +511,7 @@ const MirrorContent: React.FC<MirrorContentProps> = ({ primary, name, logo, bann
                 <h1 className="text-3xl font-display font-bold text-white tracking-[0.25em] mb-2 uppercase transition-all duration-500">
                     {name || 'Sua Barbearia'}
                 </h1>
-                <div className="flex items-center justify-center gap-2 text-[11px] text-zinc-400 font-medium opacity-60 transition-opacity hover:opacity-100">
+                <div className="flex items-center justify-center gap-2 text-xs text-zinc-400 font-medium opacity-60 transition-opacity hover:opacity-100">
                     <MapPin size={12} style={{ color: primary, transition: 'color 0.5s ease' }} />
                     <p className="tracking-wide">Rua Exemplo, 123 - Centro</p>
                 </div>

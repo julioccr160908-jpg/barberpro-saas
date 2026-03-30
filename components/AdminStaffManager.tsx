@@ -247,7 +247,7 @@ export const AdminStaffManager: React.FC = () => {
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-display font-bold text-white uppercase">Equipe</h1>
+          <h1 className="text-3xl font-display font-bold text-white tracking-tight">Equipe</h1>
           <p className="text-textMuted">Gerencie os profissionais da barbearia.</p>
         </div>
         <Button onClick={() => handleOpenModal()}>
@@ -279,7 +279,7 @@ export const AdminStaffManager: React.FC = () => {
                   <Mail size={12} className="mr-1.5" />
                   {user.email}
                 </div>
-                <div className="mt-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-surfaceHighlight border border-border text-textMuted uppercase">
+                <div className="mt-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-surfaceHighlight border border-border text-textMuted uppercase">
                   {user.role === Role.ADMIN ? <Shield size={10} className="mr-1" /> : <User size={10} className="mr-1" />}
                   {user.role}
                 </div>

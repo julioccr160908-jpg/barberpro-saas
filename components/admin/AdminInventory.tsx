@@ -279,7 +279,7 @@ export const AdminInventory: React.FC = () => {
                                     )}
 
                                     {/* Category Badge overlaying image */}
-                                    <div className="absolute top-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-md rounded border border-white/5 text-[10px] items-center gap-1 font-bold text-zinc-300 uppercase tracking-wider flex">
+                                    <div className="absolute top-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-md rounded border border-white/5 text-xs items-center gap-1 font-semibold text-zinc-300 uppercase tracking-wide flex">
                                         <Tag size={10} />
                                         {product.category || 'Geral'}
                                     </div>
@@ -331,7 +331,7 @@ export const AdminInventory: React.FC = () => {
                                             {Number(product.price).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                                         </span>
                                         
-                                        <span className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-md border flex gap-1 items-center
+                                        <span className={`px-2 py-0.5 text-xs font-semibold uppercase rounded-md border flex gap-1 items-center
                                             ${isOutOfStock ? 'bg-red-500/10 text-red-400 border-red-500/20' 
                                             : isLowStock ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' 
                                             : 'bg-green-500/10 text-green-400 border-green-500/20'}`}
@@ -377,7 +377,7 @@ export const AdminInventory: React.FC = () => {
                                 
                                 {/* Image Upload Area */}
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Foto do Produto</label>
+                                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wide">Foto do Produto</label>
                                     <label className="aspect-[21/9] w-full rounded-xl border-2 border-dashed border-zinc-700 hover:border-amber-400/50 cursor-pointer flex items-center justify-center overflow-hidden relative bg-zinc-950/50 group transition-all">
                                         {formDataUrl ? (
                                             <>
@@ -410,26 +410,26 @@ export const AdminInventory: React.FC = () => {
                                 </div>
 
                                 <div className="space-y-1">
-                                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest pl-1">Nome</label>
+                                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wide pl-1">Nome</label>
                                     <input name="name" defaultValue={editingProduct?.name} required placeholder="Ex: Pomada Efeito Matte 150g" className="w-full bg-zinc-950/50 border border-zinc-800 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50 text-white p-3 rounded-xl transition-all" />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1">
-                                        <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest pl-1">Preço (R$)</label>
+                                        <label className="text-xs font-bold text-zinc-500 uppercase tracking-wide pl-1">Preço (R$)</label>
                                         <input name="price" type="number" step="0.01" defaultValue={editingProduct?.price} required placeholder="0.00" className="w-full bg-zinc-950/50 border border-zinc-800 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50 text-white p-3 rounded-xl transition-all font-mono" />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest pl-1">Qtd Estoque</label>
+                                        <label className="text-xs font-bold text-zinc-500 uppercase tracking-wide pl-1">Qtd Estoque</label>
                                         <input name="stock" type="number" defaultValue={editingProduct?.stock_quantity} required placeholder="Ex: 50" className="w-full bg-zinc-950/50 border border-zinc-800 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50 text-white p-3 rounded-xl transition-all font-mono" />
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1">
-                                        <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest pl-1">Categoria</label>
+                                        <label className="text-xs font-bold text-zinc-500 uppercase tracking-wide pl-1">Categoria</label>
                                         <input name="category" defaultValue={editingProduct?.category} placeholder="Ex: Cabelo, Barba..." className="w-full bg-zinc-950/50 border border-zinc-800 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50 text-white p-3 rounded-xl transition-all" />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest pl-1" title="Avisa quando estoque ficar abaixo deste valor">Alerta Baixo</label>
+                                        <label className="text-xs font-bold text-zinc-500 uppercase tracking-wide pl-1" title="Avisa quando estoque ficar abaixo deste valor">Alerta Baixo</label>
                                         <input name="min_stock" type="number" defaultValue={editingProduct?.min_stock_level || 5} placeholder="Ex: 5" className="w-full bg-zinc-950/50 border border-zinc-800 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50 text-white p-3 rounded-xl transition-all font-mono" />
                                     </div>
                                 </div>

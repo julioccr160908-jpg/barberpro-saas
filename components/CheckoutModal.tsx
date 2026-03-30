@@ -127,7 +127,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ appointment, onClo
                         </div>
                         <div>
                             <p className="text-sm font-bold text-white">{product.name}</p>
-                            <p className="text-[10px] text-zinc-500">Estoque: {product.stock_quantity} un</p>
+                            <p className="text-xs text-zinc-500">Estoque: {product.stock_quantity} un</p>
                         </div>
                     </div>
                     <span className="text-sm font-mono font-bold text-white">R$ {product.price.toFixed(2)}</span>
@@ -148,7 +148,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ appointment, onClo
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-sm font-bold text-white">{appointment.serviceName}</p>
-                  <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Serviço</p>
+                  <p className="text-xs text-zinc-500 uppercase tracking-wide">Serviço</p>
                 </div>
                 <span className="text-sm font-mono font-bold text-white">R$ {appointment.servicePrice.toFixed(2)}</span>
               </div>
@@ -166,7 +166,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ appointment, onClo
                   </div>
                   <div className="flex flex-col items-end gap-1">
                     <span className="text-sm font-mono font-bold text-white">R$ {(item.product.price * item.quantity).toFixed(2)}</span>
-                    <button onClick={() => removeItem(item.product.id)} className="text-[10px] text-red-500 opacity-0 group-hover:opacity-100 transition-opacity uppercase font-bold">Remover</button>
+                    <button onClick={() => removeItem(item.product.id)} className="text-xs text-red-500 opacity-0 group-hover:opacity-100 transition-opacity uppercase font-semibold">Remover</button>
                   </div>
                 </div>
               ))}

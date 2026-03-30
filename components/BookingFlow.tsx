@@ -78,7 +78,7 @@ const ProductCard: React.FC<{
           <div className="w-full h-full flex items-center justify-center bg-white/5"><StoreIcon className="text-zinc-700" size={32} /></div>
         )}
         {isLowStock && (
-            <div className="absolute top-3 left-3 bg-red-500/90 backdrop-blur-md px-2 py-1 rounded-md text-[10px] font-black text-white uppercase tracking-widest shadow-lg">
+            <div className="absolute top-3 left-3 bg-red-500/90 backdrop-blur-md px-2 py-1 rounded-md text-xs font-bold text-white uppercase tracking-wide shadow-lg">
                 Últimas unidades
             </div>
         )}
@@ -92,7 +92,7 @@ const ProductCard: React.FC<{
       <div className="p-4 space-y-4 flex-1 flex flex-col justify-between">
         <div>
             <h4 className="font-bold text-white text-sm line-clamp-2 leading-tight">{product.name}</h4>
-            <p className="text-[10px] text-zinc-500 uppercase tracking-widest line-clamp-1 mt-1">{product.category || 'Cuidados'}</p>
+            <p className="text-xs text-zinc-500 uppercase tracking-wide line-clamp-1 mt-1">{product.category || 'Cuidados'}</p>
         </div>
 
         {!hideControls && (
@@ -685,9 +685,9 @@ export const BookingFlow: React.FC = () => {
                              )}
                         </div>
                         <div>
-                            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-0.5">Olá, reserva feita!</p>
+                            <p className="text-xs text-zinc-500 font-semibold uppercase tracking-wide mb-0.5">Olá, reserva feita!</p>
                             <h3 className="text-white font-bold leading-tight line-clamp-1">{profile?.name || 'Cliente'}</h3>
-                            {customerSubscription && <span className="text-[10px] text-primary font-black uppercase tracking-tighter">Membro do Clube</span>}
+                            {customerSubscription && <span className="text-xs text-primary font-bold uppercase tracking-wide">Membro do Clube</span>}
                         </div>
                     </div>
 
@@ -695,7 +695,7 @@ export const BookingFlow: React.FC = () => {
                     <div className="space-y-3">
                          <div className="flex items-center gap-2 px-1">
                             <Gift size={14} className="text-primary" />
-                            <h3 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Progressão Fidelidade</h3>
+                            <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-wide">Progressão Fidelidade</h3>
                         </div>
                         {loyaltyProfile && (
                             <LoyaltyCard 
@@ -711,7 +711,7 @@ export const BookingFlow: React.FC = () => {
                         <div className="space-y-3 pt-2">
                              <div className="flex items-center gap-2 px-1">
                                 <Star size={14} className="text-primary" />
-                                <h3 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Área do Assinante</h3>
+                                <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-wide">Área do Assinante</h3>
                             </div>
                             <SubscriptionCard subscription={customerSubscription} />
                         </div>
@@ -731,7 +731,7 @@ export const BookingFlow: React.FC = () => {
                     <div className="pt-8">
                         <button 
                             onClick={() => supabase.auth.signOut()}
-                            className="w-full flex items-center justify-center gap-2 p-3 text-red-500/60 hover:text-red-500 hover:bg-red-500/5 rounded-2xl transition-all text-xs font-bold uppercase tracking-widest"
+                            className="w-full flex items-center justify-center gap-2 p-3 text-red-500/60 hover:text-red-500 hover:bg-red-500/5 rounded-2xl transition-all text-xs font-semibold uppercase tracking-wide"
                         >
                             <LogOut size={14} />
                             Sair da Conta
@@ -770,7 +770,7 @@ export const BookingFlow: React.FC = () => {
                   <img src={activeSettings.logo_url} className="w-full h-full object-cover" alt="Logo" onError={() => setLogoError(true)} />
                 </div>
               )}
-              <h1 className="font-display font-bold text-4xl text-white tracking-widest mb-2">
+              <h1 className="font-display font-bold text-4xl text-white tracking-tight mb-2">
                 {activeSettings.establishment_name}
               </h1>
               <div className="flex items-center justify-center gap-2 text-sm text-textMuted opacity-80">
@@ -818,12 +818,12 @@ export const BookingFlow: React.FC = () => {
                       </div>
                     )}
                   </div>
-                  <h2 className="text-3xl font-display text-white">Agende com {selectedBarber.name?.split(' ')[0]}</h2>
+                  <h2 className="text-3xl font-display font-semibold text-white tracking-tight">Agende com {selectedBarber.name?.split(' ')[0]}</h2>
                   <p className="text-textMuted max-w-md">Selecione o serviço abaixo para garantir o seu horário exclusivo.</p>
                 </>
               ) : (
                 <>
-                  <h2 className="text-3xl font-display text-white">Pronto para o seu melhor visual?</h2>
+                  <h2 className="text-3xl font-display font-semibold text-white tracking-tight">Pronto para o seu melhor visual?</h2>
                   <p className="text-textMuted max-w-md">Agende agora seu horário com nossos profissionais qualificados.</p>
                 </>
               )}
@@ -882,7 +882,7 @@ export const BookingFlow: React.FC = () => {
                         <div className="p-2 bg-primary/10 rounded-lg">
                           <Package className="text-primary w-5 h-5" />
                         </div>
-                        <h3 className="text-xl font-display text-white uppercase tracking-wider">Produtos em Destaque</h3>
+                        <h3 className="text-xl font-display font-semibold text-white tracking-tight">Produtos em Destaque</h3>
                       </div>
                       
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -906,7 +906,7 @@ export const BookingFlow: React.FC = () => {
                       
                       {productsData.length > 3 && (
                         <div className="mt-8 text-center">
-                          <p className="text-xs text-zinc-500 uppercase tracking-widest">Selecione o serviço para ver o catálogo completo</p>
+                          <p className="text-xs text-zinc-500 uppercase tracking-wide">Selecione o serviço para ver o catálogo completo</p>
                         </div>
                       )}
                     </div>
@@ -918,7 +918,7 @@ export const BookingFlow: React.FC = () => {
 
           {step === BookingStep.SERVICE && (
             <div className="animate-fade-in flex-1">
-              <h2 className="text-xl font-display text-white mb-6">Escolha o Serviço</h2>
+              <h2 className="text-xl font-display font-semibold text-white mb-6 tracking-tight">Escolha o Serviço</h2>
               {isServicesLoading ? (
                 <div className="space-y-3">
                   {[1, 2, 3, 4].map(i => (
@@ -953,7 +953,7 @@ export const BookingFlow: React.FC = () => {
           {step === BookingStep.DATETIME && (
             <div className="animate-fade-in flex-1">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-display text-white">Data e Hora</h2>
+                <h2 className="text-xl font-display font-semibold text-white tracking-tight">Data e Hora</h2>
                 <Button variant="ghost" size="sm" onClick={() => setStep(BookingStep.SERVICE)}>Voltar</Button>
               </div>
               
@@ -975,7 +975,7 @@ export const BookingFlow: React.FC = () => {
                       </div>
                     </div>
                     <div className="grid grid-cols-7 gap-1 text-center mb-2">
-                      {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map(d => <div key={d} className="text-[10px] text-textMuted font-bold">{d}</div>)}
+                      {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map(d => <div key={d} className="text-xs text-textMuted font-semibold">{d}</div>)}
                     </div>
                     <div className="grid grid-cols-7 gap-1">
                       {calendarDays.map(day => {
@@ -1017,7 +1017,7 @@ export const BookingFlow: React.FC = () => {
 
           {step === BookingStep.BARBER && (
             <div className="animate-fade-in flex-1">
-              <h2 className="text-xl font-display text-white mb-6">Escolha o Profissional</h2>
+              <h2 className="text-xl font-display font-semibold text-white mb-6 tracking-tight">Escolha o Profissional</h2>
               {isStaffLoading ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                   {[1, 2, 3].map(i => (
@@ -1045,7 +1045,7 @@ export const BookingFlow: React.FC = () => {
                         )}
                       </div>
                       <h3 className="font-bold text-sm text-center text-white">{barber.name}</h3>
-                      <p className="text-[10px] text-textMuted uppercase tracking-tighter mt-1">{barber.jobTitle || 'Profissional'}</p>
+                      <p className="text-xs text-textMuted tracking-normal mt-1">{barber.jobTitle || 'Profissional'}</p>
                     </div>
                   ))}
                 </div>
@@ -1060,7 +1060,7 @@ export const BookingFlow: React.FC = () => {
             <div className="animate-fade-in flex-1">
               <div className="flex items-center justify-between mb-8">
                 <div>
-                  <h2 className="text-2xl font-display text-white tracking-tight">Retire na Cadeira 🧴</h2>
+                  <h2 className="text-2xl font-display font-semibold text-white tracking-tight">Retire na Cadeira 🧴</h2>
                   <p className="text-sm text-zinc-400">Garanta seus produtos favoritos e retire durante o serviço.</p>
                 </div>
                 <Button variant="ghost" size="sm" onClick={() => setStep(selectedBarber ? BookingStep.BARBER : BookingStep.DATETIME)} className="text-zinc-500">Voltar</Button>
@@ -1101,14 +1101,14 @@ export const BookingFlow: React.FC = () => {
                 <Button 
                   onClick={() => setStep(BookingStep.CONFIRM)} 
                   size="lg" 
-                  className="px-16 py-7 rounded-2xl shadow-xl shadow-primary/10 hover:shadow-primary/20 transition-all font-black uppercase tracking-widest text-xs"
+                  className="px-16 py-7 rounded-2xl shadow-xl shadow-primary/10 hover:shadow-primary/20 transition-all font-bold uppercase tracking-wide text-xs"
                   style={{ backgroundColor: activeSettings.primary_color || '#D4AF37' }}
                 >
                   Ir para Confirmação
                 </Button>
                 <button 
                   onClick={() => setStep(BookingStep.CONFIRM)} 
-                  className="text-[10px] text-zinc-500 uppercase tracking-[0.2em] font-bold hover:text-white transition-colors"
+                  className="text-xs text-zinc-500 uppercase tracking-wide font-semibold hover:text-white transition-colors"
                 >
                   {(!productsData || productsData.length === 0) ? 'Continuar para o Resumo' : 'Pular, apenas o serviço por enquanto'}
                 </button>
@@ -1118,7 +1118,7 @@ export const BookingFlow: React.FC = () => {
 
           {step === BookingStep.CONFIRM && (
             <div className="animate-fade-in flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
-              <h2 className="text-xl font-display text-white mb-6 text-center">Tudo certo?</h2>
+              <h2 className="text-xl font-display font-semibold text-white mb-6 text-center tracking-tight">Tudo certo?</h2>
               {!selectedBarber || !selectedService || !selectedTime ? (
                 <div className="space-y-4">
                   <Skeleton className="h-24 w-full rounded-2xl" />
@@ -1135,7 +1135,7 @@ export const BookingFlow: React.FC = () => {
                   {Object.keys(selectedProducts).some(id => selectedProducts[id] > 0) && (
                       <>
                           <div className="pt-2">
-                             <h4 className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-3">Produtos Adicionados</h4>
+                             <h4 className="text-xs text-zinc-500 font-semibold uppercase tracking-wide mb-3">Produtos Adicionados</h4>
                           </div>
                           {Object.entries(selectedProducts).filter(([_, q]) => q > 0).map(([id, quantity]) => {
                             const product = productsData?.find(p => p.id === id);
@@ -1144,11 +1144,11 @@ export const BookingFlow: React.FC = () => {
                               <div key={id} className="flex justify-between border-b border-white/5 pb-2 text-xs">
                                 <div className="flex flex-col">
                                   <span className="text-white font-medium">{product.name}</span>
-                                  <span className="text-[10px] text-amber-400 uppercase tracking-tight">Reserva para retirada</span>
+                                  <span className="text-xs text-amber-400 tracking-normal">Reserva para retirada</span>
                                 </div>
                                 <div className="text-right">
                                   <span className="text-white font-bold">{quantity}x</span>
-                                  <p className="text-[10px] text-zinc-500">R$ {(product.price * quantity).toFixed(2)}</p>
+                                  <p className="text-xs text-zinc-500">R$ {(product.price * quantity).toFixed(2)}</p>
                                 </div>
                               </div>
                             );

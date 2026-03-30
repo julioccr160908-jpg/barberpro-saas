@@ -187,7 +187,7 @@ export const CustomerSubscriptions: React.FC = () => {
                                 
                                 {isCurrentPlan && (
                                     <div className="absolute top-4 right-4 z-20">
-                                        <div className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold text-black uppercase tracking-widest ${activeSubscription.status === 'active' ? 'bg-primary' : 'bg-orange-500'}`} style={activeSubscription.status === 'active' ? { backgroundColor: settings.primary_color } : {}}>
+                                        <div className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-bold text-black uppercase tracking-wide ${activeSubscription.status === 'active' ? 'bg-primary' : 'bg-orange-500'}`} style={activeSubscription.status === 'active' ? { backgroundColor: settings.primary_color } : {}}>
                                             {activeSubscription.status === 'active' ? <><Check size={10} /> Seu Plano</> : 'Pendente'}
                                         </div>
                                     </div>
@@ -199,7 +199,7 @@ export const CustomerSubscriptions: React.FC = () => {
                                             <Sparkles size={20} style={{ color: settings.primary_color }} />
                                         </div>
                                         {!isCurrentPlan && (
-                                            <span className="text-[10px] font-bold uppercase tracking-tighter bg-primary/10 px-2 py-1 rounded text-primary" style={{ color: settings.primary_color, backgroundColor: `${settings.primary_color}1a` }}>
+                                            <span className="text-xs font-bold uppercase tracking-wide bg-primary/10 px-2 py-1 rounded text-primary" style={{ color: settings.primary_color, backgroundColor: `${settings.primary_color}1a` }}>
                                                 Recomendado
                                             </span>
                                         )}
@@ -243,7 +243,7 @@ export const CustomerSubscriptions: React.FC = () => {
                                             'Assinar Agora'
                                         )}
                                     </Button>
-                                    <p className="text-[10px] text-center text-zinc-500 mt-4 uppercase font-bold tracking-widest">
+                                    <p className="text-xs text-center text-zinc-500 mt-4 uppercase font-semibold tracking-wide">
                                         Pagamento recorrente seguro
                                     </p>
                                 </div>

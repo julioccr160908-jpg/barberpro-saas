@@ -190,7 +190,7 @@ export const BarberQRCode: React.FC<BarberQRCodeProps> = ({ slug, barberId, barb
             </div>
 
             <div className="pt-4 border-t border-zinc-800 w-full mt-auto">
-                <p className="text-[10px] text-zinc-500 uppercase tracking-widest mb-2 text-left">Link Direto</p>
+                <p className="text-xs text-zinc-500 uppercase tracking-wide mb-2 text-left">Link Direto</p>
                 <div className="flex items-center gap-2 bg-black/40 border border-zinc-800 rounded-lg p-2.5 overflow-hidden">
                     <Share2 size={14} className="text-zinc-500 flex-shrink-0" />
                     <input 

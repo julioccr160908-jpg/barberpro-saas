@@ -24,7 +24,7 @@ const PlatformSidebar: React.FC = () => {
     return (
         <aside className="w-64 bg-zinc-900 border-r border-zinc-800 flex flex-col">
             <div className="h-20 flex items-center px-6 border-b border-zinc-800">
-                <span className="font-display font-bold text-xl tracking-wider text-white">
+                <span className="font-display font-bold text-xl tracking-tight text-white">
                     PLATFORM<span className="text-blue-500">ADMIN</span>
                 </span>
             </div>
@@ -109,7 +109,7 @@ export const PlatformLayout: React.FC<{ children: React.ReactNode }> = ({ childr
             <PlatformSidebar />
             <div className="flex-1 flex flex-col h-screen overflow-hidden">
                 {activeBroadcast && (
-                    <div className={`px-8 py-2 flex items-center justify-between text-xs font-bold uppercase tracking-widest ${
+                    <div className={`px-8 py-2 flex items-center justify-between text-xs font-semibold uppercase tracking-wide ${
                         activeBroadcast.type === 'warning' ? 'bg-amber-500 text-black' :
                         activeBroadcast.type === 'error' ? 'bg-red-600 text-white' :
                         activeBroadcast.type === 'success' ? 'bg-emerald-500 text-black' : 'bg-blue-600 text-white'
@@ -134,7 +134,7 @@ export const PlatformLayout: React.FC<{ children: React.ReactNode }> = ({ childr
                     </div>
                     <div className="flex items-center gap-4">
                         <div className="flex flex-col items-end">
-                            <span className="text-xs font-bold text-blue-400 uppercase tracking-widest">Super Admin</span>
+                            <span className="text-xs font-bold text-blue-400 uppercase tracking-wide">Super Admin</span>
                             <span className="text-sm text-zinc-300">{user?.email}</span>
                         </div>
                         <div className="w-10 h-10 rounded-full bg-blue-500/20 border border-blue-500/20 flex items-center justify-center text-blue-400 font-bold">

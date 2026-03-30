@@ -105,7 +105,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
           </div>
           
           <div>
-            <h2 className="text-2xl font-display font-bold text-white uppercase tracking-wider">Como foi seu corte?</h2>
+            <h2 className="text-2xl font-display font-bold text-white tracking-tight">Como foi seu corte?</h2>
             <p className="text-zinc-500 text-sm mt-1">Sua avaliação ajuda outros clientes e valoriza nossos profissionais.</p>
           </div>
 
@@ -127,7 +127,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
 
           {/* Comment */}
           <div className="space-y-1 text-left">
-            <label className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest ml-1">Comentário (opcional)</label>
+            <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wide ml-1">Comentário (opcional)</label>
             <textarea
               className="w-full bg-zinc-800/50 border border-zinc-700/50 rounded-2xl p-4 text-white placeholder:text-zinc-600 focus:outline-none focus:border-yellow-500/50 focus:ring-1 focus:ring-yellow-500/50 transition-all min-h-[100px] resize-none"
               placeholder="Conte como foi sua experiência..."
@@ -138,7 +138,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
 
           {/* Photo Upload */}
           <div className="space-y-3 text-left">
-            <label className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest ml-1">Fotos do seu novo visual</label>
+            <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wide ml-1">Fotos do seu novo visual</label>
             <div className="grid grid-cols-4 gap-3">
               {photos.map((photo, index) => (
                 <div key={index} className="relative aspect-square rounded-xl overflow-hidden group border border-zinc-800">
@@ -158,7 +158,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
               {photos.length < 3 && (
                 <label className="aspect-square rounded-xl border-2 border-dashed border-zinc-800 flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-yellow-500/50 hover:bg-yellow-500/5 transition-all text-zinc-600 hover:text-yellow-500">
                   <Camera size={20} />
-                  <span className="text-[10px] font-bold uppercase">Add Photo</span>
+                  <span className="text-xs font-semibold uppercase">Add Photo</span>
                   <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} multiple />
                 </label>
               )}

@@ -212,7 +212,7 @@ export const CustomerProfile: React.FC = () => {
                             <h4 className="text-white font-bold text-sm">Clube de Assinatura</h4>
                             <p className="text-xs text-zinc-500">Torne-se membro e tenha cortes ilimitados.</p>
                         </div>
-                        <Button variant="outline" size="sm" onClick={() => navigate('/customer/subscriptions')} className="text-[10px] uppercase font-bold tracking-widest border-white/10 hover:border-primary">
+                        <Button variant="outline" size="sm" onClick={() => navigate('/customer/subscriptions')} className="text-xs uppercase font-semibold tracking-wide border-white/10 hover:border-primary">
                             Ver Planos
                         </Button>
                     </div>

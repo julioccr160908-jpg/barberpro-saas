@@ -126,7 +126,7 @@ const HealthItem = ({ label, status }: { label: string, status?: string }) => {
         <div className="flex justify-between items-center p-3 bg-black/30 rounded-lg border border-zinc-800/50">
             <span className="text-sm font-medium text-zinc-300">{label}</span>
             <div className="flex items-center gap-2">
-                <span className={`text-[10px] font-bold uppercase tracking-wider ${
+                <span className={`text-xs font-semibold uppercase tracking-wide ${
                     isOnline ? 'text-emerald-500' : 
                     isUnconfigured ? 'text-zinc-500' :
                     isLoading ? 'text-blue-400' : 'text-red-500'

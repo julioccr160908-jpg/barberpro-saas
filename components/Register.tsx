@@ -181,7 +181,7 @@ export const Register: React.FC = () => {
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-surface border border-primary/30 mb-4 shadow-[0_0_15px_rgba(212,175,55,0.2)]">
                         <Building2 size={32} className="text-primary" />
                     </div>
-                    <h1 className="text-3xl font-display font-bold text-white tracking-wider mb-2">
+                    <h1 className="text-3xl font-display font-bold text-white tracking-tight mb-2">
                         NOVA BARBEARIA
                     </h1>
                     <p className="text-textMuted">

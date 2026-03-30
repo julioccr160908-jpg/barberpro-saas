@@ -237,7 +237,7 @@ export const AdminAmenitiesSettings: React.FC = () => {
                         <div className="flex justify-between items-center mb-8">
                             <div>
                                 <h3 className="text-2xl font-display font-bold text-white tracking-tight">Nova Comodidade</h3>
-                                <p className="text-xs text-zinc-500 uppercase tracking-widest mt-1">Personalize seu diferencial</p>
+                                <p className="text-xs text-zinc-500 uppercase tracking-wide mt-1">Personalize seu diferencial</p>
                             </div>
                             <button onClick={() => setIsModalOpen(false)} className="p-2 text-zinc-500 hover:text-white transition-colors">
                                 <X size={20} />
@@ -246,7 +246,7 @@ export const AdminAmenitiesSettings: React.FC = () => {
 
                         <div className="space-y-6">
                             <div>
-                                <label className="block text-xs font-medium text-zinc-500 uppercase tracking-widest mb-2 px-1">Nome da Comodidade</label>
+                                <label className="block text-xs font-medium text-zinc-500 uppercase tracking-wide mb-2 px-1">Nome da Comodidade</label>
                                 <input 
                                     type="text"
                                     value={newAmenity.label}
@@ -257,11 +257,11 @@ export const AdminAmenitiesSettings: React.FC = () => {
                             </div>
 
                             <div>
-                                <label className="block text-xs font-medium text-zinc-500 uppercase tracking-widest mb-4 px-1">Selecione um Ícone</label>
+                                <label className="block text-xs font-medium text-zinc-500 uppercase tracking-wide mb-4 px-1">Selecione um Ícone</label>
                                 <div className="space-y-6 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                                     {ICON_LIBRARY.map((group) => (
                                         <div key={group.category} className="space-y-3">
-                                            <h4 className="text-[10px] font-bold text-zinc-600 uppercase tracking-[0.2em] px-1 px-1 flex items-center gap-2">
+                                            <h4 className="text-xs font-bold text-zinc-600 uppercase tracking-wide px-1 px-1 flex items-center gap-2">
                                                 <div className="h-px flex-1 bg-white/5"></div>
                                                 {group.category}
                                                 <div className="h-px flex-1 bg-white/5"></div>

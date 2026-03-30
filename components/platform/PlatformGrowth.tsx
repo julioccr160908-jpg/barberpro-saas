@@ -70,7 +70,7 @@ export const PlatformGrowth: React.FC = () => {
                             <div key={org.id} className="p-3 bg-black/40 border border-zinc-800 rounded-lg flex items-center justify-between group cursor-pointer hover:border-blue-500/50 transition-all">
                                 <div>
                                     <div className="text-sm font-bold text-white">{org.name}</div>
-                                    <div className="text-[10px] text-zinc-500 flex items-center gap-1">
+                                    <div className="text-xs text-zinc-500 flex items-center gap-1">
                                         <Calendar size={10} />
                                         Inscrito em {new Date(org.created_at).toLocaleDateString()}
                                     </div>
@@ -92,7 +92,7 @@ export const PlatformGrowth: React.FC = () => {
                         <span className="text-3xl font-bold text-white">
                             {stats.active > 0 ? ((stats.active / (stats.active + stats.pending + stats.churn)) * 100).toFixed(1) : 0}%
                         </span>
-                        <span className="text-[10px] text-zinc-500 mb-1.5 uppercase font-bold tracking-tighter">Conversão Total</span>
+                        <span className="text-xs text-zinc-500 mb-1.5 uppercase font-semibold tracking-wide">Conversão Total</span>
                     </div>
                     <div className="w-full bg-zinc-800 rounded-full h-1.5 overflow-hidden">
                         <div className="bg-green-500 h-full" style={{ width: `${stats.active > 0 ? (stats.active / (stats.active + stats.pending + stats.churn)) * 100 : 0}%` }}></div>
@@ -107,7 +107,7 @@ export const PlatformGrowth: React.FC = () => {
                     <p className="text-sm text-zinc-500 mb-4">Extraia dados consolidados para Excel ou ferramentas de BI.</p>
                     <button 
                         onClick={handleExportBI}
-                        className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-bold font-display uppercase tracking-widest"
+                        className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-semibold font-display uppercase tracking-wide"
                     >
                         Exportar Relatório CSV
                     </button>
